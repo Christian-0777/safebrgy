@@ -64,7 +64,7 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div style="padding: 30px;">
+    <div>
       <h2 class="mb-4">Welcome, <?php echo htmlspecialchars($user); ?>!</h2>
 
     <!-- Status Buttons -->

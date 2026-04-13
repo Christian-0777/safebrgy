@@ -1,5 +1,14 @@
 /* Shared Header Styles */
 
+* {
+  font-family: Arial;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
 .header {
   position: fixed;
   top: 0;
@@ -24,7 +33,7 @@
 }
 
 .header-logo {
-  font-size: 24px;
+  font-size: 16px;
   font-weight: bold;
   color: var(--color-primary-deep);
   text-decoration: none;
@@ -56,7 +65,7 @@
 }
 
 .header-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-neutral-dark-gray);
   margin: 0;
@@ -73,7 +82,7 @@
 .header-nav a {
   color: var(--color-neutral-medium-gray);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
@@ -130,7 +139,8 @@
   outline: none;
   width: 100%;
   color: var(--color-neutral-dark-gray);
-  font-size: 14px;
+  font-size: 12px;
+  font-family: Arial;
 }
 
 .search-box input::placeholder {

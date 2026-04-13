@@ -63,7 +63,7 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div style="padding: 30px;">
+    <div>
       <div class="breadcrumb">
         <a href="dashboard.php">Dashboard</a>
         <span class="separator">/</span>

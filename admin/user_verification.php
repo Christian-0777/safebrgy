@@ -71,7 +71,7 @@ $users = [
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div style="padding: 30px;">
+    <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Verify User Accounts</h2>
       <div class="d-flex align-items-center">

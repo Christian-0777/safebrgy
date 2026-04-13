@@ -20,7 +20,8 @@ session_start();
 
     <!-- Left Section -->
     <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center text-white bg-primary p-5">
-      <img src="assets/img/barangay_logo.png" alt="Barangay Logo" class="mb-4" style="max-width:120px;">
+      <img src="../assets/img/seal.png" alt="Barangay Logo" class="mb-4" style="max-width:120px;\
+      border-radius:50%;">
       <h2 class="fw-bold">SafeBrgy</h2>
       <p class="lead">Request Documents Anytime, Anywhere!</p>
       <p>Experience fast, easy, and hassle-free barangay transactions with our SafeBrgy portal.</p>

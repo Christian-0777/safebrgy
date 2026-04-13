@@ -72,7 +72,7 @@ $requests = [
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div style="padding: 30px;">
+    <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Pending Requests</h2>
       <div class="d-flex align-items-center">

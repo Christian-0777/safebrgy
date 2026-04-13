@@ -1,3 +1,25 @@
+# SafeBrgy - Official V1.1
+
+## What's New in V1.1
+
+### Admin Account Registration Form
+- **New Admin Registration Page** (`admin/register.php`): Dedicated registration form for creating new admin accounts
+- **Form Fields**:
+  - Email Address: Official email for admin account
+  - Phone Number: Contact number for verification (supports Philippine format)
+  - Password: Secure password with strength requirements
+  - Confirm Password: Real-time validation to ensure password match
+- **Create Account Button**: Submit registration form to create new admin account
+- **Password Requirements**: 
+  - Minimum 8 characters
+  - At least one uppercase letter
+  - At least one lowercase letter
+  - At least one number
+- **Real-time Validation**: JavaScript-powered validation for email, phone number, and password matching
+- **Terms Agreement**: Checkbox to accept Terms of Use and Privacy Policy before account creation
+
+---
+
 # SafeBrgy - Official V1.0
 
 ## Overview

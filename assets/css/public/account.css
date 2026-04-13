@@ -1,4 +1,14 @@
 /* Custom SafeBrgy styles */
+
+* {
+  font-family: Arial;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
 #sidebar {
   min-width: 220px;
 }
@@ -11,6 +21,8 @@
 form .btn-primary {
   background-color: #007bff;
   border: none;
+  font-size: 12px;
+  font-family: Arial;
 }
 
 form .btn-primary:hover {

@@ -65,7 +65,7 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div style="padding: 30px;">
+    <div>
     
     </div>
   </main>

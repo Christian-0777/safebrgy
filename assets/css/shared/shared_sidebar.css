@@ -1,5 +1,14 @@
 /* Shared Sidebar Styles */
 
+* {
+  font-family: Arial;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
 .sidebar {
   position: fixed;
   left: 0;
@@ -37,8 +46,9 @@
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
+  font-family: Arial;
 }
 
 .sidebar-menu a:hover,
@@ -97,7 +107,8 @@
   padding-left: 50px;
   border-left: 4px solid transparent;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
+  font-size: 12px;
+  font-family: Arial;
 }
 
 .submenu li a:hover {

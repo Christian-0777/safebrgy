@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS safebrgy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE safebrgy;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   role ENUM('resident','admin') NOT NULL DEFAULT 'resident',
   username VARCHAR(100) UNIQUE,
@@ -14,7 +14,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE residents (
+CREATE TABLE IF NOT EXISTS residents (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   first_name VARCHAR(100) NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE residents (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE requests (
+CREATE TABLE IF NOT EXISTS requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   request_type ENUM('Barangay Clearance','Barangay Residency','Barangay Indigency','Barangay Business Clearance','Incident Report','Lost Property') NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE requests (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
   report_type ENUM('Incident','Lost Property') NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE reports (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
-CREATE TABLE announcements (
+CREATE TABLE IF NOT EXISTS announcements (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   body TEXT NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE announcements (
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
-CREATE TABLE admin_logs (
+CREATE TABLE IF NOT EXISTS admin_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   admin_id INT,
   action VARCHAR(255),
@@ -95,7 +95,7 @@ CREATE TABLE admin_logs (
   FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
-CREATE TABLE officials (
+CREATE TABLE IF NOT EXISTS officials (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150),
   position VARCHAR(150),

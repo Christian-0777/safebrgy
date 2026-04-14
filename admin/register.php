@@ -1,6 +1,9 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 // admin_register.php - SafeBrgy Admin Registration
 session_start();
+$flashError = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_error']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,13 +34,24 @@ session_start();
     <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white p-5">
       <div class="w-100" style="max-width:400px;">
         <h3 class="mb-4 text-center">Create Admin Account</h3>
-        <form id="adminRegisterForm" method="POST" action="admin_register_process.php">
+        <?php if (!empty($flashError)): ?>
+          <div class="alert alert-danger"><?php echo htmlspecialchars($flashError); ?></div>
+        <?php endif; ?>
+        <form id="adminRegisterForm" method="POST" action="/safebrgy/admin/admin_register_process.php">
           
           <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
             <input type="email" class="form-control" id="email" name="email" placeholder="admin@barangay.com" required>
             <small class="text-muted">Use your official email address</small>
           </div>
+
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Enter your full name" required>
+            <small class="text-muted">Enter your complete name</small>
+          </div>
+
+
 
           <div class="mb-3">
             <label for="number" class="form-label">Phone Number</label>
@@ -58,13 +72,13 @@ session_start();
           </div>
 
           <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="agreeTerms" name="agreeTerms" required>
+            <input class="form-check-input" type="checkbox" id="agreeTerms" name="agreeTerms">
             <label class="form-check-label" for="agreeTerms">
               I agree to the <a href="terms.php" target="_blank">Terms of Use</a> and <a href="privacy.php" target="_blank">Privacy Policy</a>
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">Create Account</button>
+          <button type="submit" id="createAccountBtn" class="btn btn-primary w-100">Create Account</button>
         </form>
 
         <div class="text-center mt-3">

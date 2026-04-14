@@ -1,10 +1,24 @@
 <?php
+require_once __DIR__ . '/../admin_protect.php';
 // admin_settings.php - SafeBrgy Admin Account Settings
-session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
-$email = $_SESSION['email'] ?? "juandelacruz@gmail.com";
-$phone = $_SESSION['phone'] ?? "+639123456789";
-$position = $_SESSION['position'] ?? "System Administrator";
+
+$pdo = safeBrgy_db_connect();
+$adminId = $_SESSION['admin_user']['id'] ?? null;
+
+if ($adminId) {
+    $stmt = $pdo->prepare('SELECT username, email, phone FROM users WHERE id = :id');
+    $stmt->execute(['id' => $adminId]);
+    $admin = $stmt->fetch();
+    $user = $admin['username'] ?? 'Admin';
+    $email = $admin['email'] ?? '';
+    $phone = $admin['phone'] ?? '';
+} else {
+    $user = 'Admin';
+    $email = '';
+    $phone = '';
+}
+
+$position = "System Administrator";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,13 +26,13 @@ $position = $_SESSION['position'] ?? "System Administrator";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Admin Account Settings</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/admin/account_settings.css">
+  <link rel="stylesheet" href="../../assets/css/admin/account_settings.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -28,8 +42,8 @@ $position = $_SESSION['position'] ?? "System Administrator";
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
@@ -60,7 +74,7 @@ $position = $_SESSION['position'] ?? "System Administrator";
     </ul>
     
     <div class="sidebar-footer">
-      <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
+      <a href="../../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
     </div>
   </aside>
 
@@ -70,7 +84,7 @@ $position = $_SESSION['position'] ?? "System Administrator";
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Account Settings</h2>
       <div class="d-flex align-items-center">
-        <img src="assets/img/profile.png" alt="Profile" class="rounded-circle me-2" style="width:40px;height:40px;">
+        <img src="../../assets/img/profile.png" alt="Profile" class="rounded-circle me-2" style="width:40px;height:40px;">
         <span class="fw-bold"><?php echo htmlspecialchars($user); ?></span>
       </div>
     </div>
@@ -116,9 +130,9 @@ $position = $_SESSION['position'] ?? "System Administrator";
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
-<script src="../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
-<script src="../assets/js/admin/account_settings.js"></script>
+<script src="../../assets/js/admin/account_settings.js"></script>
 </body>
 </html>

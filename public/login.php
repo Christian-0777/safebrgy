@@ -1,7 +1,9 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 // index.php - SafeBrgy Login Page
 session_start();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

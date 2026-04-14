@@ -1,7 +1,23 @@
 <?php
+require_once __DIR__ . '/../admin_protect.php';
 // admin_dashboard.php - SafeBrgy Admin Dashboard
-session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
+
+$pdo = safeBrgy_db_connect();
+$adminId = $_SESSION['admin_user']['id'] ?? null;
+
+if ($adminId) {
+    $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
+    $stmt->execute(['id' => $adminId]);
+    $admin = $stmt->fetch();
+    $user = $admin['username'] ?? 'Admin';
+} else {
+    $user = 'Admin';
+}
+
+// Fetch stats
+$totalResidents = $pdo->query('SELECT COUNT(*) FROM residents')->fetchColumn();
+$newReports = $pdo->query("SELECT COUNT(*) FROM reports WHERE status = 'New'")->fetchColumn();
+$pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pending'")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,13 +25,13 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Admin Dashboard</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/admin/dashboard.css">
+  <link rel="stylesheet" href="../../assets/css/admin/dashboard.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -25,8 +41,8 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
@@ -57,7 +73,7 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
     </ul>
     
     <div class="sidebar-footer">
-      <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
+      <a href="../../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
     </div>
   </aside>
 
@@ -76,15 +92,15 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0;">
         <div style="background: var(--color-neutral-white); padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <h5 style="color: var(--color-primary-deep);">Total Residents</h5>
-          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">1,245</p>
+          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;"><?php echo number_format($totalResidents); ?></p>
         </div>
         <div style="background: var(--color-neutral-white); padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <h5 style="color: var(--color-accent-orange);">New Reports</h5>
-          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">32</p>
+          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;"><?php echo number_format($newReports); ?></p>
         </div>
         <div style="background: var(--color-neutral-white); padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <h5 style="color: var(--color-primary-medium);">Pending Requests</h5>
-          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">18</p>
+          <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;"><?php echo number_format($pendingRequests); ?></p>
         </div>
       </div>
 
@@ -122,9 +138,9 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   </main>
 
   <!-- Shared Scripts -->
-  <script src="../assets/js/shared/shared-header.js"></script>
-  <script src="../assets/js/shared/shared-sidebar.js"></script>
+  <script src="../../assets/js/shared/shared-header.js"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js"></script>
   <!-- Page-specific scripts -->
-  <script src="../assets/js/admin/dashboard.js"></script>
+  <script src="../../assets/js/admin/dashboard.js"></script>
 </body>
 </html>

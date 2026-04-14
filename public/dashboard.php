@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 // dashboard.php - SafeBrgy Dashboard
 session_start();
 // Example: fetch user info from session

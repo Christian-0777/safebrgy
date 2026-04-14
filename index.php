@@ -1,6 +1,8 @@
 <?php
+require_once __DIR__ . '/config/db.php';
 // index.php - Landing page for SafeBrgy (simple PHP template)
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -341,7 +343,7 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div>
-        <img src="assets/img/seal.png" alt="seal" class="footer-seal">
+        <img src="assets/img/seal.png" alt="seal" class="footer-seal" style ="border-radius:50%;">
         <h4>Barangay San Jose</h4>
       </div>
       <div>

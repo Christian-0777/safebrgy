@@ -3,11 +3,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const passwordInput = document.getElementById('password');
   const confirmPasswordInput = document.getElementById('confirmPassword');
   const passwordMatchDiv = document.getElementById('passwordMatch');
-  const submitBtn = document.querySelector('button[type="submit"]');
+  const submitBtn = document.getElementById('createAccountBtn');
   const emailInput = document.getElementById('email');
   const numberInput = document.getElementById('number');
   const agreeCheckbox = document.getElementById('agreeTerms');
   const form = document.getElementById('adminRegisterForm');
+
+  function updateSubmitState() {
+    submitBtn.disabled = !agreeCheckbox.checked;
+  }
+
+  updateSubmitState();
+  agreeCheckbox.addEventListener('change', updateSubmitState);
+  agreeCheckbox.addEventListener('input', updateSubmitState);
+  agreeCheckbox.addEventListener('click', updateSubmitState);
+
 
   // Validate password match on input
   confirmPasswordInput.addEventListener('keyup', function() {
@@ -148,5 +158,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     return isValid;
+  }
+
+  function updateSubmitState() {
+    submitBtn.disabled = !agreeCheckbox.checked;
   }
 });

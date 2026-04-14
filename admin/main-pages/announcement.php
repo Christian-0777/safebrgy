@@ -1,29 +1,27 @@
 <?php
+require_once __DIR__ . '/../admin_protect.php';
 // announcements.php - SafeBrgy Announcements
-session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
 
-// Example announcements array
-$announcements = [
-  [
-    "title" => "Scholarship Application Now Open",
-    "date" => "March 10, 2026",
-    "description" => "The scholarship application for the academic year 2026–2027 is now open. Submit requirements before March 25, 2026.",
-    "link" => "#"
-  ],
-  [
-    "title" => "Deadline for Grade Submission",
-    "date" => "March 5, 2026",
-    "description" => "All scholars must upload their latest grades through the My Reports section before the deadline.",
-    "link" => "#"
-  ],
-  [
-    "title" => "Orientation Schedule",
-    "date" => "February 28, 2026",
-    "description" => "All newly accepted scholars are required to attend the orientation on April 2, 2026 at the Municipal Hall.",
-    "link" => "#"
-  ]
-];
+$pdo = safeBrgy_db_connect();
+$adminId = $_SESSION['admin_user']['id'] ?? null;
+
+if ($adminId) {
+    $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
+    $stmt->execute(['id' => $adminId]);
+    $admin = $stmt->fetch();
+    $user = $admin['username'] ?? 'Admin';
+} else {
+    $user = 'Admin';
+}
+
+$stmt = $pdo->prepare('
+    SELECT a.title, a.body, a.published_at, u.username as author
+    FROM announcements a
+    LEFT JOIN users u ON a.author_id = u.id
+    ORDER BY a.published_at DESC
+');
+$stmt->execute();
+$announcements = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,13 +29,13 @@ $announcements = [
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Announcements</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/admin/announcement.css">
+  <link rel="stylesheet" href="../../assets/css/admin/announcement.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -47,8 +45,8 @@ $announcements = [
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
@@ -79,7 +77,7 @@ $announcements = [
     </ul>
     
     <div class="sidebar-footer">
-      <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
+      <a href="../../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
     </div>
   </aside>
 
@@ -109,9 +107,9 @@ $announcements = [
           <div class="card shadow-sm h-100">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><?php echo htmlspecialchars($a['title']); ?></h5>
-              <small class="text-muted mb-2"><?php echo htmlspecialchars($a['date']); ?></small>
-              <p class="card-text flex-grow-1"><?php echo htmlspecialchars($a['description']); ?></p>
-              <a href="<?php echo htmlspecialchars($a['link']); ?>" class="btn btn-outline-primary mt-auto">Read More</a>
+              <small class="text-muted mb-2"><?php echo htmlspecialchars(date('M d, Y', strtotime($a['published_at']))); ?> by <?php echo htmlspecialchars($a['author'] ?? 'Admin'); ?></small>
+              <p class="card-text flex-grow-1"><?php echo htmlspecialchars(substr($a['body'], 0, 150)) . (strlen($a['body']) > 150 ? '...' : ''); ?></p>
+              <a href="#" class="btn btn-outline-primary mt-auto">Read More</a>
             </div>
           </div>
         </div>
@@ -122,9 +120,9 @@ $announcements = [
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
-<script src="../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
-<script src="../assets/js/admin/announcement.js"></script>
+<script src="../../assets/js/admin/announcement.js"></script>
 </body>
 </html>

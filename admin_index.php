@@ -1,6 +1,8 @@
 <?php
+require_once __DIR__ . '/config/db.php';
 // admin.php - Admin Landing Page
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>

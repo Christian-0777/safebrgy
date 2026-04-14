@@ -1,9 +1,22 @@
 <?php
+require_once __DIR__ . '/../admin_protect.php';
 // account.php - SafeBrgy Account Settings
-session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
-$email = $_SESSION['email'] ?? "juandelacruz@gmail.com";
-$phone = $_SESSION['phone'] ?? "+639123456789";
+
+$pdo = safeBrgy_db_connect();
+$adminId = $_SESSION['admin_user']['id'] ?? null;
+
+if ($adminId) {
+    $stmt = $pdo->prepare('SELECT username, email, phone FROM users WHERE id = :id');
+    $stmt->execute(['id' => $adminId]);
+    $admin = $stmt->fetch();
+    $user = $admin['username'] ?? 'Admin';
+    $email = $admin['email'] ?? '';
+    $phone = $admin['phone'] ?? '';
+} else {
+    $user = 'Admin';
+    $email = '';
+    $phone = '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,13 +24,13 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Account Settings</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/admin/profile.css">
+  <link rel="stylesheet" href="../../assets/css/admin/profile.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -27,8 +40,8 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
@@ -59,7 +72,7 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
     </ul>
     
     <div class="sidebar-footer">
-      <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
+      <a href="../../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
     </div>
   </aside>
 
@@ -71,9 +84,9 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
-<script src="../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
-<script src="../assets/js/admin/profile.js"></script>
+<script src="../../assets/js/admin/profile.js"></script>
 </body>
 </html>

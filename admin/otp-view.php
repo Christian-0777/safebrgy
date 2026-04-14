@@ -1,6 +1,9 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 // admin/otp-view.php - SafeBrgy Admin OTP Verification
 session_start();
+$errorMessage = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_error']);
 
 // Check if we have a pending verification
 if (!isset($_SESSION['pending_verification']) || !isset($_SESSION['verification_method'])) {
@@ -59,12 +62,12 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
             <i class="fas fa-envelope-open-text"></i>
           </div>
           <h3 class="mb-2">Verify Your Identity</h3>
-          <p class="text-muted">Enter the 6-digit code sent to your <?php echo htmlspecialchars($verification_method); ?></p>
+          <p class="text-muted">Enter the 7-digit code sent to your <?php echo htmlspecialchars($verification_method); ?></p>
           <p class="text-secondary small"><strong><?php echo htmlspecialchars($masked_target); ?></strong></p>
         </div>
 
         <!-- OTP Form -->
-        <form id="otpForm" method="POST" action="verify_otp_process.php">
+        <form id="otpForm" method="POST" action="/safebrgy/admin/verify_otp_process.php">
           
           <!-- OTP Input Boxes -->
           <div class="otp-input-group mb-4">
@@ -74,15 +77,16 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
             <input type="text" class="otp-input" id="otp4" name="otp4" maxlength="1" placeholder="0" inputmode="numeric">
             <input type="text" class="otp-input" id="otp5" name="otp5" maxlength="1" placeholder="0" inputmode="numeric">
             <input type="text" class="otp-input" id="otp6" name="otp6" maxlength="1" placeholder="0" inputmode="numeric">
+            <input type="text" class="otp-input" id="otp7" name="otp7" maxlength="1" placeholder="0" inputmode="numeric">
           </div>
 
           <!-- Hidden input for full OTP code -->
           <input type="hidden" id="otpCode" name="otp_code">
 
           <!-- Error Message -->
-          <div id="errorAlert" class="alert alert-danger alert-dismissible fade hide" role="alert">
+          <div id="errorAlert" class="alert alert-danger alert-dismissible fade <?php echo !empty($errorMessage) ? 'show' : 'hide'; ?>" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>
-            <span id="errorMessage"></span>
+            <span id="errorMessage"><?php echo htmlspecialchars($errorMessage); ?></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
 

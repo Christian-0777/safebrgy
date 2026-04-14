@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 // account.php - SafeBrgy Account Settings
 session_start();
 $user = $_SESSION['user'] ?? "Juan Dela Cruz";

@@ -1,3 +1,41 @@
+# SafeBrgy - Official V1.2
+
+## What's New in V1.2
+
+### Admin Account Registration & Login Flow with OTP
+- **Enhanced Admin Authentication**: Comprehensive security overhaul for admin account management
+- **Admin Registration Process** (`admin/register.php`):
+  - Email-based account creation
+  - Phone number verification (Philippine format support)
+  - Secure password requirements:
+    - Minimum 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number
+  - Terms of Use and Privacy Policy agreement
+  - Real-time form validation
+
+- **Admin Login with OTP Verification** (`admin/login.php`):
+  - Secure credential authentication
+  - One-Time Password (OTP) verification via email
+  - Session management with authentication tokens
+
+- **OTP Management**:
+  - **OTP View** (`admin/otp-view.php`): Dedicated OTP entry interface
+  - **OTP Verification** (`admin/verify_otp_process.php`): Server-side OTP validation and session establishment
+  - **Resend OTP** (`admin/resend_otp.php`): Request new OTP if not received
+
+- **Security Features**:
+  - Protected admin routes with authentication checks (`admin/admin_protect.php`)
+  - Secure session handling and token management
+  - Password reset functionality (`admin/reset-password.php`)
+
+- **Admin Backend Processing**:
+  - Registration processing (`admin/admin_register_process.php`)
+  - Authentication middleware for route protection (`admin/admin_auth.php`)
+
+---
+
 # SafeBrgy - Official V1.1
 
 ## What's New in V1.1

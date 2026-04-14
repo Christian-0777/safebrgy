@@ -101,8 +101,8 @@ function updateOtpCode() {
   
   document.getElementById('otpCode').value = otpCode;
   
-  // Auto-submit if all 6 digits are entered
-  if (otpCode.length === 6) {
+  // Auto-submit if all 7 digits are entered
+  if (otpCode.length === 7) {
     // Optional: auto-submit after a short delay
     // submitOtp();
   }
@@ -119,14 +119,13 @@ function handleOtpSubmit(e) {
   const errorMessage = document.getElementById('errorMessage');
   
   // Validate OTP
-  if (otpCode.length !== 6) {
-    showError('Please enter all 6 digits');
+  if (otpCode.length !== 7) {
+    showError('Please enter all 7 digits');
     shakeOtpInputs();
     return;
   }
-  
-  if (!/^\d{6}$/.test(otpCode)) {
-    showError('Invalid OTP format. Please enter numeric digits only.');
+
+  if (!/^\d{7}$/.test(otpCode)) {
     shakeOtpInputs();
     return;
   }
@@ -242,7 +241,7 @@ function initializeResendButton() {
     e.preventDefault();
     
     // Make AJAX request to resend OTP
-    fetch('resend_otp.php', {
+    fetch('/safebrgy/admin/resend_otp.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

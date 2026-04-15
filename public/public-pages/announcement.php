@@ -1,8 +1,16 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 // announcements.php - SafeBrgy Announcements
 session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
+
+// Check if user is logged in and verified
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
+    header('Location: ../login.php');
+    exit;
+}
+
+$user = $_SESSION['user'];
+$name = $user['name'] ?? 'Resident';
 
 // Example announcements array
 $announcements = [
@@ -34,9 +42,9 @@ $announcements = [
   <title>SafeBrgy - Announcements</title>
   <link rel="icon" type="image/png" href="../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../assets/css/public/announcement.css">
   <!-- Font Awesome -->
@@ -48,17 +56,17 @@ $announcements = [
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
         <div class="profile-info">
-          <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
+          <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
         </div>
         <div class="profile-dropdown">
@@ -89,7 +97,7 @@ $announcements = [
     <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Announcements</h2>
-      <span class="fw-bold"><?php echo htmlspecialchars($user); ?></span>
+      <span class="fw-bold"><?php echo htmlspecialchars($name); ?></span>
     </div>
     <p class="text-muted">Stay updated with the latest notices and updates from the municipality</p>
 
@@ -123,8 +131,8 @@ $announcements = [
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
-<script src="../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
 <script src="../assets/js/public/announcement.js"></script>
 </body>

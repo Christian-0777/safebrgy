@@ -16,6 +16,7 @@ if ($adminId) {
     $email = '';
 }
 
+// Fetch unverified users
 $stmt = $pdo->prepare('
     SELECT u.id, u.username, u.email, u.phone, u.created_at, r.first_name, r.last_name, r.complete_address
     FROM users u
@@ -24,7 +25,18 @@ $stmt = $pdo->prepare('
     ORDER BY u.created_at DESC
 ');
 $stmt->execute(['role' => 'resident']);
-$users = $stmt->fetchAll();
+$unverifiedUsers = $stmt->fetchAll();
+
+// Fetch verified users
+$stmt = $pdo->prepare('
+    SELECT u.id, u.username, u.email, u.phone, u.created_at, u.updated_at, r.first_name, r.last_name, r.complete_address
+    FROM users u
+    LEFT JOIN residents r ON u.id = r.user_id
+    WHERE u.role = :role AND u.is_verified = 1
+    ORDER BY u.updated_at DESC
+');
+$stmt->execute(['role' => 'resident']);
+$verifiedUsers = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,6 +45,8 @@ $users = $stmt->fetchAll();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - User Verification</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Shared Styles -->
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
@@ -74,6 +88,7 @@ $users = $stmt->fetchAll();
   <aside class="sidebar">
     <ul class="sidebar-menu">
       <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
       <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
       <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
       <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
@@ -89,86 +104,225 @@ $users = $stmt->fetchAll();
     <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Verify User Accounts</h2>
-      <div class="d-flex align-items-center">
-        <img src="../../assets/img/profile.png" alt="Profile" class="rounded-circle me-2" style="width:40px;height:40px;">
-        <span class="fw-bold"><?php echo htmlspecialchars($user); ?></span>
+    </div>
+
+    <!-- UNVERIFIED USERS SECTION -->
+    <div class="mb-5">
+      <h4 class="mb-3" style="color: #d9534f;">Pending Verification</h4>
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>User Information</th>
+              <th>Register Date</th>
+              <th>Address</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="unverifiedTable">
+            <?php if (count($unverifiedUsers) > 0): ?>
+              <?php foreach ($unverifiedUsers as $u): ?>
+                <tr>
+                  <td>
+                    <strong><?php echo htmlspecialchars(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '') ?: $u['username']); ?></strong><br>
+                    <small><?php echo htmlspecialchars($u['email']); ?> | <?php echo htmlspecialchars($u['phone'] ?? 'N/A'); ?></small>
+                  </td>
+                  <td><?php echo htmlspecialchars(date('M d, Y', strtotime($u['created_at']))); ?></td>
+                  <td><?php echo htmlspecialchars($u['complete_address'] ?? 'N/A'); ?></td>
+                  <td>
+                    <button class="btn btn-sm btn-info me-1" onclick="viewUser(<?php echo $u['id']; ?>)">View</button>
+                    <button class="btn btn-sm btn-success me-1" onclick="verifyUser(<?php echo $u['id']; ?>)">Approve</button>
+                    <button class="btn btn-sm btn-danger" onclick="rejectUser(<?php echo $u['id']; ?>)">Reject</button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="4" class="text-center text-muted">No pending verifications</td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Users Table -->
-    <div class="table-responsive">
-      <table class="table table-striped align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>User Information</th>
-            <th>Register Date</th>
-            <th>Address</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="usersTable">
-          <?php foreach ($users as $u): ?>
+    <!-- VERIFIED USERS SECTION -->
+    <div>
+      <h4 class="mb-3" style="color: #5cb85c;">Verified Accounts</h4>
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead class="table-dark">
             <tr>
-              <td>
-                <strong><?php echo htmlspecialchars(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '') ?: $u['username']); ?></strong><br>
-                <small><?php echo htmlspecialchars($u['email']); ?> | <?php echo htmlspecialchars($u['phone'] ?? 'N/A'); ?></small>
-              </td>
-              <td><?php echo htmlspecialchars(date('M d, Y', strtotime($u['created_at']))); ?></td>
-              <td><?php echo htmlspecialchars($u['complete_address'] ?? 'N/A'); ?></td>
-              <td>
-                <button class="btn btn-sm btn-success me-1" onclick="verifyUser(<?php echo $u['id']; ?>)">Approve</button>
-                <button class="btn btn-sm btn-danger" onclick="rejectUser(<?php echo $u['id']; ?>)">Reject</button>
-              </td>
+              <th>Name</th>
+              <th>Date of Registration</th>
+              <th>Date of Approval</th>
+              <th>Address</th>
+              <th>Action</th>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+          </thead>
+          <tbody id="verifiedTable">
+            <?php if (count($verifiedUsers) > 0): ?>
+              <?php foreach ($verifiedUsers as $u): ?>
+                <tr>
+                  <td>
+                    <strong><?php echo htmlspecialchars(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '') ?: $u['username']); ?></strong>
+                  </td>
+                  <td><?php echo htmlspecialchars(date('M d, Y', strtotime($u['created_at']))); ?></td>
+                  <td><?php echo htmlspecialchars(date('M d, Y', strtotime($u['updated_at']))); ?></td>
+                  <td><?php echo htmlspecialchars($u['complete_address'] ?? 'N/A'); ?></td>
+                  <td>
+                    <button class="btn btn-sm btn-info" onclick="viewUser(<?php echo $u['id']; ?>)">View</button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="5" class="text-center text-muted">No verified accounts yet</td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     </div>
   </main>
 
-<!-- Shared JS -->
-<script src="../../assets/js/shared/shared-header.js"></script>
-<script src="../../assets/js/shared/shared-sidebar.js"></script>
-<!-- Page-specific JS -->
-<script src="../../assets/js/admin/user_verification.js"></script>
+<!-- View User Modal -->
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewUserModalLabel">Resident Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="userDetails">
+        <!-- User details will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="approveModalLabel">Account Approved</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+        <p class="mt-3 fw-bold" id="approvalMessage">Resident Approved Successfully</p>
+        <p class="text-muted" id="approvalDate"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="closeAndRefresh()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rejectModalLabel">Reject Resident</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="rejectReason" class="form-label">Reason for rejection:</label>
+        <textarea class="form-control" id="rejectReason" rows="3" placeholder="Enter reason..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="confirmReject()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
+function viewUser(userId) {
+  fetch('view_user.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('userDetails').innerHTML = data.html;
+      new bootstrap.Modal(document.getElementById('viewUserModal')).show();
+    } else {
+      alert('Error: ' + data.message);
+    }
+  });
+}
+
 function verifyUser(userId) {
-  if (confirm('Are you sure you want to approve this user?')) {
-    fetch('verify_user.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, action: 'approve' })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
-      } else {
-        alert('Error: ' + data.message);
-      }
-    });
-  }
+  fetch('verify_user.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, action: 'approve' })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('approvalMessage').textContent = 'Resident Account Approved Successfully';
+      document.getElementById('approvalDate').textContent = 'Approval Date: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      new bootstrap.Modal(document.getElementById('approveModal')).show();
+    } else {
+      alert('Error: ' + data.message);
+    }
+  });
+}
+
+function closeAndRefresh() {
+  location.reload();
 }
 
 function rejectUser(userId) {
-  if (confirm('Are you sure you want to reject this user?')) {
-    fetch('verify_user.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, action: 'reject' })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
-      } else {
-        alert('Error: ' + data.message);
-      }
-    });
+  document.getElementById('rejectReason').value = '';
+  window.currentRejectUserId = userId;
+  new bootstrap.Modal(document.getElementById('rejectModal')).show();
+}
+
+function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  if (!reason) {
+    alert('Please enter a reason for rejection');
+    return;
   }
+
+  fetch('verify_user.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      user_id: window.currentRejectUserId, 
+      action: 'reject', 
+      reason: reason 
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+      // Show rejection confirmation
+      alert('User has been rejected and notified via email.');
+      location.reload();
+    } else {
+      alert('Error: ' + data.message);
+    }
+  });
 }
 </script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Shared Scripts -->
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
+<!-- Page-specific scripts -->
+<script src="../../assets/js/admin/user_verification.js"></script>
 </body>
 </html>

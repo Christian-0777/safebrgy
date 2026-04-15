@@ -1,9 +1,18 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 // dashboard.php - SafeBrgy Dashboard
 session_start();
-// Example: fetch user info from session
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
+
+// Check if user is logged in and verified
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
+    header('Location: ../login.php');
+    exit;
+}
+
+$user = $_SESSION['user'];
+$name = $user['name'] ?? 'Resident';
+$email = $user['email'] ?? '';
+$phone = $user['phone'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,13 +20,13 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Dashboard</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/public/dashboard.css">
+  <link rel="stylesheet" href="../../assets/css/public/dashboard.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -27,17 +36,17 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+      <a href="../../index.php" class="header-logo">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
         <div class="profile-info">
-          <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
+          <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
         </div>
         <div class="profile-dropdown">
@@ -66,7 +75,7 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div>
-      <h2 class="mb-4">Welcome, <?php echo htmlspecialchars($user); ?>!</h2>
+      <h2 class="mb-4">Welcome, <?php echo htmlspecialchars($name); ?>!</h2>
 
     <!-- Status Buttons -->
     <div class="row mb-4">
@@ -110,8 +119,8 @@ $user = $_SESSION['user'] ?? "Juan Dela Cruz";
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
-<script src="../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
 <script src="../assets/js/public/dashboard.js"></script>
 </body>

@@ -139,8 +139,35 @@ function handleOtpSubmit(e) {
   verifyBtn.classList.add('hide');
   loadingState.classList.add('show');
   
-  // Submit form
-  this.submit();
+  // Submit via AJAX
+  const formData = new FormData(this);
+  fetch(this.action, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      if (data.redirect) {
+        window.location.href = data.redirect;
+      } else {
+        // Show success modal for registration
+        showSuccessModal(data.message);
+      }
+    } else {
+      showError(data.message);
+      shakeOtpInputs();
+      verifyBtn.disabled = false;
+      verifyBtn.classList.remove('hide');
+      loadingState.classList.remove('show');
+    }
+  })
+  .catch(error => {
+    showError('An error occurred. Please try again.');
+    verifyBtn.disabled = false;
+    verifyBtn.classList.remove('hide');
+    loadingState.classList.remove('show');
+  });
 }
 
 /**
@@ -242,7 +269,7 @@ function initializeResendButton() {
     e.preventDefault();
     
     // Make AJAX request to resend OTP
-    fetch('resend_otp.php', {
+    fetch('resend_otp.php?type=' + otpType, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -335,8 +362,42 @@ function showSuccessNotification(message) {
 }
 
 /**
- * Utility: Format time to MM:SS
+ * Show success modal
  */
+function showSuccessModal(message) {
+  // Create modal HTML
+  const modalHtml = `
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="successModalLabel">Account Created Successfully</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+            <p class="mt-3">${message}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Append modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('successModal'));
+  modal.show();
+
+  // Redirect to login after modal closes
+  document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+    window.location.href = 'login.php';
+  });
+}
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;

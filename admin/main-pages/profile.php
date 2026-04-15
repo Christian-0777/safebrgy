@@ -51,7 +51,7 @@ if ($adminId) {
         <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
-          <div class="profile-role">Resident</div>
+          <div class="profile-role">Admin</div>
         </div>
         <div class="profile-dropdown">
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
@@ -67,8 +67,9 @@ if ($adminId) {
     <ul class="sidebar-menu">
       <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
       <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">

@@ -33,7 +33,7 @@ require_once __DIR__ . '/config/db.php';
       <div class="container hero-content">
         <h2>Efficient Barangay Management System</h2>
         <p>Barangay San Jose, San Luis, Pampanga</p>
-        <a href="admin-login.php" class="btn-login">Admin Login</a>
+        <a href="admin/login.php" class="btn-login">Admin Login</a>
       </div>
     </div>
   </section>

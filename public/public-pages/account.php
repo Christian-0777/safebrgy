@@ -1,10 +1,18 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 // account.php - SafeBrgy Account Settings
 session_start();
-$user = $_SESSION['user'] ?? "Juan Dela Cruz";
-$email = $_SESSION['email'] ?? "juandelacruz@gmail.com";
-$phone = $_SESSION['phone'] ?? "+639123456789";
+
+// Check if user is logged in and verified
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
+    header('Location: ../login.php');
+    exit;
+}
+
+$user = $_SESSION['user'];
+$name = $user['name'] ?? 'Resident';
+$email = $user['email'] ?? '';
+$phone = $user['phone'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,13 +20,13 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Account Settings</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
-  <link rel="stylesheet" href="../assets/css/shared/shared-header.css">
-  <link rel="stylesheet" href="../assets/css/shared/shared_sidebar.css">
-  <link rel="stylesheet" href="../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
+  <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
+  <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../assets/css/public/account.css">
+  <link rel="stylesheet" href="../../assets/css/public/account.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -28,7 +36,7 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   <header class="header">
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-      <a href="../index.php" class="header-logo">
+      <a href="../../index.php" class="header-logo">
         <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
@@ -36,9 +44,9 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
         <div class="profile-info">
-          <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
+          <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
         </div>
         <div class="profile-dropdown">
@@ -71,15 +79,26 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
       <h2>Account Settings</h2>
       <div class="d-flex align-items-center">
         <img src="assets/img/profile.png" alt="Profile" class="rounded-circle me-2" style="width:40px;height:40px;">
-        <span class="fw-bold"><?php echo htmlspecialchars($user); ?></span>
+        <span class="fw-bold"><?php echo htmlspecialchars($name); ?></span>
       </div>
     </div>
+
+    <?php
+    if (isset($_SESSION['account_success'])) {
+        echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['account_success']) . '</div>';
+        unset($_SESSION['account_success']);
+    }
+    if (isset($_SESSION['account_error'])) {
+        echo '<div class="alert alert-danger">' . htmlspecialchars($_SESSION['account_error']) . '</div>';
+        unset($_SESSION['account_error']);
+    }
+    ?>
 
     <!-- Account Info Form -->
     <form id="accountForm" method="POST" action="update_account.php">
       <div class="mb-3">
         <label for="fullName" class="form-label">Full Name</label>
-        <input type="text" class="form-control" id="fullName" name="fullName" value="<?php echo htmlspecialchars($user); ?>" required>
+        <input type="text" class="form-control" id="fullName" name="fullName" value="<?php echo htmlspecialchars($name); ?>" required>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
@@ -112,9 +131,9 @@ $phone = $_SESSION['phone'] ?? "+639123456789";
   </main>
 
 <!-- Shared JS -->
-<script src="../assets/js/shared/shared-header.js"></script>
+<script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
-<script src="../assets/js/public/account.js"></script>
+<script src="../../assets/js/public/account.js"></script>
 </body>
 </html>

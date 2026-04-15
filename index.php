@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/db.php';
+session_start();
 // index.php - Landing page for SafeBrgy (simple PHP template)
 ?>
 
@@ -136,6 +137,17 @@ require_once __DIR__ . '/config/db.php';
       <div class="container">
         <h3>Create Resident Account</h3>
         <p><strong>Note:</strong> Your account will require admin approval before you can log in.</p>
+
+        <?php
+        if (isset($_SESSION['registration_errors'])) {
+            echo '<div class="alert alert-danger"><ul>';
+            foreach ($_SESSION['registration_errors'] as $error) {
+                echo '<li>' . htmlspecialchars($error) . '</li>';
+            }
+            echo '</ul></div>';
+            unset($_SESSION['registration_errors']);
+        }
+        ?>
 
         <form action="register.php" method="post" enctype="multipart/form-data" class="register-form">
           <div style="display:flex;gap:12px;flex-wrap:wrap">

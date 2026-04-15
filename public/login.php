@@ -1,7 +1,51 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
-// index.php - SafeBrgy Login Page
+require_once __DIR__ . '/../config/mailer.php';
+// SafeBrgy Login Page
 session_start();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    $pdo = safeBrgy_db_connect();
+
+    // Check if email exists
+    $stmt = $pdo->prepare('SELECT id, password_hash, is_verified, role FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        $error = 'No Account Found! Please Click Register Now to Create Account';
+    } elseif (!password_verify($password, $user['password_hash'])) {
+        $error = 'Uh oh! If you forgot your password, click the Forgot Password';
+    } elseif ($user['is_verified'] == 0) {
+        $error = 'Your account was pending for approval, I will notify you using your email for account approval';
+    } else {
+        // Login successful
+        // Fetch resident details
+        $stmt = $pdo->prepare('SELECT r.first_name, r.last_name, r.mobile_number FROM residents r WHERE r.user_id = ?');
+        $stmt->execute([$user['id']]);
+        $resident = $stmt->fetch();
+
+        $full_name = $resident ? ($resident['first_name'] . ' ' . $resident['last_name']) : $user['username'];
+
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'email' => $email,
+            'role' => $user['role'],
+            'name' => $full_name,
+            'phone' => $resident['mobile_number'] ?? ''
+        ];
+
+        if ($user['role'] === 'admin') {
+            header('Location: ../admin/main-pages/dashboard.php');
+        } else {
+            header('Location: public-pages/dashboard.php');
+        }
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -34,10 +78,15 @@ session_start();
     <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white p-5">
       <div class="w-100" style="max-width:400px;">
         <h3 class="mb-4 text-center">Barangay Residents Access</h3>
+        <?php if (isset($error)): ?>
+        <div class="alert alert-danger" role="alert">
+          <?php echo htmlspecialchars($error); ?>
+        </div>
+        <?php endif; ?>
         <form id="loginForm" method="POST" action="login.php">
           <div class="mb-3">
-            <label for="contactNumber" class="form-label">Contact Number</label>
-            <input type="text" class="form-control" id="contactNumber" name="contactNumber" required>
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>

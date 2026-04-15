@@ -1,23 +1,43 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
-// admin/otp-view.php - SafeBrgy Admin OTP Verification
+// otp-view.php - SafeBrgy OTP Verification
 session_start();
 
-// Check if we have a pending verification
-if (!isset($_SESSION['pending_verification']) || !isset($_SESSION['verification_method'])) {
+// Check if we have a pending verification or registration
+$type = $_GET['type'] ?? 'login';
+if ($type === 'registration') {
+    if (!isset($_SESSION['pending_registration'])) {
+        header("Location: ../index.php");
+        exit;
+    }
+    $verification_method = 'email';
+    $masked_target = $_SESSION['pending_registration']['email'];
+    $title = 'SafeBrgy - Account Verification';
+    $heading = 'Verify Your Account';
+    $subheading = 'Enter the 6-digit code sent to your email';
+    $left_title = 'SafeBrgy';
+    $left_subtitle = 'Account Verification';
+    $left_desc = 'Complete your registration by verifying your email address.';
+} elseif (isset($_SESSION['pending_verification'])) {
+    $verification_method = $_SESSION['verification_method']; // 'email' or 'phone'
+    $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
+    $title = 'SafeBrgy - OTP Verification';
+    $heading = 'Verify Your Identity';
+    $subheading = 'Enter the 6-digit code sent to your ' . $verification_method;
+    $left_title = 'SafeBrgy Admin';
+    $left_subtitle = 'Two-Factor Authentication';
+    $left_desc = 'Your account security is our priority. Verify your identity with a one-time password.';
+} else {
     header("Location: login.php");
     exit;
 }
-
-$verification_method = $_SESSION['verification_method']; // 'email' or 'phone'
-$masked_target = $_SESSION['masked_target'] ?? 'your registered account';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SafeBrgy - OTP Verification</title>
+  <title><?php echo htmlspecialchars($title); ?></title>
   <link rel="icon" type="image/png" href="../assets/img/seal.png">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -33,9 +53,9 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
     <!-- Left Section -->
     <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center text-white bg-primary p-5">
       <img src="../assets/img/seal.png" alt="Barangay Logo" class="mb-4" style="max-width:120px; border-radius:50%;">
-      <h2 class="fw-bold">SafeBrgy Admin</h2>
-      <p class="lead">Two-Factor Authentication</p>
-      <p>Your account security is our priority. Verify your identity with a one-time password.</p>
+      <h2 class="fw-bold"><?php echo htmlspecialchars($left_title); ?></h2>
+      <p class="lead"><?php echo htmlspecialchars($left_subtitle); ?></p>
+      <p><?php echo htmlspecialchars($left_desc); ?></p>
       <div class="mt-5">
         <div class="feature-item mb-4">
           <i class="fas fa-shield-alt fa-2x mb-2"></i>
@@ -59,13 +79,13 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
           <div class="otp-icon-wrapper mb-3">
             <i class="fas fa-envelope-open-text"></i>
           </div>
-          <h3 class="mb-2">Verify Your Identity</h3>
-          <p class="text-muted">Enter the 6-digit code sent to your <?php echo htmlspecialchars($verification_method); ?></p>
+          <h3 class="mb-2"><?php echo htmlspecialchars($heading); ?></h3>
+          <p class="text-muted"><?php echo htmlspecialchars($subheading); ?></p>
           <p class="text-secondary small"><strong><?php echo htmlspecialchars($masked_target); ?></strong></p>
         </div>
 
         <!-- OTP Form -->
-        <form id="otpForm" method="POST" action="verify_otp_process.php">
+        <form id="otpForm" method="POST" action="verify_otp_process.php?type=<?php echo htmlspecialchars($type); ?>">
           
           <!-- OTP Input Boxes -->
           <div class="otp-input-group mb-4">
@@ -135,6 +155,7 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>const otpType = '<?php echo htmlspecialchars($type); ?>';</script>
 <!-- OTP Script -->
 <script src="../assets/js/public/otp-view.js"></script>
 

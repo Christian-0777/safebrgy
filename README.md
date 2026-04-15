@@ -1,3 +1,15 @@
+# SafeBrgy - Official V1.3
+
+## What's New in V1.3
+
+### Resident Registration, Login, and Admin Approval
+- **Resident Account Registration**: Public users can now create resident accounts through the system.
+- **Resident Login Flow**: Residents can log in using their credentials to access the public portal.
+- **Admin Approval Workflow**: New resident accounts require review and approval by an administrator before activation.
+- **Improved Security and Verification**: Pending accounts remain inactive until an admin validates and approves the registration.
+
+---
+
 # SafeBrgy - Official V1.2
 
 ## What's New in V1.2

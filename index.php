@@ -13,6 +13,7 @@ session_start();
   <link rel="icon" type="image/png" href="assets/img/seal.png">
   <link rel="stylesheet" href="assets/style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/public/modals/login.css">
 </head>
 <body>
   <header class="site-header">
@@ -387,5 +388,17 @@ session_start();
       &copy; <?php echo date('Y'); ?> Barangay San Jose — All rights reserved.
     </div>
   </footer>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Log in first to access this feature</h2>
+      <p>You need to be logged in to request services.</p>
+      <a href="public/login.php" class="btn-primary">Log In</a>
+    </div>
+  </div>
+
+  <script src="assets/js/public/modals/login.js"></script>
 </body>
 </html>

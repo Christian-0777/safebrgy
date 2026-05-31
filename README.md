@@ -1,3 +1,68 @@
+# SafeBrgy - Official V1.4
+
+## What's New in V1.4
+
+### Enhanced Admin Announcement Management System
+- **Statistics Dashboard**: Real-time statistics displaying total, active, scheduled, and expired announcements
+- **Advanced Search & Filter**:
+  - Search announcements by title or content
+  - Filter by status (active, scheduled, expired, draft)
+  - Sort by newest or oldest
+  - View and manage archived announcements separately
+
+- **Create Announcement Modal** with comprehensive features:
+  - Title and description inputs with rich text support
+  - File attachments for images (JPG, PNG, GIF) or PDF documents (optional)
+  - Priority selector (normal, important, urgent)
+  - Target audience filtering:
+    - All residents
+    - Age-based targeting (18-25, 26-40, 41-60, 60+)
+    - Education-based targeting (elementary, secondary, tertiary)
+  - Schedule option for future announcement publishing
+
+- **Announcement Management Table** with enhanced functionality:
+  - Display title with pinned status indicator
+  - Message preview truncation
+  - Target audience badges
+  - Date posted with timestamp
+  - Priority level badges with color coding
+  - Status badges with visual indicators
+  - Action buttons for managing announcements:
+    - View: Display full announcement details
+    - Edit: Modify announcement content and settings
+    - Pin: Pin important announcements to top
+    - Archive: Move announcements to archive
+    - Delete: Permanently remove announcements with confirmation
+
+- **Announcement Status Management**:
+  - Active: Currently visible to residents
+  - Scheduled: Will be published at specified date/time
+  - Expired: Announcements that have passed their relevance
+  - Draft: Unpublished announcements
+  - Pinned: Important announcements displayed prominently
+
+- **File Management**:
+  - Upload directory created: `/uploads/announcements/`
+  - Automatic file handling with timestamp-based naming
+  - Support for multiple file formats (images and PDFs)
+
+- **User Interface Improvements**:
+  - Responsive Bootstrap 5 integration
+  - Stat cards with hover effects
+  - Improved table styling and layout
+  - Modal dialogs for all operations
+  - Confirmation dialogs for destructive actions
+  - Real-time feedback and notifications
+
+- **Backend Enhancements**:
+  - AJAX-based operations for seamless user experience
+  - Server-side validation and error handling
+  - Database query optimization for filtering and searching
+  - Prepared statements for SQL injection prevention
+  - JSON attachment storage for flexible media management
+
+---
+
 # SafeBrgy - Official V1.3
 
 ## What's New in V1.3

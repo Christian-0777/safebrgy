@@ -81,6 +81,13 @@ CREATE TABLE IF NOT EXISTS announcements (
   body TEXT NOT NULL,
   author_id INT,
   published_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  scheduled_at DATETIME DEFAULT NULL,
+  priority ENUM('normal','important','urgent') NOT NULL DEFAULT 'normal',
+  status ENUM('draft','active','scheduled','expired') NOT NULL DEFAULT 'active',
+  attachments JSON DEFAULT NULL,
+  target_audience JSON DEFAULT NULL,
+  pinned TINYINT(1) DEFAULT 0,
+  archived TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL

@@ -17,6 +17,7 @@ p, span, a, button, .btn, label {
   font-family: Arial;
   font-size: 12px;
 }
+
 #sidebar {
   min-width: 220px;
 }
@@ -32,4 +33,113 @@ p, span, a, button, .btn, label {
 
 .main-content {
     padding-top: 80px;
+}
+
+/* Announcement Cards */
+.announcement-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.announcement-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.announcement-card .badge {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.announcement-card .card-text {
+  color: #666;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.announcement-card small {
+  font-size: 11px;
+}
+
+/* Modal Styles */
+.modal-header {
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.announcement-content {
+  line-height: 1.6;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Search/Filter Card */
+.card {
+  border: 1px solid #e0e0e0;
+}
+
+.form-control, .form-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-outline-primary, .btn-outline-secondary {
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+/* Badge Styles */
+.badge {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000;
+}
+
+.badge.bg-info {
+  background-color: #17a2b8 !important;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
 }

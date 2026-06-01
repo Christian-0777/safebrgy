@@ -1,3 +1,93 @@
+# SafeBrgy - Official V1.8
+
+## What's New in V1.8
+
+### Resident Announcement Page - Complete Implementation
+- **Search Functionality**:
+  - Search announcements by title or keyword content
+  - Real-time filtering through form submission
+  - Search term persistence in the input field for user convenience
+  - Highlights relevant results based on search query
+
+- **Sort & Filter Options**:
+  - Sort by **Newest** (default - displays pinned announcements first, then by publication date)
+  - Sort by **Oldest** (chronological order for historical reference)
+  - Reset button to clear search and return to default view
+  - Persistent sort state in dropdown for better UX
+
+- **Announcement Preview Cards**:
+  - Display active announcements only (status = 'active' and archived = 0)
+  - Card layout with title, priority badge, publication date, and excerpt
+  - Priority badges for urgent (red), important (orange), normal announcements
+  - 150-character excerpt showing announcement preview
+  - Mark as Noted button on each card for quick acknowledgment
+  - Smooth hover animations with shadow effects
+  - Responsive 2-column grid layout (1 column on mobile)
+
+- **Full Details Modal**:
+  - Click "Read More" to open detailed modal view
+  - Modal displays:
+    - Complete announcement title and publication date with timestamp
+    - Full announcement body content with preserved line breaks
+    - Priority level indicator
+    - Author information (optional)
+    - Attachment download link if available
+    - Close and Mark as Noted buttons
+  - Professional modal styling consistent with admin pages
+  - Bootstrap 5 modal framework for reliable functionality
+
+- **Mark as Noted Feature**:
+  - Available from both card and modal views
+  - Button with checkmark icon provides visual feedback
+  - On click: Shows "Noted" with checkmark icon
+  - Sends acknowledgment to backend API
+  - Auto-resets after 2 seconds for next action
+  - Provides user confirmation without page reload
+  - Optional: Can be extended to store user read history
+
+- **Database Integration**:
+  - Fetches announcements from `announcements` table
+  - Filters only active, non-archived announcements (status = 'active' AND archived = 0)
+  - Joins with users table to display author information
+  - Supports search across title and body content using LIKE queries
+  - Respects priority field for badge styling
+  - Handles attachments stored as JSON with file information
+  - Optimized queries for performance with prepared statements
+
+- **Design & Styling**:
+  - Consistent with admin announcement page layout and design
+  - Bootstrap 5 grid system for responsive layout
+  - Card-based design with professional shadows and hover effects
+  - Color-coded priority badges (danger for urgent, warning for important)
+  - Search/filter card with clean form layout
+  - Professional typography and spacing
+  - Font Awesome icons for visual indicators (calendar, check, etc.)
+  - Fully responsive design (mobile, tablet, desktop)
+  - Empty state message with icon when no announcements found
+
+- **Frontend Enhancements**:
+  - JavaScript event listeners for Mark as Noted buttons
+  - Fetch API for async backend communication
+  - Dynamic button state changes with visual feedback
+  - Modal animations and transitions
+  - Form submission handling with GET parameters
+  - Graceful error handling with user alerts
+
+- **Backend API**:
+  - New endpoint: `api/announcement-noted.php`
+  - Receives POST requests with announcement_id parameter
+  - Validates user authentication and input
+  - Logs announcement acknowledgments (foundation for future read tracking)
+  - Returns JSON response with success status
+
+- **Files Created/Modified**:
+  - `public/public-pages/announcement.php`: Complete rewrite with DB queries, search, filter, sort, and modals
+  - `assets/js/public/announcement.js`: Enhanced with Mark as Noted functionality and form handling
+  - `assets/css/public/announcement.css`: Comprehensive styling for cards, modals, badges, and animations
+  - `api/announcement-noted.php`: New API endpoint for marking announcements as noted
+
+---
+
 # SafeBrgy - Official V1.7
 
 ## What's New in V1.7

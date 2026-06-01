@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/db.php';
-// announcements.php - SafeBrgy Announcements
+// announcement.php - SafeBrgy Announcements (Resident)
 session_start();
 
 // Check if user is logged in and verified
@@ -11,28 +11,41 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
 
 $user = $_SESSION['user'];
 $name = $user['name'] ?? 'Resident';
+$userId = $_SESSION['user']['id'] ?? null;
 
-// Example announcements array
-$announcements = [
-  [
-    "title" => "Scholarship Application Now Open",
-    "date" => "March 10, 2026",
-    "description" => "The scholarship application for the academic year 2026–2027 is now open. Submit requirements before March 25, 2026.",
-    "link" => "#"
-  ],
-  [
-    "title" => "Deadline for Grade Submission",
-    "date" => "March 5, 2026",
-    "description" => "All scholars must upload their latest grades through the My Reports section before the deadline.",
-    "link" => "#"
-  ],
-  [
-    "title" => "Orientation Schedule",
-    "date" => "February 28, 2026",
-    "description" => "All newly accepted scholars are required to attend the orientation on April 2, 2026 at the Municipal Hall.",
-    "link" => "#"
-  ]
-];
+$pdo = safeBrgy_db_connect();
+
+// Get search and sort parameters
+$search = $_GET['search'] ?? '';
+$sort = $_GET['sort'] ?? 'newest';
+
+// Build query for active announcements only
+$query = '
+    SELECT a.id, a.title, a.body, a.published_at, a.priority, a.attachments, u.username as author
+    FROM announcements a
+    LEFT JOIN users u ON a.author_id = u.id
+    WHERE a.status = "active" AND a.archived = 0
+';
+
+$params = [];
+
+if ($search) {
+    $query .= ' AND (a.title LIKE ? OR a.body LIKE ?)';
+    $searchTerm = "%$search%";
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+}
+
+// Add sort
+if ($sort === 'oldest') {
+    $query .= ' ORDER BY a.published_at ASC';
+} else {
+    $query .= ' ORDER BY a.pinned DESC, a.published_at DESC';
+}
+
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
+$announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +53,9 @@ $announcements = [
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeBrgy - Announcements</title>
-  <link rel="icon" type="image/png" href="../assets/img/seal.png">
+  <link rel="icon" type="image/png" href="../../assets/img/seal.png">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <!-- Shared Styles -->
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
@@ -95,38 +110,152 @@ $announcements = [
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Announcements</h2>
-      <span class="fw-bold"><?php echo htmlspecialchars($name); ?></span>
-    </div>
-    <p class="text-muted">Stay updated with the latest notices and updates from the municipality</p>
-
-    <!-- Search and Filter -->
-    <div class="row mb-4">
-      <div class="col-md-6 mb-2">
-        <input type="text" class="form-control" placeholder="Search announcements...">
+    <div class="container-fluid p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-2">Announcements</h2>
+          <p class="text-muted">Stay updated with the latest notices and updates from the municipality</p>
+        </div>
+        <span class="fw-bold"><?php echo htmlspecialchars($name); ?></span>
       </div>
-      <div class="col-md-6 mb-2">
-        <input type="date" class="form-control">
-      </div>
-    </div>
 
-    <!-- Announcement Cards -->
-    <div class="row g-3">
-      <?php foreach ($announcements as $a): ?>
-        <div class="col-md-6">
-          <div class="card shadow-sm h-100">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><?php echo htmlspecialchars($a['title']); ?></h5>
-              <small class="text-muted mb-2"><?php echo htmlspecialchars($a['date']); ?></small>
-              <p class="card-text flex-grow-1"><?php echo htmlspecialchars($a['description']); ?></p>
-              <a href="<?php echo htmlspecialchars($a['link']); ?>" class="btn btn-outline-primary mt-auto">Read More</a>
+      <!-- Search and Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label">Search by Title or Keyword</label>
+              <input type="text" name="search" class="form-control" placeholder="Search announcements..." value="<?php echo htmlspecialchars($search); ?>">
+            </div>
+            
+            <div class="col-md-3">
+              <label class="form-label">Sort By</label>
+              <select name="sort" class="form-select">
+                <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest</option>
+                <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="fas fa-search"></i> Search
+              </button>
+            </div>
+
+            <div class="col-12">
+              <a href="announcement.php" class="btn btn-outline-secondary">
+                <i class="fas fa-redo"></i> Reset
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Announcement Cards -->
+      <div class="row g-3">
+        <?php if (empty($announcements)): ?>
+          <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+              <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+              <p class="mb-0">No announcements found</p>
             </div>
           </div>
-        </div>
-      <?php endforeach; ?>
-    </div>
+        <?php else: ?>
+          <?php foreach ($announcements as $a): ?>
+            <div class="col-md-6">
+              <div class="card shadow-sm h-100 announcement-card">
+                <div class="card-body d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0"><?php echo htmlspecialchars($a['title']); ?></h5>
+                    <?php if ($a['priority'] !== 'normal'): ?>
+                      <span class="badge bg-<?php 
+                        echo match($a['priority']) {
+                          'urgent' => 'danger',
+                          'important' => 'warning',
+                          default => 'secondary'
+                        };
+                      ?>">
+                        <?php echo ucfirst($a['priority']); ?>
+                      </span>
+                    <?php endif; ?>
+                  </div>
+                  <small class="text-muted mb-2">
+                    <i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($a['published_at'])); ?>
+                  </small>
+                  <p class="card-text flex-grow-1">
+                    <?php 
+                      $excerpt = strlen($a['body']) > 150 ? substr($a['body'], 0, 150) . '...' : $a['body'];
+                      echo htmlspecialchars($excerpt);
+                    ?>
+                  </p>
+                  <div class="d-flex gap-2 mt-auto">
+                    <button type="button" class="btn btn-outline-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#viewAnnouncementModal<?php echo $a['id']; ?>">
+                      Read More
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary noted-btn" data-id="<?php echo $a['id']; ?>" title="Mark as Noted">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Detail Modal -->
+            <div class="modal fade" id="viewAnnouncementModal<?php echo $a['id']; ?>" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <div>
+                      <h5 class="modal-title"><?php echo htmlspecialchars($a['title']); ?></h5>
+                      <small class="text-muted">
+                        <i class="fas fa-calendar"></i> Posted on <?php echo date('M d, Y \a\t H:i', strtotime($a['published_at'])); ?>
+                      </small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <?php if ($a['priority'] !== 'normal'): ?>
+                      <div class="mb-3">
+                        <span class="badge bg-<?php 
+                          echo match($a['priority']) {
+                            'urgent' => 'danger',
+                            'important' => 'warning',
+                            default => 'secondary'
+                          };
+                        ?>">
+                          <?php echo ucfirst($a['priority']); ?> Priority
+                        </span>
+                      </div>
+                    <?php endif; ?>
+                    <div class="announcement-content">
+                      <?php echo nl2br(htmlspecialchars($a['body'])); ?>
+                    </div>
+                    <?php if ($a['attachments']): ?>
+                      <div class="mt-4 pt-4 border-top">
+                        <h6>Attachments</h6>
+                        <?php 
+                          $attachments = json_decode($a['attachments'], true);
+                          if (isset($attachments['file'])):
+                        ?>
+                          <a href="../../uploads/announcements/<?php echo htmlspecialchars($attachments['file']); ?>" class="btn btn-sm btn-outline-primary" download>
+                            <i class="fas fa-download"></i> Download Attachment
+                          </a>
+                        <?php endif; ?>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary noted-btn-modal" data-id="<?php echo $a['id']; ?>">
+                      <i class="fas fa-check"></i> Mark as Noted
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
 
     </div>
   </main>
@@ -134,6 +263,8 @@ $announcements = [
 <!-- Shared JS -->
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Page-specific JS -->
 <script src="../assets/js/public/announcement.js"></script>
 </body>

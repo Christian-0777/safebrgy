@@ -1,6 +1,6 @@
-# SafeBrgy - Official V1.4
+# SafeBrgy - Official V1.5
 
-## What's New in V1.4
+## What's New in V1.5
 
 ### Enhanced Admin Request Management System
 - **Statistics Dashboard**: Real-time statistics displaying request counts by status (Total, Pending, Processing, Approved, Ready to Receive, Received)
@@ -9,51 +9,57 @@
   - Filter by status (Pending, Processing, Approved, Ready to Receive, Received, Rejected)
   - Sort by date (Newest or Oldest)
 
-- **Request Table** with comprehensive information:
+- **Request Management Table** with comprehensive information:
   - Request # (4-digit auto-generated identifier)
   - Resident Name with email display
-  - Request Type (Barangay Clearance, Barangay Residency, etc.)
+  - Request Type (Barangay Clearance, Barangay Residency, Barangay Indigency, Barangay Business Clearance, Incident Report, Lost Property)
   - Submitted Date (formatted as MMM DD, YYYY)
-  - Status with color-coded badges
+  - Status with color-coded badges (Yellow-Pending, Teal-Processing, Green-Approved, Purple-Ready, Cyan-Received, Red-Rejected)
   - Date Received (when marked as Received)
-  - View Action button
+  - View Action button for detailed management
 
 - **Request Details Modal** with full information:
   - Resident information (name, phone, email)
-  - Request details (type, purpose, location)
-  - Submission and received dates
+  - Request details (type, purpose, location, submission date)
   - Current status display with color-coded badge
   - Status dropdown to change request status
-  - Update Status button with real-time feedback
+  - Update Status button with real-time AJAX feedback
+  - Auto-reload after successful status update
 
 - **Request Status Management**:
-  - Pending: Initial request status
-  - Processing: Request is being processed
-  - Approved: Request has been approved
-  - Ready to Receive: Documents are ready for pickup
-  - Received: Resident has received the document
-  - Rejected: Request was rejected
-  - Auto-populated date_received timestamp when status changes to "Received"
+  - Pending: Initial request status when submitted
+  - Processing: Request is actively being processed
+  - Approved: Request has been approved by admin
+  - Ready to Receive: Documents are ready for resident pickup
+  - Received: Resident has received the document (auto-populates date_received)
+  - Rejected: Request was rejected by admin
 
 - **Database Enhancement**:
-  - Updated requests table with new status values
+  - Updated requests table schema with new status values
   - Added date_received TIMESTAMP column for tracking document delivery
+  - Auto-populated date_received when status changes to "Received"
 
 - **Backend Features**:
   - AJAX-based status updates without page reload
   - Server-side validation for status changes
   - Prepared statements for SQL injection prevention
-  - Comprehensive error handling and feedback
+  - Comprehensive error handling and user feedback
+  - Dynamic statistics calculation based on current data
 
 - **User Interface**:
   - Responsive Bootstrap 5 design
   - Color-coded status badges for quick visual identification
-  - Stat cards with status-specific color themes
+  - Stat cards with status-specific color themes and hover effects
   - Modal dialogs for detailed request management
-  - Hover effects and smooth transitions
+  - Smooth transitions and animations
   - Consistent with announcement management design patterns
+  - Mobile-friendly responsive layout
 
 ---
+
+# SafeBrgy - Official V1.4
+
+## What's New in V1.4
 
 ### Enhanced Admin Announcement Management System
 - **Statistics Dashboard**: Real-time statistics displaying total, active, scheduled, and expired announcements

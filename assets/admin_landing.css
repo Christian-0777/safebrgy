@@ -1,0 +1,110 @@
+:root{
+  --bg:#f9fafb;
+  --nav:#0b63d6;
+  --primary:#0b63d6;
+}
+
+* {
+  font-family: Arial;
+}
+
+body{
+  margin:0;
+  font-family: Arial;
+  background:var(--bg);
+  color:#111827;
+}
+
+.container{
+  width:90%;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+/* Header */
+.admin-header{
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+.nav-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 0;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+}
+
+h1 { font-size: 16px; }
+h2 { font-size: 16px; }
+h3 { font-size: 16px; }
+h4 { font-size: 14px; }
+h5 { font-size: 14px; }
+h6 { font-size: 14px; }
+
+.brand{color:var(--nav);font-size: 16px;margin:0}
+.admin-nav a{
+  margin-left:18px;
+  text-decoration:none;
+  color:#1f2937;
+  font-weight:600;
+  font-size: 12px;
+}
+.nav-toggle{display:none;background:none;border:0;font-size:20px}
+
+/* Hero */
+.hero{
+  background-image:url('../assets/img/hero.jpg');
+  background-size:cover;
+  background-position:center;
+  min-height:815px;
+  display:flex;
+  align-items:center;
+  color:#fff;
+}
+.hero-overlay{
+  width:100%;
+  background:rgba(0,0,0,0.55);
+  padding:330px 0;
+}
+.hero-content{
+  text-align:center;
+}
+.hero-content h2{font-size:2rem;margin-bottom:10px}
+.hero-content p{margin-bottom:20px}
+.btn-login{
+  background:var(--primary);
+  color:#fff;
+  padding:12px 20px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:600;
+  font-size: 12px;
+}
+
+/* Footer */
+.admin-footer{
+  background:#0b63d6;
+  color:#fff;
+  padding:20px 0;
+  margin-top:0px;
+}
+.footer-grid{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.admin-footer a{color:#fff;text-decoration:none;margin:0 6px}
+.admin-footer a:hover{text-decoration:underline}
+.copyright{text-align:center;margin-top:10px;color:rgba(255,255,255,0.85)}
+
+/* Responsive */
+@media(max-width:900px){
+  .admin-nav{display:none}
+  .nav-toggle{display:block;color:#0b63d6}
+  .footer-grid{flex-direction:column;gap:10px}
+}

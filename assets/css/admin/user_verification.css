@@ -1,0 +1,97 @@
+/* Custom SafeBrgy Admin styles */
+
+* {
+  font-family: Arial;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
+body {
+  font-family: Arial;
+}
+
+p, span, a, button, .btn, label {
+  font-family: Arial;
+  font-size: 12px;
+}
+
+#sidebar {
+  min-width: 220px;
+}
+
+#sidebar .nav-link.active {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.main-content {
+    padding-top: 90px;
+}
+
+/* Section Headers */
+.main-content h4 {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 0;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Pending Verification section */
+h4[style*="d9534f"] {
+  color: #d9534f !important;
+}
+
+/* Verified Accounts section */
+h4[style*="5cb85c"] {
+  color: #5cb85c !important;
+}
+
+/* Modal Enhancements */
+.modal-header.bg-success {
+  border-bottom: 3px solid #5cb85c;
+}
+
+/* Image Preview Styles */
+.image-preview {
+  max-width: 40px;
+  max-height: 40px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 4px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  object-fit: cover;
+}
+
+.image-preview:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #0b63d6;
+}
+
+.image-preview-container {
+  margin: 12px 0;
+  text-align: center;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+}
+
+.image-preview-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

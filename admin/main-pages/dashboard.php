@@ -15,7 +15,7 @@ if ($adminId) {
 }
 
 // Fetch stats
-$totalResidents = $pdo->query('SELECT COUNT(*) FROM residents')->fetchColumn();
+$totalResidents = $pdo->query('SELECT COUNT(*) FROM residents r JOIN users u ON r.user_id = u.id WHERE u.is_verified = 1')->fetchColumn();
 $newReports = $pdo->query("SELECT COUNT(*) FROM reports WHERE status = 'New'")->fetchColumn();
 $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pending'")->fetchColumn();
 ?>
@@ -56,6 +56,7 @@ $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pe
         </div>
         <div class="profile-dropdown">
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
+          <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
@@ -81,12 +82,6 @@ $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pe
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div>
-      <div class="breadcrumb">
-        <a href="dashboard.php">Dashboard</a>
-        <span class="separator">/</span>
-        <span class="current">Home</span>
-      </div>
-
       <h2>Welcome back, <?php echo htmlspecialchars($user); ?>!</h2>
 
       <!-- Quick Stats -->

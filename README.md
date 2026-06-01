@@ -1,3 +1,83 @@
+# SafeBrgy - Official V1.7
+
+## What's New in V1.7
+
+### Enhanced Resident Dashboard with Activity Overview
+- **Dynamic Welcome Section**:
+  - Personalized greeting that differentiates between new users (first 7 days) and returning users
+  - Real-time date and time display that updates every second
+  - New user onboarding tip with setup guidance
+  - Gradient blue header with welcome icon
+
+- **Status Tracker Section** with four key metrics:
+  - **Pending Requests**: Displays count of requests awaiting processing
+  - **Approved Documents**: Shows count of approved/ready to receive requests
+  - **Your Reports**: Total reports filed by the resident
+  - **Recent Updates**: Count of recent activity from last 7 days
+  - Color-coded tracker cards (yellow, green, cyan, purple) with hover effects
+  - Quick access links to detailed pages for each metric
+  - Large, readable metrics display with icons
+
+- **Notification Summary Details**:
+  - Lists latest updates grouped by request type and status
+  - Color-coded status badges (warning, success, info, danger, dark)
+  - Shows number of requests per type and status combination
+  - Responsive grid layout for multiple updates
+  - Helpful overview of recent activities at a glance
+
+- **Services Section** with six available services:
+  - Barangay Clearance (certificate icon)
+  - Barangay Residency (home icon)
+  - Barangay Indigency (hand-holding heart icon)
+  - Barangay Business Clearance (briefcase icon)
+  - Incident Report (exclamation triangle icon)
+  - Lost Property (search icon)
+  - Each service card includes title, description, and "Request Now" button
+  - Service cards feature hover animations and gradient buttons
+  - Direct navigation to request submission with service pre-selection
+  - Fully responsive card layout
+
+- **Announcements Section**:
+  - Displays 5 most recent active announcements
+  - Shows announcement title and publication date only
+  - Timeline-style layout with colored dot indicators
+  - "See All" link to view full announcements page
+  - Empty state message when no announcements available
+  - Clean list design with hover effects and smooth transitions
+
+- **Design & User Experience**:
+  - Modern gradient blue theme matching admin dashboard design
+  - Consistent styling with admin announcement page layouts
+  - Smooth hover animations and visual feedback on all interactive elements
+  - Professional card-based layout for all sections
+  - Box shadows and color-coded accents for visual hierarchy
+  - Fully responsive design (desktop, tablet, mobile)
+  - Breakpoints at 768px and 576px for optimal mobile experience
+
+- **Database Integration**:
+  - Fetches user statistics from requests and reports tables
+  - Queries pending requests count grouped by user and status
+  - Counts approved/ready to receive requests
+  - Retrieves total reports filed by resident
+  - Calculates recent updates from last 7 days
+  - Selects 5 most recent active announcements sorted by pinned status
+  - Groups updates by request type and status for summary display
+
+- **Frontend Enhancements**:
+  - JavaScript date/time formatter with real-time updates (every second)
+  - Logout confirmation dialog with user feedback
+  - Sidebar toggle functionality for mobile devices
+  - Responsive window resize handler
+  - Font Awesome icons for all visual indicators
+  - Bootstrap 5 grid system for responsive layout
+
+- **Files Modified**:
+  - `public/public-pages/dashboard.php`: Complete redesign with new sections and database queries
+  - `assets/css/public/dashboard.css`: Comprehensive styling for welcome, tracker, services, and announcement sections
+  - `assets/js/public/dashboard.js`: JavaScript functionality for date/time, logout, and responsive behavior
+
+---
+
 # SafeBrgy - Official V1.6
 
 ## What's New in V1.6

@@ -71,6 +71,7 @@ $announcements = [
         </div>
         <div class="profile-dropdown">
           <a href="Profile.php"><i class="fas fa-user"></i> Profile</a>
+          <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account.php"><i class="fas fa-cog"></i> Settings</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>

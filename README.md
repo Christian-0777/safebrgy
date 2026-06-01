@@ -1,3 +1,138 @@
+# SafeBrgy - Official V1.9
+
+## What's New in V1.9
+
+### Resident Report Page - Complete Implementation
+- **Status Tracker Section**:
+  - Four responsive status tracker cards displaying report counts by status
+  - Real-time statistics from database:
+    - **Pending**: Yellow/warning badge for pending reports
+    - **Ongoing**: Teal/info badge for reports under investigation
+    - **Resolved**: Green/success badge for completed reports
+    - **Dismissed**: Red/danger badge for dismissed reports
+  - Large, readable metrics display with Font Awesome icons
+  - Hover effects and smooth transitions for better interactivity
+  - Responsive grid layout (4 columns on desktop, 2 on tablet, 1 on mobile)
+
+- **Search & Filter Functionality**:
+  - Search bar for finding reports by case number or title
+  - Real-time search filtering as user types
+  - Status dropdown filter (All Status, Pending, Ongoing, Resolved, Dismissed)
+  - Combined search + filter functionality
+  - Clean, modern search box with search icon
+  - Integrated filter controls in single section
+
+- **Create Report Modal**:
+  - Accessible via "Create New Report" button in page header
+  - Form fields:
+    - **Report Type Picker**: Select from Incident, Lost Property, or Blotter
+    - **Title**: Required input field for report title
+    - **Description**: Required textarea for detailed description
+    - **Location**: Optional field for report location
+    - **Picture Upload Area**: Marked as "Recommended" with visual badge
+  - Advanced file upload features:
+    - Drag-and-drop functionality with visual feedback
+    - Click to browse file explorer
+    - Image preview with remove button capability
+    - Supported formats: PNG, JPG, GIF, WebP
+    - File size validation (5MB maximum)
+    - Real-time preview display after selection
+  - Submit button with icon for clear action intent
+  - Cancel button to close without submitting
+
+- **Reports Table**:
+  - Comprehensive table displaying all resident reports
+  - Columns:
+    - **Case No.**: Auto-generated format (CASE-YYYYMMDD-####)
+    - **Report Type**: Color-coded badge (Incident, Lost Property, Blotter)
+    - **Title**: Report title text
+    - **Date**: Formatted submission date (Mon DD, YYYY)
+    - **Status**: Color-coded status badge matching tracker cards
+    - **Actions**: View button to open report details
+  - Table hover effects for better UX
+  - Empty state message with icon when no reports exist
+  - Responsive table with horizontal scroll on mobile devices
+
+- **View Report Modal**:
+  - Opens when clicking the "View" button on any report
+  - Displays complete report information:
+    - Case number
+    - Report type with badge
+    - Full title and description
+    - Location (if provided)
+    - Status with color-coded badge
+    - Date submitted (formatted)
+    - Uploaded images/attachments (if any)
+  - Large preview images with proper aspect ratio
+  - Professional modal styling with consistent design
+  - Close button to dismiss modal
+
+- **Database Integration**:
+  - Fetches reports from `reports` table filtered by user_id
+  - Calculates status statistics via grouped COUNT queries
+  - Auto-generates unique case numbers using date + random identifier
+  - Stores attachments as JSON array
+  - Optimized queries using prepared statements
+  - User data isolation (residents can only view their own reports)
+
+- **File Upload Processing**:
+  - Backend validation for file type and size
+  - Creates `uploads/reports/` directory automatically if needed
+  - Stores files with unique filename (uniqid + timestamp + extension)
+  - Generates JSON array of attachment paths
+  - Returns success/error responses to frontend
+
+- **Design & Styling**:
+  - Consistent with resident dashboard design language
+  - Bootstrap 5 framework for responsive layout
+  - Color-coded status indicators matching dashboard theme
+  - Blue gradient buttons (#007bff to #0056b3) with hover effects
+  - Professional card-based design with shadows
+  - Smooth animations and transitions throughout
+  - Clean typography and proper spacing
+  - Font Awesome icons for visual indicators
+  - Fully responsive (desktop 1400px, tablet 576-768px, mobile <576px)
+
+- **Security Features**:
+  - Session authentication check for resident access only
+  - User role verification
+  - File type validation (image files only)
+  - File size validation (5MB maximum)
+  - MIME type verification via mime_content_type()
+  - User data isolation (cannot view other users' reports)
+  - SQL injection prevention with prepared statements
+  - Input sanitization with htmlspecialchars()
+
+- **Frontend Enhancements**:
+  - JavaScript event listeners for all interactive elements
+  - Drag-and-drop file upload with visual feedback
+  - Real-time search and filter functionality
+  - Form submission via Fetch API (AJAX)
+  - Dynamic modal content population
+  - File preview generation with FileReader API
+  - Error handling and user alerts
+  - Bootstrap 5 modal framework for reliable dialogs
+
+- **API Endpoints Created**:
+  - **`api/reports/create.php`**: Handles report creation and file upload
+    - Validates input parameters
+    - Processes file uploads with comprehensive checks
+    - Generates unique case numbers
+    - Returns JSON response with success/error status
+  - **`api/reports/get.php`**: Retrieves individual report details
+    - Validates user ownership of report
+    - Parses attachment JSON
+    - Returns complete report data as JSON
+
+- **Files Created/Modified**:
+  - `public/public-pages/reports.php`: Complete rewrite with database queries, status tracking, and modal dialogs
+  - `assets/js/public/reports.js`: Comprehensive JavaScript for search, filter, file upload, and AJAX functionality
+  - `assets/css/public/reports.css`: Complete styling with responsive design, animations, and theme consistency
+  - `api/reports/create.php`: New API endpoint for report creation with file handling
+  - `api/reports/get.php`: New API endpoint for retrieving report details
+
+---
+
 # SafeBrgy - Official V1.8
 
 ## What's New in V1.8

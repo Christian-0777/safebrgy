@@ -1,3 +1,81 @@
+# SafeBrgy - Official V1.6
+
+## What's New in V1.6
+
+### Enhanced Admin Requests Management System
+- **Statistics Dashboard**: Real-time statistics displaying total requests, pending, processing, and received counts
+- **Request Number Tracking**: Automatic 4-digit request number generation in format R-XXXX for each request
+- **Advanced Search & Filter**:
+  - Search requests by request number, resident name, email, or username
+  - Filter results by status (Pending, Approved, Processing, Ready to Receive, Received, Rejected)
+  - Sort by newest or oldest
+  - Reset functionality to clear filters
+
+- **Request Details Modal** with comprehensive information display:
+  - Request number badge for easy identification
+  - Resident information (name, email, phone)
+  - Request type and purpose details
+  - Location information
+  - Submitted date with timestamp
+  - Status tracking and update capability
+
+- **Status Management System**:
+  - Six status levels: Pending, Approved, Processing, Ready to Receive, Received, Rejected
+  - Color-coded status badges for quick visual identification:
+    - Yellow for Pending
+    - Blue for Approved and Processing
+    - Green for Ready to Receive and Received
+    - Red for Rejected
+  - Status update dropdown in modal with Update button
+  - Real-time status updates via AJAX
+  - Automatic date recording when status changed to "Received"
+
+- **Requests Management Table** with enhanced functionality:
+  - Request number display (R-0001 format)
+  - Resident name with email in secondary text
+  - Request type classification (badge)
+  - Date submitted with formatted timestamp
+  - Current status indicator with color coding
+  - Date received (automatically set when marked as received)
+  - View action button opening detailed modal
+
+- **Statistics Cards** with color-coded design:
+  - Total Requests card (blue)
+  - Pending Requests card (yellow)
+  - Processing Requests card (blue)
+  - Received Requests card (green)
+  - Hover effects for enhanced interactivity
+
+- **Database Schema Updates**:
+  - Added `request_number` column to requests table for request tracking (format: R-XXXX)
+  - Added `date_received` column to automatically record when documents are received
+  - Updated `status` enum to include new statuses: 'Ready to Receive' and 'Received'
+  - Migration file provided for existing databases
+
+- **Backend Enhancements**:
+  - AJAX-based request details and status updates
+  - Server-side status update processing
+  - Automatic date recording for received requests
+  - Optimized database queries for request filtering and statistics
+  - Prepared statements for SQL injection prevention
+  - XSS protection with HTML escaping
+
+- **User Interface Improvements**:
+  - Responsive Bootstrap 5 integration
+  - Statistics cards with hover effects and color coding
+  - Professional modal dialogs for viewing and managing requests
+  - Search and filter panel with responsive layout
+  - Responsive table layout for all device sizes
+  - Real-time feedback and status update confirmations
+
+- **Design Consistency**:
+  - Matching the Admin Announcements page design and layout
+  - Consistent styling, typography, and color scheme
+  - Uniform modal and form interactions
+  - Professional card-based statistics display
+
+---
+
 # SafeBrgy - Official V1.5
 
 ## What's New in V1.5

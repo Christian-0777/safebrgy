@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
-// admin_requests.php - SafeBrgy Admin Requests
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
@@ -14,15 +13,82 @@ if ($adminId) {
     $user = 'Admin';
 }
 
-$stmt = $pdo->prepare('
-    SELECT r.id, r.request_type, r.purpose, r.created_at, r.status, u.username, u.email, u.phone, res.first_name, res.last_name
+// Handle AJAX requests
+$response = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json');
+    
+    $action = $_POST['action'];
+    
+    if ($action === 'update_status') {
+        $requestId = $_POST['request_id'] ?? 0;
+        $newStatus = $_POST['status'] ?? '';
+        $dateReceived = ($newStatus === 'Received') ? date('Y-m-d H:i:s') : null;
+        
+        $stmt = $pdo->prepare('UPDATE requests SET status = ?, date_received = ?, updated_at = NOW() WHERE id = ?');
+        $result = $stmt->execute([$newStatus, $dateReceived, $requestId]);
+        
+        echo json_encode(['success' => $result]);
+        exit;
+    }
+}
+
+// Get filter and search parameters
+$search = $_GET['search'] ?? '';
+$status = $_GET['status'] ?? '';
+$sort = $_GET['sort'] ?? 'newest';
+
+// Build query
+$query = '
+    SELECT r.id, r.request_number, r.request_type, r.purpose, r.location, r.status, r.created_at, r.date_received, 
+           u.username, u.email, u.phone, res.first_name, res.last_name
     FROM requests r
     LEFT JOIN users u ON r.user_id = u.id
     LEFT JOIN residents res ON u.id = res.user_id
-    ORDER BY r.created_at DESC
-');
-$stmt->execute();
+    WHERE 1=1
+';
+
+$params = [];
+
+if ($search) {
+    $query .= ' AND (r.request_number LIKE ? OR res.first_name LIKE ? OR res.last_name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)';
+    $searchTerm = "%$search%";
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+}
+
+if ($status && $status !== 'all') {
+    $query .= ' AND r.status = ?';
+    $params[] = $status;
+}
+
+// Add sort
+if ($sort === 'oldest') {
+    $query .= ' ORDER BY r.created_at ASC';
+} else {
+    $query .= ' ORDER BY r.created_at DESC';
+}
+
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
 $requests = $stmt->fetchAll();
+
+// Get statistics
+$statsQuery = '
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = "Approved" THEN 1 ELSE 0 END) as approved,
+        SUM(CASE WHEN status = "Processing" THEN 1 ELSE 0 END) as processing,
+        SUM(CASE WHEN status = "Received" THEN 1 ELSE 0 END) as received
+    FROM requests
+';
+$statsStmt = $pdo->prepare($statsQuery);
+$statsStmt->execute();
+$stats = $statsStmt->fetch();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,6 +105,8 @@ $requests = $stmt->fetchAll();
   <link rel="stylesheet" href="../../assets/css/admin/requests.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
 
@@ -85,53 +153,245 @@ $requests = $stmt->fetchAll();
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
-    <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Pending Requests</h2>
-      <div class="d-flex align-items-center">
-        <img src="../../assets/img/profile.png" alt="Profile" class="rounded-circle me-2" style="width:40px;height:40px;">
-        <span class="fw-bold"><?php echo htmlspecialchars($user); ?></span>
+    <div class="container-fluid p-4">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-2">Resident Requests</h2>
+          <p class="text-muted">Manage and process resident requests for documents and services</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Requests Table -->
-    <div class="table-responsive">
-      <table class="table table-striped align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>Resident Name</th>
-            <th>Type</th>
-            <th>Submitted</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="requestsTable">
-          <?php foreach ($requests as $req): ?>
-            <tr>
-              <td>
-                <strong><?php echo htmlspecialchars(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '') ?: $req['username']); ?></strong><br>
-                <small><?php echo htmlspecialchars($req['email']); ?> | <?php echo htmlspecialchars($req['phone'] ?? 'N/A'); ?></small>
-              </td>
-              <td><?php echo htmlspecialchars($req['request_type']); ?></td>
-              <td><?php echo htmlspecialchars(date('M d, Y', strtotime($req['created_at']))); ?></td>
-              <td>
-                <button class="btn btn-sm btn-success me-1">Approve</button>
-                <button class="btn btn-sm btn-danger me-1">Reject</button>
-                <a href="view_request.php?id=<?php echo $req['id']; ?>" class="btn btn-sm btn-outline-info">View Details</a>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
+      <!-- Statistics Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-value"><?php echo $stats['total']; ?></div>
+            <div class="stat-label">Total Requests</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-value"><?php echo $stats['pending']; ?></div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-value"><?php echo $stats['processing']; ?></div>
+            <div class="stat-label">Processing</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-value"><?php echo $stats['received']; ?></div>
+            <div class="stat-label">Received</div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Search and Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Search by Name, Email, or Request Number</label>
+              <input type="text" name="search" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
+            </div>
+            
+            <div class="col-md-3">
+              <label class="form-label">Filter by Status</label>
+              <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="Pending" <?php echo $status === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                <option value="Approved" <?php echo $status === 'Approved' ? 'selected' : ''; ?>>Approved</option>
+                <option value="Processing" <?php echo $status === 'Processing' ? 'selected' : ''; ?>>Processing</option>
+                <option value="Ready to Receive" <?php echo $status === 'Ready to Receive' ? 'selected' : ''; ?>>Ready to Receive</option>
+                <option value="Received" <?php echo $status === 'Received' ? 'selected' : ''; ?>>Received</option>
+                <option value="Rejected" <?php echo $status === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Sort By</label>
+              <select name="sort" class="form-select">
+                <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest</option>
+                <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i> Search
+              </button>
+              <a href="requests.php" class="btn btn-outline-secondary">
+                <i class="fas fa-redo"></i> Reset
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Requests Table -->
+      <div class="card">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Request #</th>
+                <th>Resident Name</th>
+                <th>Request Type</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Date Received</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (empty($requests)): ?>
+                <tr>
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                    No requests found
+                  </td>
+                </tr>
+              <?php else: ?>
+                <?php foreach ($requests as $req): ?>
+                  <tr>
+                    <td>
+                      <strong><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></strong>
+                    </td>
+                    <td>
+                      <div>
+                        <strong><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></strong>
+                        <br>
+                        <small class="text-muted"><?php echo htmlspecialchars($req['email']); ?></small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-info"><?php echo htmlspecialchars($req['request_type']); ?></span>
+                    </td>
+                    <td>
+                      <small><?php echo date('M d, Y', strtotime($req['created_at'])); ?></small>
+                    </td>
+                    <td>
+                      <span class="badge bg-<?php 
+                        echo match($req['status']) {
+                          'Pending' => 'warning',
+                          'Approved' => 'info',
+                          'Processing' => 'primary',
+                          'Ready to Receive' => 'success',
+                          'Received' => 'success',
+                          'Rejected' => 'danger',
+                          default => 'secondary'
+                        };
+                      ?>">
+                        <?php echo htmlspecialchars($req['status']); ?>
+                      </span>
+                    </td>
+                    <td>
+                      <small><?php echo $req['date_received'] ? date('M d, Y', strtotime($req['date_received'])) : 'N/A'; ?></small>
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-outline-primary view-btn" data-bs-toggle="modal" data-bs-target="#viewRequestModal<?php echo $req['id']; ?>" title="View Details">
+                        <i class="fas fa-eye"></i> View
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- VIEW REQUEST MODAL -->
+                  <div class="modal fade" id="viewRequestModal<?php echo $req['id']; ?>" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Request Details - <?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <!-- Request Information -->
+                          <h6 class="mb-3">Resident Information</h6>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Name:</strong> <p><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Email:</strong> <p><?php echo htmlspecialchars($req['email']); ?></p>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Phone:</strong> <p><?php echo htmlspecialchars($req['phone'] ?? 'N/A'); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Request Number:</strong> <p><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></p>
+                            </div>
+                          </div>
+
+                          <hr>
+
+                          <!-- Request Details -->
+                          <h6 class="mb-3">Request Details</h6>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Request Type:</strong> <p><?php echo htmlspecialchars($req['request_type']); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Purpose:</strong> <p><?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?></p>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Location:</strong> <p><?php echo htmlspecialchars($req['location'] ?? 'N/A'); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Submitted Date:</strong> <p><?php echo date('M d, Y H:i', strtotime($req['created_at'])); ?></p>
+                            </div>
+                          </div>
+
+                          <hr>
+
+                          <!-- Status Update -->
+                          <h6 class="mb-3">Update Status</h6>
+                          <div class="mb-3">
+                            <label class="form-label">Current Status: <strong><?php echo htmlspecialchars($req['status']); ?></strong></label>
+                            <select class="form-select status-select" data-request-id="<?php echo $req['id']; ?>">
+                              <option value="">-- Select New Status --</option>
+                              <option value="Pending" <?php echo $req['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                              <option value="Approved" <?php echo $req['status'] === 'Approved' ? 'selected' : ''; ?>>Approved</option>
+                              <option value="Processing" <?php echo $req['status'] === 'Processing' ? 'selected' : ''; ?>>Processing</option>
+                              <option value="Ready to Receive" <?php echo $req['status'] === 'Ready to Receive' ? 'selected' : ''; ?>>Ready to Receive</option>
+                              <option value="Received" <?php echo $req['status'] === 'Received' ? 'selected' : ''; ?>>Received</option>
+                              <option value="Rejected" <?php echo $req['status'] === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
+                            </select>
+                          </div>
+                          <?php if ($req['date_received']): ?>
+                            <div class="alert alert-info">
+                              <strong>Date Received:</strong> <?php echo date('M d, Y H:i', strtotime($req['date_received'])); ?>
+                            </div>
+                          <?php endif; ?>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="button" class="btn btn-primary update-status-btn" data-request-id="<?php echo $req['id']; ?>">Update Status</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
-<!-- Shared JS -->
-<script src="../../assets/js/shared/shared-header.js"></script>
-<script src="../../assets/js/shared/shared-sidebar.js"></script>
-<!-- Page-specific JS -->
-<script src="../../assets/js/admin/requests.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Shared JS -->
+  <script src="../../assets/js/shared/shared-header.js"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js"></script>
+  <!-- Page-specific JS -->
+  <script src="../../assets/js/admin/requests.js"></script>
 </body>
 </html>

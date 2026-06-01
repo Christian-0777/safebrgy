@@ -51,11 +51,13 @@ CREATE TABLE IF NOT EXISTS residents (
 CREATE TABLE IF NOT EXISTS requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
+  request_number VARCHAR(10) UNIQUE,
   request_type ENUM('Barangay Clearance','Barangay Residency','Barangay Indigency','Barangay Business Clearance','Incident Report','Lost Property') NOT NULL,
   purpose VARCHAR(255),
   location VARCHAR(255),
   attachments JSON,
-  status ENUM('Pending','Approved','Rejected','Processing') DEFAULT 'Pending',
+  status ENUM('Pending','Approved','Processing','Ready to Receive','Received','Rejected') DEFAULT 'Pending',
+  date_received DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

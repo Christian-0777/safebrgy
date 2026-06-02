@@ -40,8 +40,10 @@ $sort = $_GET['sort'] ?? 'newest';
 
 // Build query
 $query = '
-    SELECT r.id, r.request_number, r.request_type, r.purpose, r.location, r.status, r.created_at, r.date_received, 
-           u.username, u.email, u.phone, res.first_name, res.last_name
+    SELECT r.id, r.request_number, r.request_type, r.purpose, r.location, r.status, r.created_at, r.date_received, r.document_data,
+           u.username, u.email, u.phone, u.id as user_id,
+           res.first_name, res.last_name, res.birthdate, res.age, res.gender, res.civil_status, 
+           res.complete_address, res.purok, res.mobile_number, res.valid_id_path
     FROM requests r
     LEFT JOIN users u ON r.user_id = u.id
     LEFT JOIN residents res ON u.id = res.user_id
@@ -302,57 +304,119 @@ $stats = $statsStmt->fetch();
 
                   <!-- VIEW REQUEST MODAL -->
                   <div class="modal fade" id="viewRequestModal<?php echo $req['id']; ?>" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
+                    <div class="modal-dialog modal-xl">
                       <div class="modal-content">
                         <div class="modal-header">
                           <h5 class="modal-title">Request Details - <?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></h5>
                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                          <!-- Request Information -->
-                          <h6 class="mb-3">Resident Information</h6>
+                          <!-- Applicant Information -->
+                          <h6 class="mb-3 text-primary"><i class="fas fa-user-circle"></i> Applicant Information</h6>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>Name:</strong> <p><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
+                              <strong>Full Name:</strong> 
+                              <p><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
                             </div>
                             <div class="col-md-6">
-                              <strong>Email:</strong> <p><?php echo htmlspecialchars($req['email']); ?></p>
+                              <strong>Age:</strong> 
+                              <p><?php echo htmlspecialchars($req['age'] ?? 'N/A'); ?></p>
                             </div>
                           </div>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>Phone:</strong> <p><?php echo htmlspecialchars($req['phone'] ?? 'N/A'); ?></p>
+                              <strong>Date of Birth:</strong> 
+                              <p><?php echo $req['birthdate'] ? date('M d, Y', strtotime($req['birthdate'])) : 'N/A'; ?></p>
                             </div>
                             <div class="col-md-6">
-                              <strong>Request Number:</strong> <p><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></p>
+                              <strong>Gender:</strong> 
+                              <p><?php echo htmlspecialchars($req['gender'] ?? 'N/A'); ?></p>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Civil Status:</strong> 
+                              <p><?php echo htmlspecialchars($req['civil_status'] ?? 'N/A'); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Contact Number:</strong> 
+                              <p><?php echo htmlspecialchars($req['mobile_number'] ?? $req['phone'] ?? 'N/A'); ?></p>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>House Number/Street/Purok:</strong> 
+                              <p><?php echo htmlspecialchars($req['complete_address'] ?? '') . ($req['purok'] ? ', ' . htmlspecialchars($req['purok']) : ''); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                              <strong>Email:</strong> 
+                              <p><?php echo htmlspecialchars($req['email']); ?></p>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <strong>Valid ID:</strong>
+                              <p>
+                                <?php if ($req['valid_id_path']): ?>
+                                  <a href="../../<?php echo htmlspecialchars($req['valid_id_path']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-image"></i> View ID
+                                  </a>
+                                <?php else: ?>
+                                  <span class="text-muted">Not uploaded</span>
+                                <?php endif; ?>
+                              </p>
                             </div>
                           </div>
 
                           <hr>
 
                           <!-- Request Details -->
-                          <h6 class="mb-3">Request Details</h6>
+                          <h6 class="mb-3 text-primary"><i class="fas fa-clipboard-list"></i> Request Details</h6>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>Request Type:</strong> <p><?php echo htmlspecialchars($req['request_type']); ?></p>
+                              <strong>Request Number:</strong> 
+                              <p><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></p>
                             </div>
                             <div class="col-md-6">
-                              <strong>Purpose:</strong> <p><?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?></p>
+                              <strong>Request Type:</strong> 
+                              <p><span class="badge bg-info"><?php echo htmlspecialchars($req['request_type']); ?></span></p>
                             </div>
                           </div>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>Location:</strong> <p><?php echo htmlspecialchars($req['location'] ?? 'N/A'); ?></p>
+                              <strong>Date Requested:</strong> 
+                              <p><?php echo date('M d, Y H:i A', strtotime($req['created_at'])); ?></p>
                             </div>
                             <div class="col-md-6">
-                              <strong>Submitted Date:</strong> <p><?php echo date('M d, Y H:i', strtotime($req['created_at'])); ?></p>
+                              <strong>Purpose of Request:</strong> 
+                              <p><?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?></p>
                             </div>
                           </div>
+                          
+                          <?php 
+                          $doc_data = json_decode($req['document_data'], true);
+                          if ($doc_data && !empty($doc_data)):
+                          ?>
+                          <hr>
+                          <h6 class="mb-3 text-primary"><i class="fas fa-file-alt"></i> Document Information</h6>
+                          <?php foreach ($doc_data as $key => $value): ?>
+                            <?php if ($key !== 'purpose' && $key !== 'business_logo'): ?>
+                              <div class="row mb-2">
+                                <div class="col-md-6">
+                                  <strong><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $key))); ?>:</strong>
+                                </div>
+                                <div class="col-md-6">
+                                  <p><?php echo htmlspecialchars(is_array($value) ? implode(', ', $value) : $value); ?></p>
+                                </div>
+                              </div>
+                            <?php endif; ?>
+                          <?php endforeach; ?>
+                          <?php endif; ?>
 
                           <hr>
 
                           <!-- Status Update -->
-                          <h6 class="mb-3">Update Status</h6>
+                          <h6 class="mb-3 text-primary"><i class="fas fa-tasks"></i> Update Status</h6>
                           <div class="mb-3">
                             <label class="form-label">Current Status: <strong><?php echo htmlspecialchars($req['status']); ?></strong></label>
                             <select class="form-select status-select" data-request-id="<?php echo $req['id']; ?>">
@@ -367,7 +431,7 @@ $stats = $statsStmt->fetch();
                           </div>
                           <?php if ($req['date_received']): ?>
                             <div class="alert alert-info">
-                              <strong>Date Received:</strong> <?php echo date('M d, Y H:i', strtotime($req['date_received'])); ?>
+                              <strong>Date Received:</strong> <?php echo date('M d, Y H:i A', strtotime($req['date_received'])); ?>
                             </div>
                           <?php endif; ?>
                         </div>

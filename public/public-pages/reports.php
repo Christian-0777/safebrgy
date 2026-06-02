@@ -75,7 +75,7 @@ if ($userId) {
     <div class="header-left">
       <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
       <a href="../../index.php" class="header-logo">
-        <img src="../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
+        <img src="../../assets/img/seal.png" alt="SafeBrgy Logo" class="logo-image">
         <span>SafeBrgy</span>
       </a>
     </div>

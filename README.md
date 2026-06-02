@@ -1,5 +1,278 @@
 # SafeBrgy - Official V1.9
 
+## What's New in V2.0
+
+### Resident Request Page - Complete 3-Step Modal Implementation
+
+#### Overview
+A comprehensive multi-step request system for residents to submit applications for various barangay documents. The implementation includes a 3-step modal workflow, dynamic form handling, and enhanced admin interface for request management.
+
+#### Step 1: Document Type Selection
+- **Interactive Document Selection Interface**:
+  - Four document type options with descriptive icons:
+    - **Barangay Clearance**: Certificate of good moral character (green icon)
+    - **Barangay Residency**: Proof of residency in barangay (blue icon)
+    - **Barangay Indigency**: Certificate of indigency (orange icon)
+    - **Business Clearance**: Certificate for business operations (purple icon)
+  - Hoverable card design with smooth animations
+  - Visual feedback on selection
+  - Responsive 2-column grid layout
+
+#### Step 2: Document-Specific Form
+Dynamic form fields that change based on selected document type:
+
+**Barangay Clearance**:
+- Purpose of Request (required, text input)
+
+**Barangay Residency**:
+- Years of Residency (required, number input)
+- Date Started Living in Barangay (required, date picker)
+- Purpose of Request (required, text input)
+
+**Barangay Indigency**:
+- Monthly Income (required, decimal number)
+- Number of Household Members (required, integer)
+- Purpose of Request (required, dropdown selector):
+  - Medical Assistance
+  - Educational Assistance
+  - Financial Assistance
+  - Burial Assistance
+  - Others (shows additional text field when selected)
+- Supporting Documents (optional, multi-file upload - PDF, JPG, PNG)
+- Images (optional, multi-file upload - JPG, PNG)
+
+**Business Clearance**:
+- Business Name (required, text input)
+- Business Logo (optional, image file - JPG, PNG, WebP)
+- Business Description (optional, textarea)
+- Business Full Address (required, text input)
+- Contact Number (required, tel input)
+- TIN - Tax Identification Number (optional, text)
+- Business Started (required, date picker)
+- Purpose of Request (required, text input)
+
+**Form Features**:
+- Back button to return to document type selection
+- Real-time form validation
+- Required field indicators
+- Form reset on back navigation
+- Conditional field visibility (e.g., "Others reason" for indigency)
+- File upload validation (5MB limit per file)
+
+#### Step 3: Confirmation Screen
+After successful submission, displays:
+- Success message with checkmark icon
+- **Reference Number**: Auto-generated format (REQ-YYYYMMDD-XXXX)
+- **Date Requested**: Formatted submission timestamp
+- **Confirmation Message**: "Your '[document type]' is pending to review by our officials, We will send you an email for updates."
+- Close button that reloads the page to show new request in list
+- Email notification promise
+
+#### Request Management Features
+- **Search & Filter**:
+  - Search by request number or document type
+  - Real-time filtering as user types
+  - Clear search button
+  
+- **Request History Table**:
+  - Columns: Request #, Document Type (badge), Submitted Date, Status (color-coded), Actions
+  - Status badges:
+    - Yellow: Pending
+    - Blue: Approved/Processing
+    - Green: Ready to Receive/Received
+    - Red: Rejected
+  - View button for detailed information
+  - Pagination (10 requests per page)
+
+- **Request Details Modal** (Resident View):
+  - Document Type and Status
+  - Submission Date
+  - Purpose of Request
+  - All document-specific information
+  - Formatted display of stored data
+
+#### Admin Request Details Modal - Enhanced
+Comprehensive view showing:
+
+**Applicant Information Section**:
+- Full Name (from residents table)
+- Age
+- Date of Birth (formatted)
+- Gender
+- Civil Status
+- House Number/Street/Purok
+- Contact Number
+- Email Address
+- Valid ID (clickable link to view uploaded image)
+
+**Request Details Section**:
+- Request Number (unique identifier)
+- Request Type (with badge)
+- Date Requested (formatted timestamp)
+- Purpose of Request
+
+**Document Information Section**:
+- All document-specific fields stored in JSON
+- Formatted display for all document types
+- Dynamic field names based on request type
+
+**Status Management Section**:
+- Current status display
+- Status dropdown selector with options:
+  - Pending
+  - Approved
+  - Processing
+  - Ready to Receive
+  - Received
+  - Rejected
+- Date Received display (when applicable)
+- Update Status button
+
+#### Backend API Implementation
+**POST `/api/requests/create.php`**:
+- Authentication verification (residents only)
+- Request type validation
+- Document-specific field validation
+- File upload handling:
+  - MIME type verification
+  - Size validation (5MB max per file)
+  - Secure file naming with uniqid() and timestamp
+  - Storage in `/uploads/requests/` directory
+- Unique request number generation
+- Document data stored as JSON for flexibility
+- JSON response with success/error status
+- Returns: request_number and created_at timestamp
+
+#### Database Schema Updates
+- Updated `requests` table:
+  - Added `document_data` JSON column for flexible document-specific data storage
+  - Updated `request_number` to VARCHAR(20) for new format
+  - Maintains user_id for data isolation
+  - Created_at and updated_at timestamps
+
+**Sample document_data JSON**:
+```json
+{
+  "years_residency": "5",
+  "date_started_living": "2021-06-02",
+  "purpose": "Employment requirement",
+  "monthly_income": "25000",
+  "household_members": "4"
+}
+```
+
+#### File Handling
+- **Upload Directory**: `/uploads/requests/`
+- **File Type Support**:
+  - Documents: PDF, JPG, PNG
+  - Images: JPG, PNG, WebP
+- **File Size Limit**: 5MB per file
+- **Naming Convention**: `{type}_{uniqid}_{timestamp}.{ext}`
+- **Security**:
+  - MIME type verification
+  - Size validation before storage
+  - Unique filenames to prevent conflicts
+  - Separate directory for request uploads
+
+#### Frontend Technology
+- **Modal Framework**: Bootstrap 5
+- **Animations**: CSS transitions and keyframes
+- **Form Handling**: Fetch API for async submission
+- **File Upload**: FormData API for multipart/form-data
+- **State Management**: JavaScript variables tracking current step
+- **Validation**: Client-side and server-side validation
+
+#### Design & UX
+- **Responsive Layout**: Mobile-first design
+- **Animations**: 
+  - Fade-in for step transitions
+  - Slide-in for form sections
+  - Smooth hover effects on cards
+- **Color Scheme**:
+  - Green (#4CAF50): Barangay Clearance
+  - Blue (#2196F3): Barangay Residency
+  - Orange (#FF9800): Barangay Indigency
+  - Purple (#9C27B0): Business Clearance
+- **Typography**: Arial font throughout for consistency
+- **Icons**: Font Awesome 6.4.0 for visual indicators
+- **Bootstrap 5**: Grid system and components for responsiveness
+
+#### Security Features
+- Session authentication check
+- User role verification (residents only)
+- Server-side validation of all inputs
+- Prepared SQL statements (SQL injection prevention)
+- File type and size validation
+- HTML sanitization with htmlspecialchars()
+- User data isolation (can only access own requests)
+- MIME type verification for uploads
+
+#### Files Created/Modified
+- **NEW**: `api/requests/create.php` - Request creation API endpoint
+- **NEW**: `uploads/requests/` - Directory for request uploads
+- **UPDATED**: `public/public-pages/requests.php` - Complete rewrite with 3-step modal
+- **UPDATED**: `assets/js/public/requests.js` - Modal logic and form handling
+- **UPDATED**: `assets/css/public/requests.css` - Enhanced modal and form styling
+- **UPDATED**: `admin/main-pages/requests.php` - Enhanced details modal with applicant info
+- **UPDATED**: `sql/safebrgy_schema.sql` - Added document_data column
+
+#### User Workflows
+
+**Resident Request Workflow**:
+1. Navigate to "My Requests" page
+2. Click "Request Now" button
+3. Select desired document type
+4. Fill in document-specific form fields
+5. Submit the form
+6. Receive confirmation with reference number
+7. View request in history table
+8. Receive email updates on request status
+
+**Admin Request Review Workflow**:
+1. Navigate to "Requests" page in admin panel
+2. Search or filter requests
+3. Click "View" button on target request
+4. Review applicant information and request details
+5. Update request status using dropdown
+6. Click "Update Status" button
+7. Status change is saved and timestamped
+
+#### Testing Checklist
+- ✓ Create Barangay Clearance request
+- ✓ Create Barangay Residency request with date picker
+- ✓ Create Barangay Indigency request with "Others" option
+- ✓ Upload files for Indigency request
+- ✓ Create Business Clearance with logo upload
+- ✓ Verify request appears in resident list
+- ✓ Search requests by number
+- ✓ View request details as resident
+- ✓ View request in admin with full applicant info
+- ✓ Update request status as admin
+- ✓ Test mobile responsiveness
+- ✓ Verify file upload security
+
+#### Performance Considerations
+- Optimized queries with prepared statements
+- JSON storage for flexible, scalable document data
+- Pagination for large request lists (10 per page)
+- Lazy-loading of document details via modal
+- Efficient file upload handling with progress feedback
+- CSS animations using GPU acceleration (transform/opacity)
+
+#### Future Enhancements
+- Real-time email notifications on status updates
+- Document preview gallery in admin modal
+- Bulk request operations (status update, export)
+- Export requests to PDF/Excel reports
+- Request templates for common purposes
+- Advanced filtering (date range, document type, status)
+- Document recommendation engine
+- WebSocket integration for live status updates
+- Mobile app API integration
+- SMS notifications for request updates
+
+---
+
 ## What's New in V1.9
 
 ### Resident Report Page - Complete Implementation
@@ -660,6 +933,15 @@ The system is built to handle various aspects of barangay operations, including 
 
 ## Version History
 
+- **V2.0** (Latest - June 2, 2026): Complete resident request system with 3-step modal workflow for submitting barangay documents. Enhanced admin interface with comprehensive applicant information and request management.
+  - New Features: 3-step request modal, dynamic forms by document type, file uploads, request tracking, enhanced admin details modal
+  - Files Added: `api/requests/create.php`, `uploads/requests/` directory
+  - Files Updated: `public/public-pages/requests.php`, `assets/js/public/requests.js`, `assets/css/public/requests.css`, `admin/main-pages/requests.php`, `sql/safebrgy_schema.sql`
+
+- **V1.9**: Resident Report Page with complete implementation including status tracking, search/filter, create report modal with file uploads, and view report details.
+
+- **V1.8**: Resident Announcement Page with search, sort, filter, announcement cards, full details modal, and mark as noted feature.
+
 - **V1.0** (Official Release): Initial stable release with core barangay management features implemented.
 
 ## Contributing
@@ -680,4 +962,4 @@ For support or questions, please contact the development team or refer to the pr
 
 ---
 
-*SafeBrgy V1.0 - Empowering communities through technology.*
+*SafeBrgy V2.0 - Empowering communities through technology.*

@@ -1,4 +1,270 @@
-# SafeBrgy - Official V1.9
+## What's New in V2.1
+
+### Admin Dashboard - Comprehensive Executive Overview Redesign
+
+#### Overview
+A complete redesign of the admin dashboard featuring an executive dashboard with 6 key metric cards, demographic statistics, recent activity tracking, notification summaries, and a calendar widget. The dashboard provides administrators with comprehensive visibility into barangay operations with real-time data.
+
+#### Statistics Summary Cards (6 Key Metrics)
+- **Total Residents**: Count of verified resident accounts
+  - Icon: Users icon
+  - Color: Primary Blue
+  - Data Source: Verified users joined with residents table
+  
+- **Registered Voters**: Residents with voter status set to 'Yes'
+  - Icon: Vote-yea icon
+  - Color: Success Green
+  - Data Source: Query residents table for voter_status = 'Yes'
+
+- **Senior Citizens (60+)**: Residents aged 60 and above
+  - Icon: Person-cane icon
+  - Color: Warning Yellow
+  - Data Source: Query residents WHERE age >= 60
+
+- **Persons with Disabilities**: Residents with disabilities recorded
+  - Icon: Wheelchair icon
+  - Color: Danger Red
+  - Data Source: Query residents WHERE disabilities is NOT NULL
+
+- **Pending Document Requests**: Active requests awaiting processing
+  - Icon: File-invoice icon
+  - Color: Info Teal
+  - Data Source: Query requests WHERE status = 'Pending'
+
+- **Pending Cases**: Reports in pending or ongoing status
+  - Icon: Exclamation-circle icon
+  - Color: Secondary Gray
+  - Data Source: Query reports WHERE status IN ('Pending', 'Ongoing')
+
+**Card Features**:
+- Responsive grid layout (3 columns desktop, 2 columns tablet, 1 column mobile)
+- Flex layout with icon and content side-by-side
+- Hover effects with elevation and shadow animations
+- Color-coded left border indicators
+- Large readable numbers with formatted values (e.g., "1,250")
+- Uppercase label text with letter-spacing for visual hierarchy
+
+#### Residents Statistics Section
+Two-column responsive layout displaying population demographics:
+
+**Gender Distribution**:
+- Progress bar chart showing Male, Female, Other populations
+- Displays count and percentage for each gender
+- Color-coded bars (primary blue)
+- Gender-specific icons (Mars for Male, Venus for Female)
+- Responsive stack on mobile
+
+**Population by Age Groups**:
+- Six age brackets: 0-12, 13-19, 20-35, 36-50, 51-60, 60+
+- Progress bars with percentages and counts
+- Info teal color (#17a2b8) for age bars
+- CASE statement SQL for age grouping
+- Sortable by age group in database
+
+**Features**:
+- Card-based design with headers and subtitles
+- Icons for visual clarity
+- Scrollable containers for long lists
+- Empty state messages when no data available
+- Responsive columns (full-width on mobile, 50% on tablet, 50% on desktop)
+
+#### Recent Activities Timeline
+Chronological feed combining admin actions and resident activities:
+
+**Activity Sources**:
+- Admin logs from `admin_logs` table
+- Recent resident requests from `requests` table
+- Combined and sorted by timestamp (newest first)
+
+**Timeline Features**:
+- Vertical timeline with gradient line indicator
+- Activity markers (circular dots with box shadow)
+- Actor information (Admin vs Resident indicator with icon)
+- Action description text
+- Formatted timestamp (Mon DD, YYYY HH:ii)
+- Limited to 10 most recent activities
+- Hover effects for better interactivity
+
+**Activity Display**:
+- Admin activities show shield icon with admin username
+- Resident activities show user icon with resident username
+- Clear action descriptions (e.g., "posted an announcement", "submitted a new request")
+- Professional timeline styling matching admin design patterns
+
+#### Notifications Summary Section
+Two-column responsive layout for critical alerts:
+
+**Left Column - Notification Cards** (4 cards):
+1. **User Verification Pending**
+   - Icon: User-check (warning orange background)
+   - Count: Number of unverified users
+   
+2. **Pending Document Requests**
+   - Icon: File-alt (info teal background)
+   - Count: Total pending requests
+   
+3. **Upcoming Events (Next 7 Days)**
+   - Icon: Calendar-check (primary blue background)
+   - Count: Scheduled announcements within 7 days
+   
+4. **New Reports**
+   - Icon: Exclamation-triangle (danger red background)
+   - Count: Pending reports count
+
+**Right Column - Pending Requests by Type**:
+- Breakdown of pending requests grouped by request type
+- Each request type displays:
+  - File icon with request type name
+  - Warning badge with count
+  - Individual list items for each request type
+- Empty state when all requests processed
+- Scrollable container if many request types
+
+**Card Features**:
+- Icon boxes with colored backgrounds
+- Large readable counts in primary blue
+- Hover effects for interactivity
+- Badge-styled counts with warning color
+- Request type icons and labels
+
+#### Calendar Widget - Scheduled Events
+Displays upcoming scheduled events and announcements:
+
+**Event Display**:
+- Event list with 10 most recent scheduled/active announcements
+- Each event shows:
+  - Date card (day/month in blue gradient box)
+  - Event title
+  - Time with clock icon
+  - Priority badge (normal/important/urgent)
+  - Status badge (scheduled/active)
+
+**Event Information**:
+- Ordered by scheduled_at date ascending
+- Filters only status IN ('scheduled', 'active')
+- Large formatted day number, small uppercase month abbreviation
+- Responsive layout with date on left, content on right
+
+**Styling**:
+- Date box: Linear gradient blue to dark blue
+- Priority badges: Color-coded (gray/yellow/red)
+- Status badges: Success green or info teal
+- Hover effects with background color change
+- Responsive stack on mobile
+
+**Empty State**:
+- Calendar icon with "No scheduled events" message when empty
+
+#### Design & Styling System
+
+**Color Scheme**:
+- Primary: #007bff (Blue)
+- Success: #28a745 (Green)
+- Warning: #ffc107 (Yellow)
+- Danger: #dc3545 (Red)
+- Info: #17a2b8 (Teal)
+- Secondary: #6c757d (Gray)
+
+**Layout**:
+- Bootstrap 5 responsive grid system
+- Container-fluid with max-width 1400px
+- Responsive breakpoints: 1400px desktop, 768px tablet, 576px mobile
+- Padding and margins following Bootstrap standards
+- Flexbox layouts for alignment
+
+**Typography**:
+- Font: Arial, sans-serif throughout
+- Welcome title: 28px, font-weight 600
+- Section titles: 18px with bottom border
+- Stat values: 28px bold
+- Regular text: 14px, 13px for secondary text
+
+**Effects & Animations**:
+- Hover elevation with translateY(-3px)
+- Shadow transitions (0 2px 4px to 0 4px 12px)
+- Smooth CSS transitions (0.3s ease)
+- Progress bar animations (0.6s ease)
+- Timeline gradient background
+
+**Responsive Design**:
+- Stat cards stack vertically on mobile (1 column)
+- Statistics section: 2 columns tablet, 1 column mobile
+- Activity timeline: Adjusted marker positioning on mobile
+- Notification cards: Stack vertically on mobile
+- All containers full-width on mobile with appropriate padding
+
+#### Database Queries
+
+**Statistics Queries**:
+- COUNT() aggregations for all metrics
+- LEFT JOIN residents with users table for verified count
+- CASE statements for age grouping
+- GROUP BY for gender/type breakdowns
+- Prepared statements for SQL injection prevention
+
+**Activity Queries**:
+- SELECT from admin_logs with user_id JOIN
+- SELECT from requests with user_id JOIN
+- Combined and sorted results
+- Limited to 10 results
+
+**Notification Queries**:
+- COUNT WHERE is_verified = 0 for pending users
+- GROUP BY request_type for pending breakdown
+- Date arithmetic for 7-day upcoming events
+- Status filtering for pending reports
+
+#### Backend Implementation
+
+**PHP Processing**:
+- Session authentication check
+- Admin user retrieval
+- Multiple aggregation queries executed sequentially
+- Array sorting with usort() for activity timeline
+- Data formatting for display
+
+**Data Validation**:
+- Null coalescing operators for safe defaults
+- Empty array checks before iteration
+- Safe output with htmlspecialchars() for HTML display
+- Proper number formatting with number_format()
+
+#### Frontend Features
+
+**Bootstrap Components**:
+- Grid system for responsive layout
+- Progress bars for demographic visualization
+- Badge components for status indicators
+- Responsive utilities (d-flex, gap, etc.)
+
+**Interactive Elements**:
+- Hover states on all cards
+- Responsive font sizing
+- Proper spacing and alignment
+- Accessible color contrasts
+
+#### Files Modified
+- `admin/main-pages/dashboard.php`: Complete rewrite with new sections and database queries
+- `assets/css/admin/dashboard.css`: Comprehensive styling with responsive design and animations
+
+#### Performance Considerations
+- Optimized database queries with prepared statements
+- Limited result sets (10 for activities, events)
+- Efficient aggregation using SQL GROUP BY
+- CSS GPU acceleration with transform/opacity
+- Minimal JavaScript for fast load times
+
+#### Future Enhancements
+- Real-time data refresh using AJAX
+- Export statistics to PDF/Excel
+- Custom date range filtering
+- Advanced search within activities
+- Notification preferences/alerts
+- Dashboard widget customization
+- Data visualization charts (Chart.js integration)
+- Predicted trends and analytics
+
+---
 
 ## What's New in V2.0
 
@@ -933,7 +1199,18 @@ The system is built to handle various aspects of barangay operations, including 
 
 ## Version History
 
-- **V2.0** (Latest - June 2, 2026): Complete resident request system with 3-step modal workflow for submitting barangay documents. Enhanced admin interface with comprehensive applicant information and request management.
+- **V2.1** (Latest - June 3, 2026): Comprehensive Admin Dashboard Redesign with executive overview, demographics, and activity tracking.
+  - New Features: 
+    - Statistics Summary Cards (6 key metrics: Total Residents, Registered Voters, Senior Citizens, Persons with Disabilities, Pending Requests, Pending Cases)
+    - Residents Statistics (Gender distribution and age group breakdown with progress bars)
+    - Recent Activities Timeline (Admin logs and resident requests combined in chronological order)
+    - Notifications Summary (User verification, pending requests by type, upcoming events, new reports)
+    - Calendar Widget (Scheduled events and announcements with date, time, priority, and status)
+  - Design: Color-coded cards, responsive Bootstrap 5 grid, responsive animations, mobile-friendly
+  - Files Modified: `admin/main-pages/dashboard.php`, `assets/css/admin/dashboard.css`
+  - Database Integration: Live queries for all statistics and aggregations
+
+- **V2.0** (June 2, 2026): Complete resident request system with 3-step modal workflow for submitting barangay documents. Enhanced admin interface with comprehensive applicant information and request management.
   - New Features: 3-step request modal, dynamic forms by document type, file uploads, request tracking, enhanced admin details modal
   - Files Added: `api/requests/create.php`, `uploads/requests/` directory
   - Files Updated: `public/public-pages/requests.php`, `assets/js/public/requests.js`, `assets/css/public/requests.css`, `admin/main-pages/requests.php`, `sql/safebrgy_schema.sql`

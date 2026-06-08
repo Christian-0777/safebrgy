@@ -1,0 +1,237 @@
+/* Custom SafeBrgy Admin styles */
+
+* {
+  font-family: Arial;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
+body {
+  font-family: Arial;
+}
+
+p, span, a, button, .btn, label {
+  font-family: Arial;
+  font-size: 12px;
+}
+
+.main-content {
+    padding-top: 90px;
+}
+
+/* Welcome Title */
+.welcome-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 3px solid #007bff;
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+/* ===== STATISTICS CARDS ===== */
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #007bff;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.stat-icon {
+  font-size: 32px;
+  color: #007bff;
+  min-width: 50px;
+  text-align: center;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Color variants for stat cards */
+.stat-card-primary {
+  border-left-color: #007bff;
+}
+
+.stat-card-primary .stat-icon,
+.stat-card-primary .stat-value {
+  color: #007bff;
+}
+
+.stat-card-success {
+  border-left-color: #28a745;
+}
+
+.stat-card-success .stat-icon,
+.stat-card-success .stat-value {
+  color: #28a745;
+}
+
+.stat-card-warning {
+  border-left-color: #ffc107;
+}
+
+.stat-card-warning .stat-icon,
+.stat-card-warning .stat-value {
+  color: #ffc107;
+}
+
+.stat-card-danger {
+  border-left-color: #dc3545;
+}
+
+.stat-card-danger .stat-icon,
+.stat-card-danger .stat-value {
+  color: #dc3545;
+}
+
+.stat-card-info {
+  border-left-color: #17a2b8;
+}
+
+.stat-card-info .stat-icon,
+.stat-card-info .stat-value {
+  color: #17a2b8;
+}
+
+.stat-card-secondary {
+  border-left-color: #6c757d;
+}
+
+.stat-card-secondary .stat-icon,
+.stat-card-secondary .stat-value {
+  color: #6c757d;
+}
+
+/* Table Styles */
+#sidebar {
+  min-width: 220px;
+}
+
+#sidebar .nav-link.active {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-responsive.card {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.table {
+  font-size: 13px;
+}
+
+.table thead.table-dark {
+  background-color: #343a40;
+}
+
+.table th {
+  font-weight: 600;
+  color: white;
+  border-bottom: 2px solid #23282d;
+  padding: 15px;
+}
+
+.table td {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+  transition: background-color 0.2s ease;
+}
+
+.table small {
+  color: #999;
+}
+
+/* Modal Enhancements */
+.modal-header.bg-success {
+  border-bottom: 3px solid #28a745;
+}
+
+/* Image Preview Styles */
+.image-preview {
+  max-width: 40px;
+  max-height: 40px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 4px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  object-fit: cover;
+}
+
+.image-preview:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #0b63d6;
+}
+
+.image-preview-container {
+  margin: 12px 0;
+  text-align: center;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+}
+
+.image-preview-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

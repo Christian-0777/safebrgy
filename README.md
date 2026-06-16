@@ -1,3 +1,226 @@
+## What's New in V2.2.4 (Minor Update)
+
+### Resident Profile Page - Comprehensive Profile Dashboard
+
+#### Overview
+A complete resident profile page displaying personal information, contact details, identification status, and requested documents history. The page provides residents with a centralized view of their account information and document request tracking.
+
+#### Profile Header Section
+- **Cover Photo**: Gradient blue background with decorative pattern
+- **Profile Picture**: Circular avatar with initial letter fallback for residents without profile images
+- **Full Name**: Large heading displaying resident's complete name
+- **Resident ID**: Unique 7-digit identifier with ID card icon
+- **Edit Profile Button**: Direct link to account settings page for updating profile information
+
+#### Personal Information Section
+Comprehensive display of resident demographics:
+- **First Name**: Resident's given name
+- **Middle Name**: Resident's middle name (if available)
+- **Last Name**: Resident's family name
+- **Gender**: Male, Female, or Other
+- **Date of Birth**: Formatted as "Month Day, Year"
+- **Age Calculation**: Automatically calculated from birthdate, displayed as "X years, Y months, Z days" format
+- **Civil Status**: Single, Married, Widowed, Separated, or Divorced
+- **Nationality**: Country of citizenship
+- **Occupation**: Current employment or profession
+
+**Layout**: Responsive 3-column grid on desktop, adapting to mobile devices
+
+#### Contact Information Section
+Contact details for resident communication:
+- **Mobile Number**: Phone number with icon
+- **Email Address**: Email account for correspondence
+- **Icons**: Font Awesome phone and envelope icons for visual clarity
+
+**Layout**: 2-column responsive grid
+
+#### Identification Section
+Verification and ID documentation:
+- **Valid ID Preview**: Uploaded identification document image
+  - Clickable to open full-size modal preview
+  - Professional border and shadow styling
+  - Hover effects for interactivity
+- **Verification Status Badge**:
+  - Green badge with checkmark for "Verified" residents
+  - Orange badge with clock icon for "Pending Verification"
+  - Easy visual identification of account status
+
+**Layout**: 2-column grid with image on left, status on right
+
+#### Requested Documents History Section
+Table displaying resident's document requests:
+- **Columns**:
+  - **Document Type**: Type of requested document with PDF icon
+  - **Request Date**: Formatted submission date
+  - **Status**: Color-coded badge indicator
+    - Yellow: Pending
+    - Blue: Processing
+    - Green: Approved, Ready to Receive
+    - Gray: Received
+    - Red: Rejected
+  - **Action**: Download button
+    - Enabled only for "Ready to Receive" or "Received" status
+    - Links to download endpoint
+    - Disabled state for pending/processing requests
+
+**Features**:
+- Displays up to 10 most recent requests
+- Hover effects for better interactivity
+- Empty state message with icon when no requests exist
+- Responsive table with horizontal scroll on mobile
+- Direct navigation to full requests page for additional entries
+
+#### Logout Button
+- Positioned at bottom of page in danger red color
+- Sign-out icon with text
+- Confirmation dialog before logout
+- Redirects to logout endpoint
+
+#### Design & Styling
+- **Color Scheme**: 
+  - Primary: #0b63d6 (Blue) for headers, buttons, and accents
+  - Table Header: #3C8E95 (Teal) for professional appearance
+  - Status Badges: Color-coded (green, orange, blue, gray, red)
+  - Background: Light gray (#f8f9fa) for subtle contrast
+- **Layout**: Bootstrap 5 responsive grid system
+- **Typography**: Arial font family throughout
+- **Cards**: White background cards with subtle shadows
+- **Icons**: Font Awesome 6.4.0 for visual indicators
+- **Responsive Breakpoints**:
+  - Desktop (1400px+): Full layout
+  - Tablet (768px-1399px): Adjusted columns
+  - Mobile (<768px): Stacked layout
+
+#### Database Integration
+
+**Queries**:
+1. Resident Data: `SELECT r.*, u.is_verified, u.profile_image FROM residents r LEFT JOIN users u ON r.user_id = u.id WHERE r.user_id = ?`
+2. Documents History: `SELECT id, request_type, created_at, status FROM requests WHERE user_id = ? ORDER BY created_at DESC LIMIT 10`
+3. User Verification: Check `u.is_verified` field for verification status
+
+**Data Sources**:
+- `residents` table: All personal information (name, birthdate, gender, civil status, nationality, occupation, mobile number, valid ID path, profile image)
+- `users` table: Verification status and profile image
+- `requests` table: Document request history with types and statuses
+
+**Helper Functions**:
+- `calculateAge($birthdate)`: Returns array with years, months, days
+- `formatDate($date)`: Formats date as "Month Day, Year"
+- `getStatusBadgeClass($status)`: Returns CSS badge class for status
+
+#### Interactive Features
+
+**JavaScript Functionality**:
+- `openImageModal()`: Opens Bootstrap modal for full-size ID image preview
+- `handleLogout()`: Displays confirmation dialog before logout
+- `downloadDocument()`: Validates document availability before download
+- `viewMoreRequests()`: Navigation to full requests page
+- `showNotification()`: Toast-style notification display
+
+**Bootstrap Modal**:
+- Image preview modal with centered layout
+- Large image display area
+- Professional modal styling with close button
+
+#### Image Modal
+- Full-screen image preview for ID documents
+- Modal title: "Valid ID Preview"
+- Large responsive image display
+- Dismissible close button
+- Professional styling consistent with page design
+
+#### Security Features
+- Session authentication check (residents only)
+- User role verification
+- Data isolation (residents see only their own profile)
+- HTML sanitization with htmlspecialchars()
+- Secure file paths for ID images
+- Prepared SQL statements for all queries
+
+#### User Workflows
+
+**View Profile**:
+1. Navigate to Profile page from sidebar
+2. View all personal information automatically populated
+3. Review verification status
+4. Check document request history
+5. Download completed documents if available
+
+**Edit Profile**:
+1. Click "Edit Profile" button
+2. Redirected to account settings page
+3. Update information
+4. Save changes
+
+**Request Documents**:
+1. View document request history
+2. Click on request to view details
+3. Download completed documents
+4. Navigate to requests page for new requests
+
+#### Design Consistency
+- Matches resident dashboard design patterns
+- Same color scheme and typography as other resident pages
+- Consistent header and sidebar with dashboard
+- Bootstrap 5 grid system for uniformity
+- Professional card-based layout throughout
+- Font Awesome icons matching other pages
+
+#### Files Created/Modified
+- **MODIFIED**: `public/public-pages/profile.php`: Complete rewrite with database queries and helper functions
+  - Fetches resident data with verification status
+  - Calculates age from birthdate
+  - Retrieves document request history
+  - Displays all profile sections with proper formatting
+  - Includes image modal for ID preview
+  
+- **MODIFIED**: `assets/css/public/profile.css`: Comprehensive styling
+  - Profile header with cover photo and picture
+  - Section styling with cards and shadows
+  - Table styling with hover effects
+  - Badge colors for status indicators
+  - Modal styling for image preview
+  - Responsive design for all screen sizes
+  - Typography and spacing consistency
+  
+- **MODIFIED**: `assets/js/public/profile.js`: Interactive features
+  - Image modal functionality
+  - Logout confirmation
+  - Notification system
+  - Document download validation
+  - Helper functions for formatting
+
+#### Responsive Design
+- **Desktop (1400px+)**: Full 3-column grid for personal info, side-by-side layouts for identification
+- **Tablet (768px-1399px)**: 2-column grid, adjusted spacing
+- **Mobile (<768px)**: Single column stack, full-width elements, optimized spacing
+
+#### Empty States
+- When no requested documents: "No requested documents yet" message with inbox icon and link to create request
+- Graceful handling of missing data with N/A defaults
+- User-friendly messaging throughout
+
+#### Performance Considerations
+- Efficient database queries with prepared statements
+- Limited result set (10 most recent documents)
+- CSS optimizations with GPU acceleration
+- Image lazy-loading ready
+- Minimal JavaScript for fast load times
+
+#### Future Enhancement Opportunities
+- Add profile picture upload functionality
+- Add cover photo customization
+- Add profile information edit modal
+- Add document status timeline
+- Add document status notification alerts
+- Add profile export to PDF
+- Add activity log section
+- Add family members section
+- Add emergency contacts section
+- Add document re-upload for rejected applications
+
+---
+
 ## What's New in V2.2.3 (Minor Update)
 
 ## Resident ID System - Automated 7-Digit ID Generation

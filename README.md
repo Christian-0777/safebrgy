@@ -1,3 +1,523 @@
+## What's New in V2.2.5 (Minor Update)
+
+### Resident Account Settings - Comprehensive Settings Dashboard
+
+#### Overview
+A complete resident account settings page featuring 9 major sections with tab-based navigation for managing personal information, contact details, identification, security, notifications, privacy, support, and account actions. The page provides residents with centralized control over all account settings and preferences.
+
+#### Settings Navigation Tabs (9 Sections)
+Tab-based navigation system allowing residents to switch between different settings sections:
+1. **Personal Info** - Profile pictures, personal details
+2. **Contact Info** - Phone numbers, email, emergency contact
+3. **ID** - Valid ID upload and management
+4. **Security** - Password, 2FA, login activity
+5. **Notifications** - Notification preferences
+6. **Privacy** - Data download, privacy policy
+7. **Support** - Contact barangay, feedback, issues
+8. **About** - Version, terms, privacy policy
+9. **Danger Zone** - Deactivate/delete account
+
+#### Section 1: Personal Information
+Comprehensive personal profile management:
+- **Profile Media**:
+  - Profile Picture upload with preview (400x400px recommended, 5MB max)
+  - Cover Photo upload with preview (1200x300px recommended, 10MB max)
+  - Drag-and-drop file upload support
+  
+- **Personal Details Form**:
+  - First Name, Middle Name, Last Name (required)
+  - Suffix dropdown (Jr., Sr., II, III, IV)
+  - Gender dropdown (Male, Female, Other)
+  - Date of Birth with auto-calculated age display
+  - Civil Status dropdown (Single, Married, Widowed, Separated, Divorced)
+  - Nationality and Occupation text fields
+  
+- **Database Updates**: Saves to `residents` table with all personal information
+- **Session Update**: Updates session user data after successful save
+
+#### Section 2: Contact Information
+Complete contact management:
+- **Phone Number**: Main contact number (required) with placeholder
+- **Mobile Number**: Alternative mobile number
+- **Email Address**: Primary email for notifications (required, validated)
+- **Emergency Contact Name**: Contact person name
+- **Emergency Contact Number**: Emergency phone number
+- **Validation**: Email uniqueness check, phone format validation
+- **Database Updates**: Updates both `users` and `residents` tables
+
+#### Section 3: Valid ID Update
+ID document management:
+- **Current ID Display**: Shows previously uploaded ID with full-size preview button
+- **Upload New ID**:
+  - Drag-and-drop upload area with visual feedback
+  - Supported formats: JPG, PNG, PDF (10MB max)
+  - File type and size validation with MIME type verification
+  - Image preview for JPG/PNG files
+  - PDF notification for PDF files
+- **Database Storage**: Saves file path to `residents.valid_id_path`
+- **File Organization**: Uploaded to `/uploads/valid_ids/` directory
+
+#### Section 4: Security Settings
+Account security management:
+- **Change Password**:
+  - Current password verification
+  - New password with strength requirements:
+    - Minimum 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number
+  - Visual password strength indicator (5-level scale)
+  - Password confirmation field
+  - Collapse form for compact display
+  
+- **Two-Factor Authentication (2FA)**:
+  - Toggle switch to enable/disable 2FA
+  - Label shows current status (Enable/Disable)
+  
+- **Login Activity**:
+  - Timeline display of recent login sessions
+  - Shows device type, browser, date/time
+  - Current session highlighted as "Active"
+  - Visual timeline with device icons
+  
+- **Logout All Other Devices**:
+  - Button to sign out from all other devices
+  - Maintains current session
+
+#### Section 5: Notification Preferences
+Customizable notification settings:
+- **Document Request Updates**: Toggle for notification about request status changes
+- **Barangay Announcements**: Toggle for receiving important announcements
+- **Reports Update**: Toggle for report status notifications
+- **Toggle Switches**: Form-check-input components with visual feedback
+- **Default**: All notifications enabled by default
+- **Database Storage**: Saves to session (future: `user_notification_preferences` table)
+
+#### Section 6: Privacy & Data
+Data privacy and management:
+- **Download Personal Data**:
+  - Generates JSON export of all user data
+  - Includes: personal info, requests, reports
+  - Auto-download file naming: `safebrgy-personal-data-YYYY-MM-DD.json`
+  
+- **Privacy Policy Link**:
+  - Direct link to `/external-links/privacy-policy.html`
+  - Opens in new tab
+  
+- **Activity Log**:
+  - Link to view account activity history
+  - Shows recent actions and changes
+
+#### Section 7: Support & Help
+Support and contact options:
+- **Contact Barangay Office**:
+  - Modal form for sending messages
+  - Subject and message fields
+  - Submits via `api/account/send_contact.php`
+  
+- **Submit Feedback**:
+  - Modal form for feedback submission
+  - Feedback type selector (Bug Report, Feature Request, Improvement, General)
+  - Message textarea for detailed feedback
+  
+- **Report an Issue**:
+  - Modal form for reporting technical/security issues
+  - Issue type selector (Technical, Security, Other)
+  - Description and affected page fields
+  - Submits via `api/account/report_issue.php`
+
+#### Section 8: About SafeBrgy
+System information:
+- **Version Information**:
+  - SafeBrgy Version: 1.0.0
+  - Last Updated: June 2024
+  - Status badge showing "You're using the latest version"
+  
+- **Terms & Conditions**:
+  - Link to `/external-links/terms-of-service.html`
+  - Opens in new tab
+  
+- **Privacy Policy**:
+  - Link to `/external-links/privacy-policy.html`
+  - Duplicate link for easy access
+  
+- **Developed By**:
+  - Credits to SafeBrgy Development Team
+
+#### Section 9: Danger Zone
+Destructive account actions:
+- **Deactivate Account**:
+  - Temporarily disables account (reversible)
+  - Warning message: "Your profile will be hidden from other residents"
+  - Note: "You can reactivate it anytime by logging in"
+  - Modal confirmation with optional reason textarea
+  
+- **Delete Account**:
+  - Permanently deletes account and all data
+  - Warning: "This action cannot be reversed"
+  - Lists what will happen (permanent deletion of all data)
+  - Requires typing "DELETE" to confirm (case-sensitive)
+  - Optional reason for deletion
+  - Database transaction with rollback on error
+  - Destroys session and redirects to home
+
+#### Design & Styling
+
+**Color Scheme**:
+- Primary: #0b63d6 (Blue) - headers, buttons, icons
+- Danger: #f32b36 (Red) - danger zone, delete actions
+- Warning: #ffc107 (Yellow) - warnings, cautions
+- Success: #19a964 (Green) - success messages
+- Light: #f8f9fa (Off-white) - backgrounds
+
+**Layout & Typography**:
+- Font: Arial, sans-serif throughout
+- Page Header: 32px bold with icon
+- Tab Navigation: Horizontal scrollable tabs with active state
+- Settings Card: White card with section header and content area
+- Form Elements: Consistent padding, focus states, validation styling
+- Buttons: Inline-flex with icons and text, hover effects
+
+**Responsive Design**:
+- Desktop (1400px+): Full layout with tabs visible
+- Tablet (768px-1399px): Adjusted spacing, 2-column forms
+- Mobile (<576px): Stacked tabs, single-column forms, reduced padding
+
+**Visual Effects**:
+- Tab hover: Border color change to primary blue
+- Tab active: Full primary blue background with white text
+- Button hover: Elevation with translateY(-2px) and shadow
+- Form focus: Blue border with subtle shadow
+- Card hover: Subtle elevation effect
+- Smooth transitions: 0.3s ease on all interactive elements
+
+#### File Upload & Media Handling
+
+**Profile Picture**:
+- Size: 400x400px recommended
+- Format: JPG, PNG
+- Max size: 5MB
+- Preview shows in placeholder
+- Drag-and-drop support
+
+**Cover Photo**:
+- Size: 1200x300px recommended
+- Format: JPG, PNG
+- Max size: 10MB
+- Gradient blue background default
+- Background image overlay on upload
+
+**Valid ID**:
+- Formats: JPG, PNG, PDF
+- Max size: 10MB
+- MIME type validation with finfo
+- Drag-and-drop upload area
+- Image preview for visual formats
+
+#### Form Validation
+
+**Client-Side**:
+- Required field validation
+- Email format validation (regex)
+- Phone format validation
+- Birthdate format validation
+- File type and size checks
+- Password strength indicators
+- Drag-and-drop feedback
+
+**Server-Side**:
+- Prepared statements (SQL injection prevention)
+- Email uniqueness verification
+- Password verification against current hash
+- File MIME type verification
+- File size validation
+- HTML sanitization with htmlspecialchars()
+
+#### Backend API Endpoints (api/account/)
+
+| Endpoint | Method | Function |
+|----------|--------|----------|
+| `update_personal.php` | POST | Save personal information |
+| `update_contact.php` | POST | Save contact details |
+| `update_id.php` | POST | Upload valid ID file |
+| `update_password.php` | POST | Change password with validation |
+| `update_notifications.php` | POST | Save notification preferences |
+| `send_contact.php` | POST | Message barangay office |
+| `send_feedback.php` | POST | Submit feedback |
+| `report_issue.php` | POST | Report issues/bugs |
+| `download_data.php` | GET | Export personal data as JSON |
+| `deactivate_account.php` | POST | Temporarily disable account |
+| `delete_account.php` | POST | Permanently delete account |
+
+#### Security Features
+
+- Session authentication check (residents only)
+- User role verification
+- Prepared SQL statements (all queries)
+- HTML sanitization with htmlspecialchars()
+- Email uniqueness check
+- Current password verification before change
+- Password strength requirements:
+  - Minimum 8 characters
+  - Uppercase, lowercase, numbers required
+- File type validation with MIME verification
+- File size limits (5MB for pictures, 10MB for ID)
+- "DELETE" confirmation text for account deletion
+- Database transactions for data deletion
+- User data isolation (can only access own data)
+
+#### Database Integration
+
+**Tables Used**:
+- `users` table: email, phone, password_hash, created_at
+- `residents` table: first_name, middle_name, last_name, gender, birthdate, civil_status, nationality, occupation, mobile_number, emergency_contact_name, emergency_contact_number, valid_id_path, profile_image_path
+
+**Queries**:
+- SELECT personal/contact info: JOIN residents with users
+- UPDATE operations: Both tables as needed
+- File path storage: Relative paths for uploads
+
+#### Frontend Features
+
+**Tab System**:
+- Active tab highlighting with blue background
+- Content sections toggle with display:none/block
+- Smooth tab switching
+- Scroll-to-top on tab change
+
+**Form Handling**:
+- Real-time validation feedback
+- Required field indicators
+- Collapsible sections (e.g., Change Password)
+- Modal dialogs for confirmations
+- Toast notifications for messages
+
+**File Preview**:
+- Image preview on file selection
+- Drag-and-drop visual feedback
+- File list with remove buttons
+- Progress indicators for uploads
+
+**Password Strength**:
+- Visual strength meter (5-level scale)
+- Color-coded strength indicator
+- Real-time calculation on input
+
+**Modals**:
+- Contact office modal with subject/message
+- Feedback modal with type selector
+- Issue report modal with description
+- Account deactivation confirmation
+- Account deletion confirmation with "DELETE" requirement
+
+#### JavaScript Functionality (assets/js/public/account.js)
+
+**Tab Management**:
+- `document.querySelectorAll('.settings-tab')` event listeners
+- Tab click handler with show/hide logic
+- Active class management
+
+**File Upload Handlers**:
+- `handleProfilePictureChange()`: Validates and previews profile image
+- `handleCoverPhotoChange()`: Validates and previews cover photo
+- `handleIdFileChange()`: Validates ID file with type checking
+
+**Drag-and-Drop**:
+- `handleDragOver()`: Visual feedback on drag
+- `handleDragLeave()`: Reset visual state
+- `handleDrop()`: Process dropped files
+
+**Form Validation**:
+- `handlePersonalInfoSubmit()`: Required field validation
+- `handleContactFormSubmit()`: Email format and required field validation
+- `handleNotificationSubmit()`: Optional field handling
+
+**Security Functions**:
+- `toggleTwoFactor()`: 2FA toggle handling
+- `logoutAllDevices()`: Logout other sessions
+
+**Account Actions**:
+- `downloadPersonalData()`: Triggers JSON download
+- `showDeactivateConfirm()`: Shows deactivation modal
+- `confirmDeactivate()`: Submits deactivation request
+- `showDeleteConfirm()`: Shows deletion modal with confirmation
+- `confirmDelete()`: Submits deletion request
+
+**Utilities**:
+- `showNotification()`: Auto-dismissing alert notifications
+- `calculatePasswordStrength()`: 5-level strength calculation
+- `updatePasswordStrengthIndicator()`: Visual strength display
+
+#### CSS Styling (assets/css/public/account.css)
+
+**Layout**:
+- `.main-content`: Padding-top 80px for header
+- `.container-fluid`: Max-width 1400px
+- `.settings-header`: Page title and description
+- `.settings-tabs`: Horizontal tab navigation
+- `.settings-card`: White card containers with shadows
+- `.section-header`: Card header with background color
+- `.section-content`: Card content with padding
+
+**Forms**:
+- `.form-label`: Bold, uppercase labels
+- `.form-control`: Blue focus state, smooth transitions
+- `.form-select`: Matching control styling
+- `.upload-area`: Dashed border, hover highlight
+
+**Buttons**:
+- `.btn-primary`: Blue background with hover effect
+- `.btn-danger`: Red background for destructive actions
+- `.btn-warning`: Yellow for warnings
+- `.btn-outline-*`: Outlined variants
+- All buttons: Inline-flex with icon + text alignment
+
+**Responsive**:
+- Mobile breakpoint: 576px
+- Tablet breakpoint: 768px
+- Tab stack on mobile
+- Single-column forms on mobile
+- Reduced padding on small screens
+- Full-width buttons on mobile
+
+#### Files Created/Modified
+
+- **UPDATED**: `public/public-pages/account.php` - Complete rewrite with 9 sections and tab navigation
+- **UPDATED**: `assets/css/public/account.css` - Comprehensive styling with responsive design
+- **UPDATED**: `assets/js/public/account.js` - Interactive features and form handling
+- **NEW**: `api/account/update_personal.php` - Personal info update endpoint
+- **NEW**: `api/account/update_contact.php` - Contact info update endpoint
+- **NEW**: `api/account/update_id.php` - Valid ID upload endpoint
+- **NEW**: `api/account/update_password.php` - Password change endpoint
+- **NEW**: `api/account/update_notifications.php` - Notification preferences endpoint
+- **NEW**: `api/account/send_contact.php` - Contact message endpoint
+- **NEW**: `api/account/send_feedback.php` - Feedback submission endpoint
+- **NEW**: `api/account/report_issue.php` - Issue reporting endpoint
+- **NEW**: `api/account/download_data.php` - Personal data export endpoint
+- **NEW**: `api/account/deactivate_account.php` - Account deactivation endpoint
+- **NEW**: `api/account/delete_account.php` - Account deletion endpoint
+
+#### User Workflows
+
+**Update Personal Information**:
+1. Click "Personal Info" tab
+2. Fill in form fields
+3. Upload profile/cover photos (optional)
+4. Click "Save Personal Information"
+5. Success message appears
+
+**Change Password**:
+1. Click "Security" tab
+2. Click "Update" button to expand form
+3. Enter current password
+4. Enter new password (shows strength meter)
+5. Confirm password
+6. Submit to save
+
+**Download Personal Data**:
+1. Click "Privacy" tab
+2. Click "Download Data" button
+3. JSON file auto-downloads to machine
+4. Contains all personal info, requests, reports
+
+**Delete Account**:
+1. Click "Danger Zone" tab
+2. Click "Delete Account" button
+3. Read warning message
+4. Type "DELETE" to confirm
+5. Optionally provide reason
+6. Submit to permanently delete
+
+#### Database Migration Needed
+
+```sql
+-- Optional: Add additional columns for enhanced features
+ALTER TABLE users ADD COLUMN is_active TINYINT(1) DEFAULT 1;
+ALTER TABLE users ADD COLUMN two_factor_enabled TINYINT(1) DEFAULT 0;
+
+-- Create notification preferences table (optional)
+CREATE TABLE user_notification_preferences (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  document_updates TINYINT(1) DEFAULT 1,
+  announcements TINYINT(1) DEFAULT 1,
+  reports TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create feedback table
+CREATE TABLE feedback (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  type VARCHAR(50),
+  message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create issue reports table
+CREATE TABLE issue_reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  type VARCHAR(50),
+  description TEXT,
+  page VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+#### Design Consistency
+- Matches resident dashboard design patterns
+- Same color scheme and typography
+- Consistent header and sidebar with dashboard
+- Bootstrap 5 grid system for uniformity
+- Professional card-based layout throughout
+- Font Awesome icons matching other pages
+
+#### Future Enhancement Opportunities
+- Two-factor authentication setup with authenticator app
+- Profile picture upload with crop functionality
+- Cover photo upload with positioning controls
+- Activity log with detailed action history
+- Login attempt security alerts
+- Device management interface
+- Export data in additional formats (CSV, PDF)
+- Session timeout management
+- Email change verification
+- Phone number verification
+- Account recovery options
+- Backup codes for 2FA
+
+#### Performance Considerations
+- Optimized file upload with size validation
+- Efficient database queries with prepared statements
+- CSS animations using GPU acceleration
+- Lazy-loading for modals and heavy content
+- Session storage for temporary preferences
+- Minimal JavaScript for fast load times
+
+#### Testing Checklist
+- ✓ Tab navigation switches content correctly
+- ✓ Personal info form saves to database
+- ✓ Contact info updates both tables
+- ✓ Valid ID upload with file validation
+- ✓ Password change with strength requirements
+- ✓ Notification preferences save
+- ✓ Download personal data as JSON
+- ✓ Contact/feedback/issue modals display
+- ✓ Account deactivation works
+- ✓ Account deletion requires "DELETE" confirmation
+- ✓ File uploads to correct directory
+- ✓ Responsive design on all screen sizes
+- ✓ All validations work (email, phone, file size)
+- ✓ Error messages display correctly
+- ✓ Success messages appear after updates
+
+---
+
 ## What's New in V2.2.4 (Minor Update)
 
 ### Resident Profile Page - Comprehensive Profile Dashboard

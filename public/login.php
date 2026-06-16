@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
         <div class="text-center mt-3">
-          <p class="mb-1">New to SafeBrgy? <a href="register.php">Register now</a></p>
+          <p class="mb-1">New to SafeBrgy? <a href="../register.php">Register now</a></p>
           <a href="help.php" class="small me-2">Help Center</a>
           <a href="terms.php" class="small me-2">Terms of Use</a>
           <a href="privacy.php" class="small">Privacy Policy</a>

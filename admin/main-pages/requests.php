@@ -42,7 +42,7 @@ $sort = $_GET['sort'] ?? 'newest';
 $query = '
     SELECT r.id, r.request_number, r.request_type, r.purpose, r.location, r.status, r.created_at, r.date_received, r.document_data,
            u.username, u.email, u.phone, u.id as user_id,
-           res.first_name, res.last_name, res.birthdate, res.age, res.gender, res.civil_status, 
+           res.resident_id, res.first_name, res.last_name, res.birthdate, res.age, res.gender, res.civil_status, 
            res.complete_address, res.purok, res.mobile_number, res.valid_id_path
     FROM requests r
     LEFT JOIN users u ON r.user_id = u.id
@@ -315,12 +315,20 @@ $stats = $statsStmt->fetch();
                           <h6 class="mb-3 text-primary"><i class="fas fa-user-circle"></i> Applicant Information</h6>
                           <div class="row mb-4">
                             <div class="col-md-6">
+                              <strong>Resident ID:</strong> 
+                              <p><?php echo htmlspecialchars($req['resident_id'] ?? 'N/A'); ?></p>
+                            </div>
+                            <div class="col-md-6">
                               <strong>Full Name:</strong> 
                               <p><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
                             </div>
+                          </div>
+                          <div class="row mb-4">
                             <div class="col-md-6">
                               <strong>Age:</strong> 
                               <p><?php echo htmlspecialchars($req['age'] ?? 'N/A'); ?></p>
+                            </div>
+                            <div class="col-md-6">
                             </div>
                           </div>
                           <div class="row mb-4">

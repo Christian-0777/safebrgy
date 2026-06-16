@@ -51,6 +51,8 @@ function sendMail(string $recipient, string $subject, string $htmlBody, string $
             $mail->AltBody = $plainBody;
             if ($mail->send()) {
                 return true;
+            } else {
+                error_log('SMTP mail failed to send to ' . $recipient . ': ' . $mail->ErrorInfo);
             }
         } catch (PHPMailerException $exception) {
             error_log('SMTP mail error: ' . $exception->getMessage());

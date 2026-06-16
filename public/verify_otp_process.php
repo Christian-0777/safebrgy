@@ -42,14 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Insert resident
                 $stmt = $pdo->prepare('
                     INSERT INTO residents (
-                        user_id, first_name, middle_name, last_name, birthdate, age, place_of_birth,
+                        resident_id, user_id, first_name, middle_name, last_name, birthdate, age, place_of_birth,
                         gender, civil_status, nationality, religion, complete_address, purok,
                         years_of_residency, mobile_number, voter_status, employment_status, occupation,
                         household_head, emergency_contact_name, number_of_family_member,
                         educational_attainment, blood_type, disabilities, valid_id_path, profile_image_path
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ');
                 $stmt->execute([
+                    $pending['resident_id'],
                     $user_id,
                     $pending['first_name'],
                     $pending['middle_name'],

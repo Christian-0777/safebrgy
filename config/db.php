@@ -51,4 +51,35 @@ function safeBrgy_db_connect(): PDO
     }
 }
 
+/**
+ * Generate a unique 7-digit resident ID
+ * @return string A unique 7-digit resident ID
+ */
+function generateResidentId(): string
+{
+    $pdo = safeBrgy_db_connect();
+    
+    $maxAttempts = 100;
+    $attempts = 0;
+    
+    while ($attempts < $maxAttempts) {
+        // Generate a random 7-digit number (1000000 to 9999999)
+        $residentId = str_pad(random_int(1000000, 9999999), 7, '0', STR_PAD_LEFT);
+        
+        // Check if this ID already exists
+        $stmt = $pdo->prepare('SELECT id FROM residents WHERE resident_id = ?');
+        $stmt->execute([$residentId]);
+        
+        if (!$stmt->fetch()) {
+            // ID is unique
+            return $residentId;
+        }
+        
+        $attempts++;
+    }
+    
+    // Fallback - should rarely happen
+    throw new Exception('Failed to generate unique resident ID after maximum attempts');
+}
+
 $pdo = safeBrgy_db_connect();

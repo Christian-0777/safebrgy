@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="row">
       <div class="col-md-6">
         <h6>Personal Information</h6>
+        <p><strong>Resident ID:</strong> ' . htmlspecialchars($user['resident_id'] ?? 'N/A') . '</p>
         <p><strong>Name:</strong> ' . htmlspecialchars($user['first_name'] . ' ' . $user['middle_name'] . ' ' . $user['last_name']) . '</p>
         <p><strong>Email:</strong> ' . htmlspecialchars($user['email']) . '</p>
         <p><strong>Phone:</strong> ' . htmlspecialchars($user['phone'] ?? 'N/A') . '</p>

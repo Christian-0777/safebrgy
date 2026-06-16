@@ -81,9 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Generate OTP
         $otp = generateOTP();
         $otp_expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+        
+        // Generate Resident ID
+        $resident_id = generateResidentId();
 
         // Store registration data in session
         $_SESSION['pending_registration'] = [
+            'resident_id' => $resident_id,
             'first_name' => $_POST['first_name'],
             'middle_name' => $_POST['middle_name'] ?? '',
             'last_name' => $_POST['last_name'],

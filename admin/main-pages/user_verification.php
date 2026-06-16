@@ -18,7 +18,7 @@ if ($adminId) {
 
 // Fetch unverified users
 $stmt = $pdo->prepare('
-    SELECT u.id, u.username, u.email, u.phone, u.created_at, r.first_name, r.last_name, r.complete_address
+    SELECT u.id, u.username, u.email, u.phone, u.created_at, r.resident_id, r.first_name, r.last_name, r.complete_address
     FROM users u
     LEFT JOIN residents r ON u.id = r.user_id
     WHERE u.role = :role AND u.is_verified = 0
@@ -29,7 +29,7 @@ $unverifiedUsers = $stmt->fetchAll();
 
 // Fetch verified users
 $stmt = $pdo->prepare('
-    SELECT u.id, u.username, u.email, u.phone, u.created_at, u.updated_at, r.first_name, r.last_name, r.complete_address
+    SELECT u.id, u.username, u.email, u.phone, u.created_at, u.updated_at, r.resident_id, r.first_name, r.last_name, r.complete_address
     FROM users u
     LEFT JOIN residents r ON u.id = r.user_id
     WHERE u.role = :role AND u.is_verified = 1
@@ -158,6 +158,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
         <table class="table table-striped align-middle mb-0">
           <thead class="table-dark">
             <tr>
+              <th>Resident ID</th>
               <th>User Information</th>
               <th>Register Date</th>
               <th>Address</th>
@@ -168,6 +169,9 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
             <?php if (count($unverifiedUsers) > 0): ?>
               <?php foreach ($unverifiedUsers as $u): ?>
                 <tr>
+                  <td>
+                    <strong><?php echo htmlspecialchars($u['resident_id'] ?? 'N/A'); ?></strong>
+                  </td>
                   <td>
                     <strong><?php echo htmlspecialchars(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '') ?: $u['username']); ?></strong><br>
                     <small><?php echo htmlspecialchars($u['email']); ?> | <?php echo htmlspecialchars($u['phone'] ?? 'N/A'); ?></small>
@@ -183,7 +187,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="4" class="text-center text-muted py-4">
+                <td colspan="5" class="text-center text-muted py-4">
                   <i class="fas fa-check-circle fa-2x mb-2 d-block text-success"></i>
                   No pending verifications
                 </td>
@@ -201,6 +205,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
         <table class="table table-striped align-middle mb-0">
           <thead class="table-dark">
             <tr>
+              <th>Resident ID</th>
               <th>Name</th>
               <th>Date of Registration</th>
               <th>Date of Approval</th>
@@ -212,6 +217,9 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
             <?php if (count($verifiedUsers) > 0): ?>
               <?php foreach ($verifiedUsers as $u): ?>
                 <tr>
+                  <td>
+                    <strong><?php echo htmlspecialchars($u['resident_id'] ?? 'N/A'); ?></strong>
+                  </td>
                   <td>
                     <strong><?php echo htmlspecialchars(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '') ?: $u['username']); ?></strong>
                   </td>
@@ -225,7 +233,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="5" class="text-center text-muted py-4">
+                <td colspan="6" class="text-center text-muted py-4">
                   <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                   No verified accounts yet
                 </td>

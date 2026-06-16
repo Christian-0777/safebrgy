@@ -1,4 +1,67 @@
-## What's New in V2.2.2 (Minor Update)
+## What's New in V2.2.3 (Minor Update)
+
+## Resident ID System - Automated 7-Digit ID Generation
+
+#### Overview
+A new resident identification system that automatically generates unique 7-digit resident IDs upon successful registration. Each resident receives a permanent identifier stored in their profile for tracking and identification purposes within the barangay system.
+
+#### Key Features
+- **Automatic ID Generation**: 7-digit numeric IDs (1000000-9999999) generated during registration
+- **Unique Identifier System**: Each resident receives a unique ID with database-level uniqueness constraints
+- **Registration Integration**: ID is assigned immediately upon successful OTP verification and account creation
+- **Permanent Storage**: Resident IDs are stored in the `residents` table and linked to user profiles
+
+#### Technical Implementation
+
+**Database Schema Updates**:
+- Added `resident_id VARCHAR(7) UNIQUE NOT NULL` field to `residents` table
+- Positioned as the second column for easy reference
+- Unique constraint ensures no duplicate IDs can exist
+
+**ID Generation Function** (`generateResidentId()` in `config/db.php`):
+- Generates random 7-digit numbers within the range 1000000-9999999
+- Performs database uniqueness verification before assigning
+- Implements retry logic with maximum 100 attempts for ID generation
+- Throws exception if unique ID cannot be generated (safeguard against infinite loops)
+
+**Registration Flow Integration**:
+- ID is generated during initial registration form submission
+- ID is stored in session alongside other pending registration data
+- ID is permanently saved to database upon successful OTP verification
+- ID is available immediately for resident identification and tracking
+
+#### How It Works
+1. Resident completes registration form
+2. System generates unique 7-digit resident ID
+3. ID is temporarily stored in session during OTP verification step
+4. Upon successful OTP verification, resident account is created with assigned ID
+5. Resident ID can be used for identification, document tracking, and system queries
+6. ID remains permanent throughout the resident's account lifecycle
+
+#### Database Queries
+- `generateResidentId()`: Generates and validates unique 7-digit IDs
+  ```php
+  SELECT id FROM residents WHERE resident_id = ?
+  ```
+- Ensures uniqueness before ID assignment to prevent conflicts
+
+#### Files Modified
+- `sql/safebrgy_schema.sql`: Added `resident_id` column to residents table
+- `config/db.php`: Added `generateResidentId()` helper function
+- `register.php`: Integrated ID generation into registration process
+- `public/verify_otp_process.php`: Updated to store resident_id during account creation
+
+#### Future Enhancements
+- Display resident ID on resident profile page
+- Include resident ID in certificates and documents
+- Use resident ID for advanced search and filtering
+- Integrate resident ID into admin tracking systems
+- Generate resident ID cards or badges
+- API endpoints for resident ID lookups
+
+---
+
+# What's New in V2.2.2 (Minor Update)
 
 ### Admin Profile Page - Complete Profile & Activity Dashboard
 

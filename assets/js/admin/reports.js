@@ -61,6 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Resident ID:</strong> <p>${escapeHtml(report.resident_id || 'N/A')}</p>
+          </div>
+          <div class="col-md-6">
+            <strong>Reporter:</strong> <p>${escapeHtml(reporterName)}</p>
+          </div>
+        </div>
+
         <div class="mb-3">
           <strong>Title:</strong> <p>${escapeHtml(report.title || 'Untitled')}</p>
         </div>
@@ -81,11 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="row mb-3">
           <div class="col-md-6">
-            <strong>Reporter:</strong> <p>${escapeHtml(reporterName)}</p>
-          </div>
-          <div class="col-md-6">
             <strong>Reporter Email:</strong> <p>${escapeHtml(report.email || 'N/A')}</p>
           </div>
+          <div class="col-md-6"></div>
         </div>
 
         ${attachmentsHtml}

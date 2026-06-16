@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $reportId = $_POST['id'] ?? 0;
         
         $stmt = $pdo->prepare('
-            SELECT r.*, u.username, u.email, res.first_name, res.last_name
+            SELECT r.*, u.username, u.email, res.resident_id, res.first_name, res.last_name
             FROM reports r
             LEFT JOIN users u ON r.user_id = u.id
             LEFT JOIN residents res ON u.id = res.user_id
@@ -53,7 +53,7 @@ $search = $_GET['search'] ?? '';
 
 // Build query for reports
 $query = '
-    SELECT r.id, r.case_number, r.title, r.description, r.report_type, r.location, r.status, r.created_at, r.updated_at, u.username, u.email, res.first_name, res.last_name
+    SELECT r.id, r.case_number, r.title, r.description, r.report_type, r.location, r.status, r.created_at, r.updated_at, u.username, u.email, res.resident_id, res.first_name, res.last_name
     FROM reports r
     LEFT JOIN users u ON r.user_id = u.id
     LEFT JOIN residents res ON u.id = res.user_id

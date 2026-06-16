@@ -1,3 +1,224 @@
+## What's New in V2.2.2 (Minor Update)
+
+### Admin Profile Page - Complete Profile & Activity Dashboard
+
+#### Overview
+A comprehensive admin profile page displaying personal admin information, account statistics, activity logs, and profile management options. The page provides administrators with a complete overview of their account and system activities.
+
+#### Admin Information Section
+Personal admin profile card featuring:
+- **Profile Picture**: Circular avatar with initial letter fallback for admins without profile images
+- **Admin Name**: Large heading with admin username
+- **Admin Role Badge**: "System Administrator" role indicator with badge icon
+- **Contact Information**:
+  - Email Address with envelope icon
+  - Contact Number with phone icon
+  - Date Joined (formatted as "Month Day, Year")
+  - Last Login (formatted as "Month Day, Year at H:MM A")
+- **Edit Profile Button**: Direct link to account_settings.php for profile updates
+- **Responsive Layout**: Profile picture on left (mobile: top), info in center, edit button on right (mobile: bottom)
+
+#### Account Statistics Section
+Four color-coded statistic cards displaying admin activity metrics:
+
+1. **Total Residents Managed** (Blue card)
+   - Icon: Users icon (#007bff)
+   - Count: Total verified residents
+   - Data Source: Residents joined with verified users table
+
+2. **Documents Processed** (Green card)
+   - Icon: File-check icon (#28a745)
+   - Count: Approved/completed requests
+   - Status filter: 'Approved', 'Ready to Receive', 'Received'
+
+3. **Announcements Posted** (Yellow card)
+   - Icon: Bullhorn icon (#ffc107)
+   - Count: Announcements created by this admin
+   - Filtered by author_id from announcements table
+
+4. **Cases Handled** (Red card)
+   - Icon: Briefcase icon (#dc3545)
+   - Count: Resolved/dismissed reports
+   - Status filter: 'Resolved', 'Dismissed'
+
+**Card Features**:
+- Flexbox layout with icon and content side-by-side
+- Color-coded left border indicators matching icon color
+- Large readable numbers with number_format() for thousands separator
+- Responsive grid layout (4 columns desktop, 2 columns tablet, 1 column mobile)
+- Hover effects with elevation and shadow animations
+
+#### Activity Log Section
+Comprehensive activity tracking table displaying admin actions:
+
+**Table Features**:
+- Columns:
+  - **Date & Time**: Formatted timestamp (Mon DD, YYYY at H:i A) with calendar icon
+  - **Activity**: Action description with optional metadata
+- Display: Latest activities shown on top (ORDER BY created_at DESC)
+- Limit: Shows up to 20 most recent logs
+- Metadata Display: JSON metadata parsed and displayed as secondary text
+- Empty State: "No activity logs available" message with inbox icon when no data
+- Table Styling: 
+  - Header with light gray background (#f8f9fa)
+  - Row hover effects for interactivity
+  - Responsive design with horizontal scroll on mobile
+
+**Data Source**: Queries `admin_logs` table filtered by admin_id
+
+#### Action Buttons Section
+Two action buttons at the bottom of the page:
+
+1. **Download Information Button** (Secondary gray button)
+   - Icon: Download icon
+   - Function: Exports admin profile data as CSV file
+   - Exports:
+     - Profile Information (Name, Email, Phone, Date Joined, Last Login)
+     - Account Statistics (Residents Managed, Documents Processed, Announcements, Cases Handled)
+   - File naming: `admin-profile-{timestamp}.csv`
+   - CSV Format: Two-column key-value pairs
+
+2. **Logout Button** (Danger red button)
+   - Icon: Sign-out icon
+   - Function: Logs out admin with confirmation dialog
+   - Confirmation: "Are you sure you want to logout?"
+   - Redirects to: `admin/logout.php`
+   - Form submission on confirm
+
+#### Download Information Feature
+**Functionality**:
+- Extracts profile data from visible page elements using DOM queries
+- Generates CSV content with headers and formatted data
+- Creates downloadable file with auto-generated filename including timestamp
+- Shows success notification after download
+- Toast notification displays: "Profile information downloaded successfully!"
+
+**CSV Format**:
+```
+"Admin Profile Information","June 16, 2026 2:30 PM"
+""
+"Profile Information",""
+"Name","John Admin"
+"Email","admin@example.com"
+"Contact Number","+63 912 345 6789"
+"Date Joined","June 01, 2026"
+"Last Login","June 16, 2026 at 2:00 PM"
+""
+"Account Statistics",""
+"Total Residents Managed","1,250"
+"Documents Processed","487"
+"Announcements Posted","23"
+"Cases Handled","156"
+```
+
+#### Design & Styling
+
+**Color Scheme**:
+- Primary: #007bff (Blue) - for statistics and primary actions
+- Success: #28a745 (Green) - for positive metrics
+- Warning: #ffc107 (Yellow) - for caution metrics
+- Danger: #dc3545 (Red) - for important metrics
+- Secondary: #6c757d (Gray) - for secondary actions
+- Light: #f8f9fa (Off-white) - for backgrounds
+
+**Layout & Typography**:
+- Font: Arial, sans-serif throughout
+- Admin Name: 28px, font-weight 700
+- Section Titles: 18px with bottom border and icon
+- Stat Values: 28px bold with color-coding
+- Regular Text: 14px for body content
+- Labels: 12px uppercase with letter-spacing
+
+**Visual Effects**:
+- Card hover: Elevation with translateY(-3px) and enhanced shadow
+- Shadow: 0 2px 4px rgba(0,0,0,0.1) base, 0 4px 12px on hover
+- Transitions: All 0.3s ease for smooth animations
+- Profile Picture: 150px circular with 4px border and shadow
+- Avatar Fallback: Gradient blue background with large white letter
+
+#### Responsive Design
+
+**Desktop (1400px+)**:
+- Admin info card: 3-column layout (picture | info | button)
+- Statistics: 4-column grid
+- Full-width layout with max-width 1400px
+
+**Tablet (768px - 1399px)**:
+- Admin info card: Info section wraps below picture
+- Statistics: 2-column grid
+- Button centers or stacks based on space
+
+**Mobile (<576px)**:
+- Admin info card: Stack vertically (picture, info, button)
+- Statistics: 1-column stack
+- Activity table: Responsive text size reduction
+- Action buttons: Full-width stack
+
+#### Database Integration
+
+**Queries**:
+1. Admin Info: SELECT username, email, phone, profile_image, created_at, updated_at FROM users
+2. Residents Managed: SELECT COUNT(*) FROM residents r JOIN users u ON r.user_id = u.id WHERE u.is_verified = 1
+3. Documents Processed: SELECT COUNT(*) FROM requests WHERE status IN ('Approved', 'Ready to Receive', 'Received')
+4. Announcements Posted: SELECT COUNT(*) FROM announcements WHERE author_id = :adminId
+5. Cases Handled: SELECT COUNT(*) FROM reports WHERE status IN ('Resolved', 'Dismissed')
+6. Last Login: SELECT created_at FROM admin_logs WHERE admin_id = :adminId ORDER BY created_at DESC LIMIT 1
+7. Activity Logs: SELECT * FROM admin_logs WHERE admin_id = :adminId ORDER BY created_at DESC LIMIT 20
+
+**Prepared Statements**: All queries use prepared statements with parameterized queries for SQL injection prevention
+
+#### Frontend Features
+
+**JavaScript Functionality**:
+- Event listeners for Download and Logout buttons
+- DOM queries to extract profile data from page elements
+- CSV generation with proper escaping and formatting
+- File download mechanism using Blob and data URI
+- Toast notification system with animations
+- Logout confirmation dialog with preventDefault
+
+**Animations**:
+- Notification slide-in from right (0.3s ease)
+- Notification slide-out to right before removal
+- Smooth CSS transitions on all interactive elements
+- Hover effects on stat cards and buttons
+
+#### Security Features
+
+- Session authentication check via `admin_protect.php`
+- Prepared statements for all database queries
+- HTML sanitization with htmlspecialchars()
+- User data isolation (admins see only their own profile)
+- Logout confirmation to prevent accidental logouts
+- No sensitive data in browser console
+
+#### Files Created/Modified
+
+- **admin/main-pages/profile.php**: Complete profile page with database integration
+- **assets/css/admin/profile.css**: Comprehensive styling with responsive design
+- **assets/js/admin/profile.js**: Download, logout, and notification functionality
+- **Bootstrap 5.3.0**: CDN integration for responsive grid system
+
+#### Design Consistency
+
+- Follows admin dashboard design patterns
+- Uses same color scheme and typography as other admin pages
+- Consistent stat card styling with dashboard
+- Responsive Bootstrap 5 grid system matching other pages
+- Professional card-based layout throughout
+- Same icons and visual hierarchy as dashboard
+
+#### Files Modified/Referenced
+
+- `admin/main-pages/profile.php`: Profile page main file
+- `assets/css/admin/profile.css`: Profile page styling
+- `assets/js/admin/profile.js`: Profile page JavaScript
+- `assets/css/shared/`: Shared header and sidebar styles
+- `admin/main-pages/account_settings.php`: Edit profile destination
+- `admin/logout.php`: Logout destination
+
+---
+
 ## What's New in V2.2.1 (Minor Update)
 
 ### Admin User Verification Page - Status Cards Redesign

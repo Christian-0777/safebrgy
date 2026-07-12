@@ -1,0 +1,506 @@
+/* SafeBrgy Reports Page Styles */
+
+* {
+  font-family: Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+p, span, a, button, .btn, label {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.main-content {
+  padding-top: 80px;
+  min-height: calc(100vh - 80px);
+  background-color: #f8f9fa;
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============== PAGE HEADER ============== */
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.btn-create-report {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-create-report:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  color: white;
+}
+
+/* ============== STATUS TRACKER SECTION ============== */
+
+.status-tracker-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+  margin-top: 0;
+}
+
+.tracker-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  height: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 5px solid #007bff;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tracker-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.tracker-card.pending {
+  border-left-color: #ffc107;
+}
+
+.tracker-card.ongoing {
+  border-left-color: #17a2b8;
+}
+
+.tracker-card.resolved {
+  border-left-color: #28a745;
+}
+
+.tracker-card.dismissed {
+  border-left-color: #dc3545;
+}
+
+.tracker-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #007bff;
+}
+
+.tracker-card.pending .tracker-icon {
+  color: #ffc107;
+}
+
+.tracker-card.ongoing .tracker-icon {
+  color: #17a2b8;
+}
+
+.tracker-card.resolved .tracker-icon {
+  color: #28a745;
+}
+
+.tracker-card.dismissed .tracker-icon {
+  color: #dc3545;
+}
+
+.tracker-content {
+  margin-bottom: 16px;
+}
+
+.tracker-value {
+  font-size: 40px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.tracker-label {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ============== SEARCH & FILTER SECTION ============== */
+
+.search-filter-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  color: #999;
+  pointer-events: none;
+}
+
+.search-box .form-control {
+  padding-left: 36px;
+  border-radius: 8px;
+}
+
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* ============== REPORTS TABLE SECTION ============== */
+
+.reports-table-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table thead th {
+  font-weight: 600;
+  color: #333;
+  padding: 16px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  padding: 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.case-number {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.badge {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-view-report {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-view-report:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.text-muted {
+  color: #999 !important;
+}
+
+.text-muted i {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* ============== MODAL STYLES ============== */
+
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header .modal-title {
+  font-weight: 700;
+  color: #333;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+/* ============== PICTURE UPLOAD ============== */
+
+.picture-upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.picture-upload-area:hover {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.picture-upload-area i {
+  font-size: 32px;
+  color: #007bff;
+  margin-bottom: 12px;
+}
+
+.picture-upload-area p {
+  margin: 12px 0 0 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.picture-upload-area small {
+  display: block;
+  color: #999;
+  margin-top: 4px;
+}
+
+#picturePreview {
+  position: relative;
+}
+
+.picture-preview-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.picture-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.picture-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.picture-remove-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* ============== REPORT DETAILS MODAL ============== */
+
+.report-detail-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.report-detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 14px;
+}
+
+.report-detail-image {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+/* ============== RESPONSIVE DESIGN ============== */
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 70px;
+  }
+
+  .container-fluid {
+    padding: 12px !important;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .btn-create-report {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .tracker-card {
+    padding: 16px;
+  }
+
+  .tracker-value {
+    font-size: 32px;
+  }
+
+  .tracker-icon {
+    font-size: 24px;
+  }
+
+  .search-filter-section {
+    padding: 12px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .btn-view-report {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .modal-dialog {
+    margin: 10px;
+  }
+
+  .picture-upload-area {
+    padding: 30px 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .tracker-value {
+    font-size: 28px;
+  }
+
+  .tracker-icon {
+    font-size: 20px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 10px;
+    font-size: 11px;
+  }
+
+  .btn-view-report {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .d-flex {
+    flex-direction: column;
+  }
+
+  .align-items-center {
+    align-items: flex-start !important;
+  }
+}

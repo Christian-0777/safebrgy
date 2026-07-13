@@ -1,0 +1,44 @@
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Composer dependencies
+/vendor/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+storage/logs/
+
+# Cache
+.cache/
+tmp/
+*.cache
+
+# Uploads (keep directory, ignore contents)
+public/assets/uploads/*
+!public/assets/uploads/.gitkeep
+
+# IDE / Project settings
+.vscode/
+.idea/
+*.iml
+
+# Node / Frontend (if used)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# PHPUnit / Testing
+.phpunit.result.cache
+coverage/

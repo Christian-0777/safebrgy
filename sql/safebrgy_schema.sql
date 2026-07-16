@@ -56,9 +56,10 @@ CREATE TABLE IF NOT EXISTS requests (
   resident_name VARCHAR(150) NOT NULL,
   resident_email VARCHAR(150) NOT NULL,
   supporting_file VARCHAR(255) NULL,
-  status ENUM('Pending','Approved','Rejected','Ready for Pickup') NOT NULL DEFAULT 'Pending',
+  status ENUM('Pending','Approved','Rejected','Ready for Pickup','Processing','Received') NOT NULL DEFAULT 'Pending',
   submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  date_received DATETIME NULL,
   INDEX idx_requests_email (resident_email),
   INDEX idx_requests_status (status)
 ) ENGINE=InnoDB;

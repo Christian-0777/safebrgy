@@ -21,13 +21,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     
     if ($action === 'update_status') {
-        $requestId = $_POST['request_id'] ?? 0;
-        $newStatus = $_POST['status'] ?? '';
-        $dateReceived = ($newStatus === 'Received') ? date('Y-m-d H:i:s') : null;
-        
-        $stmt = $pdo->prepare('UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?');
-        $result = $stmt->execute([$newStatus, $requestId]);
-        
+        $requestId = (int) ($_POST['request_id'] ?? 0);
+        $newStatus = trim($_POST['status'] ?? '');
+        $allowedStatuses = ['Pending', 'Approved', 'Rejected', 'Processing', 'Ready for Pickup', 'Received'];
+
+        if (!in_array($newStatus, $allowedStatuses, true) || $requestId <= 0) {
+            echo json_encode(['success' => false]);
+            exit;
+        }
+
+        $hasDateReceivedColumn = (bool) $pdo->query("SHOW COLUMNS FROM requests LIKE 'date_received'")->fetch();
+
+        if ($hasDateReceivedColumn) {
+            $stmt = $pdo->prepare('UPDATE requests SET status = ?, date_received = CASE WHEN ? = "Received" THEN NOW() ELSE NULL END, updated_at = NOW() WHERE id = ?');
+            $result = $stmt->execute([$newStatus, $newStatus, $requestId]);
+        } else {
+            $stmt = $pdo->prepare('UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?');
+            $result = $stmt->execute([$newStatus, $requestId]);
+        }
+
         echo json_encode(['success' => $result]);
         exit;
     }
@@ -43,10 +55,15 @@ $requestNumberColumn = in_array('request_number', $requestsColumns, true) ? 'req
 $requestTypeColumn = in_array('request_type', $requestsColumns, true) ? 'request_type' : (in_array('document_type', $requestsColumns, true) ? 'document_type' : null);
 $createdAtColumn = in_array('created_at', $requestsColumns, true) ? 'created_at' : (in_array('submitted_at', $requestsColumns, true) ? 'submitted_at' : 'id');
 $dateReceivedColumn = in_array('date_received', $requestsColumns, true) ? 'date_received' : null;
+$hasDateReceivedColumn = in_array('date_received', $requestsColumns, true);
 $documentDataColumn = in_array('document_data', $requestsColumns, true) ? 'document_data' : null;
-$purposeColumn = in_array('purpose', $requestsColumns, true) ? 'purpose' : null;
+$purposeColumn = in_array('purpose', $requestsColumns, true) ? 'r.purpose' : null;
 $locationColumn = in_array('location', $requestsColumns, true) ? 'location' : null;
 $hasUserIdColumn = in_array('user_id', $requestsColumns, true);
+
+$purposeSelect = $purposeColumn
+    ? 'COALESCE(r.purpose, bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose'
+    : 'COALESCE(bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose';
 
 $selectParts = [
     'r.id',
@@ -56,7 +73,7 @@ $selectParts = [
     $createdAtColumn ? "r.$createdAtColumn as created_at" : 'NULL as created_at',
     $dateReceivedColumn ? "r.$dateReceivedColumn as date_received" : 'NULL as date_received',
     $documentDataColumn ? "r.$documentDataColumn as document_data" : 'NULL as document_data',
-    $purposeColumn ? "r.$purposeColumn as purpose" : 'NULL as purpose',
+    $purposeSelect,
     $locationColumn ? "r.$locationColumn as location" : 'NULL as location',
     'u.username',
     'u.email',
@@ -80,6 +97,10 @@ $query = 'SELECT ' . implode(', ', $selectParts) . '
     FROM requests r
     LEFT JOIN users u ON ' . ($hasUserIdColumn ? 'r.user_id = u.id' : 'u.email = r.resident_email') . '
     LEFT JOIN residents res ON u.id = res.user_id
+    LEFT JOIN barangay_clearance bc ON bc.request_id = r.id
+    LEFT JOIN barangay_residency br ON br.request_id = r.id
+    LEFT JOIN barangay_indigency bi ON bi.request_id = r.id
+    LEFT JOIN barangay_business_clearance bb ON bb.request_id = r.id
     WHERE 1=1
 ';
 
@@ -117,8 +138,8 @@ $statsQuery = '
         COUNT(*) as total,
         SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending,
         SUM(CASE WHEN status = "Approved" THEN 1 ELSE 0 END) as approved,
-        SUM(CASE WHEN status = "Processing" THEN 1 ELSE 0 END) as processing,
-        SUM(CASE WHEN status = "Received" THEN 1 ELSE 0 END) as received
+        SUM(CASE WHEN status = "Ready for Pickup" THEN 1 ELSE 0 END) as ready_for_pickup,
+        SUM(CASE WHEN status = "Rejected" THEN 1 ELSE 0 END) as rejected
     FROM requests
 ';
 $statsStmt = $pdo->prepare($statsQuery);
@@ -214,14 +235,14 @@ $stats = $statsStmt->fetch();
         </div>
         <div class="col-md-3">
           <div class="stat-card">
-            <div class="stat-value"><?php echo $stats['processing']; ?></div>
-            <div class="stat-label">Processing</div>
+            <div class="stat-value"><?php echo $stats['approved']; ?></div>
+            <div class="stat-label">Approved</div>
           </div>
         </div>
         <div class="col-md-3">
           <div class="stat-card">
-            <div class="stat-value"><?php echo $stats['received']; ?></div>
-            <div class="stat-label">Received</div>
+            <div class="stat-value"><?php echo $stats['ready_for_pickup']; ?></div>
+            <div class="stat-label">Ready for Pickup</div>
           </div>
         </div>
       </div>
@@ -242,7 +263,7 @@ $stats = $statsStmt->fetch();
                 <option value="Pending" <?php echo $status === 'Pending' ? 'selected' : ''; ?>>Pending</option>
                 <option value="Approved" <?php echo $status === 'Approved' ? 'selected' : ''; ?>>Approved</option>
                 <option value="Processing" <?php echo $status === 'Processing' ? 'selected' : ''; ?>>Processing</option>
-                <option value="Ready to Receive" <?php echo $status === 'Ready to Receive' ? 'selected' : ''; ?>>Ready to Receive</option>
+                <option value="Ready for Pickup" <?php echo $status === 'Ready for Pickup' ? 'selected' : ''; ?>>Ready for Pickup</option>
                 <option value="Received" <?php echo $status === 'Received' ? 'selected' : ''; ?>>Received</option>
                 <option value="Rejected" <?php echo $status === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
               </select>
@@ -316,13 +337,13 @@ $stats = $statsStmt->fetch();
                           'Pending' => 'warning',
                           'Approved' => 'info',
                           'Processing' => 'primary',
-                          'Ready to Receive' => 'success',
-                          'Received' => 'success',
+                          'Ready for Pickup' => 'success',
+                          'Received' => 'secondary',
                           'Rejected' => 'danger',
                           default => 'secondary'
                         };
                       ?>">
-                        <?php echo htmlspecialchars($req['status']); ?>
+                        <?php echo htmlspecialchars($req['status'] ?: 'Unknown'); ?>
                       </span>
                     </td>
                     <td>
@@ -465,7 +486,7 @@ $stats = $statsStmt->fetch();
                               <option value="Pending" <?php echo $req['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
                               <option value="Approved" <?php echo $req['status'] === 'Approved' ? 'selected' : ''; ?>>Approved</option>
                               <option value="Processing" <?php echo $req['status'] === 'Processing' ? 'selected' : ''; ?>>Processing</option>
-                              <option value="Ready to Receive" <?php echo $req['status'] === 'Ready to Receive' ? 'selected' : ''; ?>>Ready to Receive</option>
+                              <option value="Ready for Pickup" <?php echo $req['status'] === 'Ready for Pickup' ? 'selected' : ''; ?>>Ready for Pickup</option>
                               <option value="Received" <?php echo $req['status'] === 'Received' ? 'selected' : ''; ?>>Received</option>
                               <option value="Rejected" <?php echo $req['status'] === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
                             </select>

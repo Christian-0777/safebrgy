@@ -130,12 +130,21 @@ $requests = $stmt->fetchAll();
                 </tr>
               <?php else: ?>
                 <?php foreach ($requests as $request): ?>
+                  <?php $statusLabel = trim($request['status'] ?? '') ?: 'Unknown'; ?>
+                  <?php $remarks = match ($statusLabel) {
+                      'Approved' => 'Approved',
+                      'Rejected' => 'Denied',
+                      'Processing' => 'Processing',
+                      'Ready for Pickup' => 'Ready for Pickup',
+                      'Received' => 'Received',
+                      default => 'Pending review',
+                  }; ?>
                   <tr>
                     <td><strong><?php echo htmlspecialchars($request['reference_no']); ?></strong></td>
                     <td><?php echo htmlspecialchars($request['document_type']); ?></td>
                     <td><?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($request['submitted_at']))); ?></td>
-                    <td><span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $request['status'])); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-                    <td>Pending review</td>
+                    <td><span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $statusLabel)); ?>"><?php echo htmlspecialchars($statusLabel); ?></span></td>
+                    <td><?php echo htmlspecialchars($remarks); ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>

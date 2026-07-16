@@ -42,6 +42,30 @@ function safeBrgy_db_connect(): PDO
         }
 
         $pdo->exec(sprintf('USE `%s`', DB_NAME));
+
+        // Ensure requests.status enum supports the full workflow statuses.
+        $statusColumn = $pdo->query("SHOW COLUMNS FROM requests WHERE Field = 'status'")->fetch(PDO::FETCH_ASSOC);
+        if ($statusColumn && preg_match('/^enum\((.*)\)$/', $statusColumn['Type'], $matches)) {
+            $currentValues = array_map(function ($value) {
+                return trim($value, "'\"");
+            }, explode(',', $matches[1]));
+
+            $expectedValues = ['Pending', 'Approved', 'Rejected', 'Ready for Pickup', 'Processing', 'Received'];
+            $missingValues = array_values(array_diff($expectedValues, $currentValues));
+
+            if (!empty($missingValues)) {
+                $allValues = array_unique(array_merge($currentValues, $expectedValues));
+                $enumType = "ENUM('" . implode("','", $allValues) . "')";
+                $pdo->exec("ALTER TABLE requests MODIFY status $enumType NOT NULL DEFAULT 'Pending'");
+            }
+        }
+
+        // Ensure requests.date_received exists for received-status timestamps.
+        $columns = $pdo->query('SHOW COLUMNS FROM requests')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('date_received', $columns, true)) {
+            $pdo->exec('ALTER TABLE requests ADD COLUMN date_received DATETIME NULL AFTER updated_at');
+        }
+
         return $pdo;
     } catch (PDOException $exception) {
         http_response_code(500);

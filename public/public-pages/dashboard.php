@@ -35,7 +35,7 @@ if ($residentEmail !== '') {
     $stats['pending_requests'] = $stmt->fetch()['count'] ?? 0;
 
     // Count approved requests
-    $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM requests WHERE resident_email = ? AND status IN ("Approved", "Ready for Pickup", "Ready to Receive")');
+    $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM requests WHERE resident_email = ? AND status IN ("Approved", "Ready for Pickup", "Received", "Ready to Receive")');
     $stmt->execute([$residentEmail]);
     $stats['approved_requests'] = $stmt->fetch()['count'] ?? 0;
 

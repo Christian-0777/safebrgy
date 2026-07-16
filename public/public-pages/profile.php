@@ -81,6 +81,7 @@ function getStatusBadgeClass($status) {
             return 'badge-success';
         case 'Processing':
             return 'badge-info';
+        case 'Ready for Pickup':
         case 'Ready to Receive':
             return 'badge-success';
         case 'Received':

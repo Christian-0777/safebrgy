@@ -17,7 +17,8 @@ function safeBrgy_db_connect(): PDO
         return $pdo;
     }
 
-    $dsn = sprintf('mysql:host=%s;port=%s;charset=%s', DB_HOST, DB_PORT, DB_CHARSET);
+    // Added dbname=%s directly into the initial connection sequence
+    $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', DB_HOST, DB_PORT, DB_NAME DB_CHARSET);
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -40,8 +41,6 @@ function safeBrgy_db_connect(): PDO
                 $pdo->exec($statement);
             }
         }
-
-        $pdo->exec(sprintf('USE `%s`', DB_NAME));
 
         // Ensure requests.status enum supports the full workflow statuses.
         $statusColumn = $pdo->query("SHOW COLUMNS FROM requests WHERE Field = 'status'")->fetch(PDO::FETCH_ASSOC);

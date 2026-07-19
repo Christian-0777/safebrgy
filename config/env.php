@@ -33,5 +33,8 @@ if (!defined('SAFE_BRGY_ENV_LOADED')) {
     define('DB_USER', getenv('DB_USER') ?: 'root');
     define('DB_PASS', getenv('DB_PASS') ?: '');
     define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
-    define('DB_INIT_SCHEMA', true);
+    
+    // Dynamic schema initialization: defaults to false unless explicitly set to 'true'
+    define('DB_INIT_SCHEMA', getenv('DB_INIT_SCHEMA') === 'true');
 }
+

@@ -1,4 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // --- Nav toggle (burger menu) ---
+  var navToggle = document.getElementById('navToggle');
+  var mainNav = document.querySelector('.main-nav');
+
+  if (navToggle && mainNav) {
+    navToggle.addEventListener('click', function() {
+      mainNav.classList.toggle('open');
+    });
+
+    // Close menu when a nav link is clicked (mobile)
+    mainNav.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        mainNav.classList.remove('open');
+      });
+    });
+  }
+
+  // --- Login modal ---
   const modal = document.getElementById('loginModal');
   const btns = document.querySelectorAll('.btn-request');
   const close = document.querySelector('.close');

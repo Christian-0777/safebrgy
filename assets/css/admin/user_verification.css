@@ -14,12 +14,20 @@ body {
 }
 
 p, span, a, button, .btn, label {
-  font-family: Arial;
-  font-size: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
 }
 
 .main-content {
-    padding-top: 90px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px);
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Welcome Title */
@@ -229,9 +237,55 @@ p, span, a, button, .btn, label {
 
 .image-preview-title {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 8px;
   color: #333;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 0 12px;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .table {
+    font-size: 14px;
+  }
+
+  .table th, .table td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .table {
+    font-size: 11px;
+  }
+
+  .table th, .table td {
+    padding: 8px;
+  }
+
+  .container-fluid {
+    padding: 0 10px;
+  }
 }

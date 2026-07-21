@@ -6,7 +6,6 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: Arial;
-  font-size: 16px;
 }
 
 .sidebar {
@@ -17,8 +16,9 @@ h1, h2, h3, h4, h5, h6 {
   height: 100vh;
   background: linear-gradient(135deg, var(--color-primary-deep) 0%, var(--color-primary-muted) 100%);
   padding-top: 80px;
-  transition: all 0.3s ease;
+  transition: width 0.3s ease, transform 0.3s ease;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 999;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -46,7 +46,7 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   font-family: Arial;
 }
@@ -107,7 +107,7 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 50px;
   border-left: 4px solid transparent;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
+  font-size: 13px;
   font-family: Arial;
 }
 
@@ -130,15 +130,17 @@ h1, h2, h3, h4, h5, h6 {
 /* Toggle Button Styles */
 .sidebar-toggle {
   display: none;
-  position: absolute;
-  top: 20px;
-  right: -60px;
+  position: fixed;
+  top: 15px;
+  left: 15px;
   background: none;
   border: none;
   color: var(--color-neutral-dark-gray);
   font-size: 24px;
   cursor: pointer;
-  z-index: 1000;
+  z-index: 1001;
+  padding: 5px;
+  line-height: 1;
 }
 
 .sidebar-toggle:hover {
@@ -177,20 +179,40 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .sidebar {
-    width: 0;
+    width: 250px;
     padding-top: 60px;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   }
 
   .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
     width: 250px;
   }
 
+  /* Main content stays full-width on mobile — sidebar overlays on top */
   .main-content {
     margin-left: 0;
   }
 
   .main-content.sidebar-open {
-    margin-left: 250px;
+    margin-left: 0;
+  }
+
+  /* Dark overlay backdrop when sidebar is open on mobile */
+  .main-content.sidebar-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    cursor: pointer;
   }
 
   .sidebar-toggle {
@@ -215,6 +237,7 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
   border-left: 4px solid transparent;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .sidebar-footer a:hover {

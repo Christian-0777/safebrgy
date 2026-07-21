@@ -14,8 +14,8 @@ body {
 }
 
 p, span, a, button, .btn, label {
-  font-family: Arial;
-  font-size: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
 }
 
 #sidebar {
@@ -33,6 +33,14 @@ p, span, a, button, .btn, label {
 
 body .main-content {
   padding-top: 80px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px);
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Request Modal Styles */

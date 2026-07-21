@@ -6,7 +6,6 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: Arial;
-  font-size: 16px;
 }
 
 .header {
@@ -33,7 +32,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-logo {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   color: var(--color-primary-deep);
   text-decoration: none;
@@ -65,7 +64,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--color-neutral-dark-gray);
   margin: 0;
@@ -82,7 +81,7 @@ h1, h2, h3, h4, h5, h6 {
 .header-nav a {
   color: var(--color-neutral-medium-gray);
   text-decoration: none;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
@@ -139,7 +138,7 @@ h1, h2, h3, h4, h5, h6 {
   outline: none;
   width: 100%;
   color: var(--color-neutral-dark-gray);
-  font-size: 12px;
+  font-size: 14px;
   font-family: Arial;
 }
 
@@ -231,13 +230,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .notification-item-text {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-neutral-medium-gray);
   margin-bottom: 5px;
 }
 
 .notification-item-time {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-neutral-medium-gray);
 }
 
@@ -284,13 +283,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .profile-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-neutral-dark-gray);
 }
 
 .profile-role {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-neutral-medium-gray);
 }
 
@@ -400,7 +399,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-neutral-medium-gray);
   margin-bottom: 20px;
 }

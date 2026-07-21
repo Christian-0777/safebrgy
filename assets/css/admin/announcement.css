@@ -30,6 +30,14 @@ p, span, a, button, .btn, label {
 
 .main-content {
   padding-top: 80px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px);
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Statistics Cards */
@@ -308,6 +316,25 @@ p, span, a, button, .btn, label {
 
   .announcement-images .row .col-md-4 {
     flex: 0 0 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .nav-tabs .nav-link {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .container-fluid {
+    padding: 0 10px;
   }
 }
 

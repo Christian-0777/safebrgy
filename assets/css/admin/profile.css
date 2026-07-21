@@ -31,10 +31,14 @@ p, span, a, button, .btn, label {
 
 .main-content {
   padding-top: 80px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px);
 }
 
 .container-fluid {
   max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* ===== SECTION TITLE ===== */

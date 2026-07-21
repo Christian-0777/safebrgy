@@ -30,6 +30,14 @@ p, span, a, button, .btn, label {
 
 .main-content {
   padding-top: 80px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px);
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Statistics Cards */
@@ -220,5 +228,27 @@ p, span, a, button, .btn, label {
 
   .table {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .table {
+    font-size: 11px;
+  }
+
+  .table td, .table th {
+    padding: 8px;
+  }
+
+  .container-fluid {
+    padding: 0 10px;
   }
 }

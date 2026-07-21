@@ -14,8 +14,8 @@ body {
 }
 
 p, span, a, button, .btn, label {
-  font-family: Arial;
-  font-size: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
 }
 
 #sidebar {
@@ -177,5 +177,51 @@ p, span, a, button, .btn, label {
 .modal-body small {
   display: inline-block;
   margin-bottom: 10px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 70px;
+  }
+
+  .container-fluid {
+    padding: 0 12px;
+  }
+
+  .announcement-card .card-text {
+    font-size: 14px;
+  }
+
+  .announcement-card small {
+    font-size: 10px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
+
+  .announcement-content {
+    font-size: 13px;
+  }
+
+  .form-control, .form-select {
+    font-size: 14px;
+  }
+
+  .btn-outline-primary, .btn-outline-secondary {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .announcement-card .badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .modal-dialog {
+    margin: 10px;
+  }
 }
 

@@ -400,5 +400,22 @@ session_start();
   </div>
 
   <script src="assets/js/public/modals/login.js"></script>
+  <script>
+    // Burger menu toggle for landing page
+    document.addEventListener('DOMContentLoaded', function() {
+      var navToggle = document.getElementById('navToggle');
+      var mainNav = document.querySelector('.main-nav');
+      if (navToggle && mainNav) {
+        navToggle.addEventListener('click', function() {
+          mainNav.classList.toggle('open');
+        });
+        mainNav.querySelectorAll('a').forEach(function(link) {
+          link.addEventListener('click', function() {
+            mainNav.classList.remove('open');
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

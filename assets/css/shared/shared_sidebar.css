@@ -130,19 +130,40 @@ h1, h2, h3, h4, h5, h6 {
 /* Toggle Button Styles */
 .sidebar-toggle {
   display: none;
-  position: absolute;
-  top: 20px;
-  right: -60px;
-  background: none;
+  position: fixed;
+  top: 18px;
+  left: 12px;
+  background: var(--color-neutral-white);
   border: none;
-  color: var(--color-neutral-dark-gray);
-  font-size: 24px;
+  color: var(--color-primary-deep);
+  font-size: 22px;
   cursor: pointer;
-  z-index: 1000;
+  z-index: 1001;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
 .sidebar-toggle:hover {
   color: var(--color-accent-orange);
+  background-color: rgba(254, 152, 164, 0.08);
+}
+
+/* Mobile backdrop overlay */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.active {
+  display: block;
+  opacity: 1;
 }
 
 /* Main Content Adjustment */
@@ -179,10 +200,12 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar {
     width: 0;
     padding-top: 60px;
+    overflow: hidden;
   }
 
   .sidebar.open {
     width: 250px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
   }
 
   .main-content {
@@ -190,11 +213,56 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .main-content.sidebar-open {
-    margin-left: 250px;
+    margin-left: 0;
   }
 
   .sidebar-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-menu a,
+  .sidebar-menu .menu-item {
+    padding: 14px 20px;
+    font-size: 13px;
+  }
+
+  .sidebar-menu i {
+    font-size: 16px;
+  }
+
+  .sidebar-footer a {
+    padding: 14px 20px;
+    font-size: 13px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .sidebar.open {
+    width: 220px;
+  }
+
+  .sidebar-menu a,
+  .sidebar-menu .menu-item {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .sidebar-menu i {
+    font-size: 15px;
+    margin-right: 12px;
+  }
+
+  .submenu li a {
+    padding-left: 42px;
+    font-size: 12px;
+  }
+
+  .sidebar-toggle {
+    font-size: 20px;
+    padding: 5px 8px;
   }
 }
 

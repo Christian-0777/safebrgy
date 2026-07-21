@@ -400,5 +400,25 @@ session_start();
   </div>
 
   <script src="assets/js/public/modals/login.js"></script>
+  <script>
+  (function(){
+    var toggle = document.getElementById('navToggle');
+    var nav = document.querySelector('.main-nav');
+    if(!toggle || !nav) return;
+    toggle.addEventListener('click', function(){
+      var isOpen = nav.classList.toggle('open');
+      toggle.classList.toggle('active', isOpen);
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    // Close menu when a nav link is clicked
+    nav.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', function(){
+        nav.classList.remove('open');
+        toggle.classList.remove('active');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

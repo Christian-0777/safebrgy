@@ -1,3 +1,5 @@
+// File: safebrgy/assets/css/public/account.css (839 lines, 12618 bytes)
+
 /* SafeBrgy Resident Account Settings Page Styles */
 
 * {
@@ -36,7 +38,7 @@ p, span, a, button, .btn, label {
 /* ============== PAGE HEADER ============== */
 
 .settings-header {
-  margin-bottom: 40px;
+  margin-bottom: 16px;
   padding-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
 }
@@ -837,3 +839,19 @@ p, span, a, button, .btn, label {
     border: 1px solid #ddd;
   }
 }
+
+
+/* Small mobile responsive */
+@media (max-width: 480px) {
+  .main-content { padding: 10px !important; }
+  h1, h2, h3 { font-size: 14px; }
+  p, span, a, button, .btn, label { font-size: 11px; }
+  .card, .panel, .box { padding: 12px; }
+  .btn { padding: 6px 10px; font-size: 11px; }
+  .d-flex, .flex-row { flex-direction: column; gap: 8px; }
+  .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Table horizontal scroll wrapper */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: 400px; }

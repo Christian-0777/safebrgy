@@ -17,6 +17,12 @@ class SharedSidebar {
   init() {
     if (!this.sidebar) return;
 
+    // Create backdrop element for mobile
+    this.backdrop = document.createElement('div');
+    this.backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(this.backdrop);
+    this.backdrop.addEventListener('click', () => this.closeSidebarMobile());
+
     this.attachEventListeners();
     this.setActiveMenuItem();
     this.handleResize();
@@ -53,6 +59,11 @@ class SharedSidebar {
     // Close sidebar when clicking on main content (mobile)
     if (this.isMobile && this.mainContent) {
       this.mainContent.addEventListener('click', () => this.closeSidebarMobile());
+    }
+
+    // Close sidebar via backdrop click
+    if (this.backdrop) {
+      this.backdrop.addEventListener('click', () => this.closeSidebarMobile());
     }
 
     // Handle window resize

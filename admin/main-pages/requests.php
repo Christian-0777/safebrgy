@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../config/mailer.php';
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
@@ -38,6 +39,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         } else {
             $stmt = $pdo->prepare('UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?');
             $result = $stmt->execute([$newStatus, $requestId]);
+        }
+
+        // Send email notification to the resident about the status update
+        if ($result) {
+            try {
+                $reqCols = $pdo->query('SHOW COLUMNS FROM requests')->fetchAll(PDO::FETCH_COLUMN);
+                $refCol = in_array('request_number', $reqCols, true) ? 'request_number' : (in_array('reference_no', $reqCols, true) ? 'reference_no' : 'id');
+                $docCol = in_array('request_type', $reqCols, true) ? 'request_type' : (in_array('document_type', $reqCols, true) ? 'document_type' : null);
+                $userFkCol = in_array('user_id', $reqCols, true) ? 'user_id' : (in_array('resident_id', $reqCols, true) ? 'resident_id' : null);
+
+                if ($userFkCol) {
+                    $docSelect = $docCol ? "r.{$docCol}" : "'Document Request'";
+                    $fetchStmt = $pdo->prepare("SELECT r.{$refCol} AS ref_no, {$docSelect} AS doc_type, u.email, u.username FROM requests r LEFT JOIN users u ON u.id = r.{$userFkCol} WHERE r.id = ?");
+                    $fetchStmt->execute([$requestId]);
+                    $reqInfo = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($reqInfo && !empty($reqInfo['email'])) {
+                        sendRequestStatusEmail(
+                            $reqInfo['email'],
+                            (string) $reqInfo['ref_no'],
+                            $reqInfo['doc_type'] ?? 'Document Request',
+                            $newStatus,
+                            $reqInfo['username'] ?? null
+                        );
+                    }
+                }
+            } catch (Throwable $e) {
+                error_log('Request status email notification failed: ' . $e->getMessage());
+            }
         }
 
         echo json_encode(['success' => $result]);

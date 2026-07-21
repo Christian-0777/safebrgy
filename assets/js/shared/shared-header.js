@@ -10,6 +10,8 @@ class SharedHeader {
     this.userProfile = document.querySelector('.user-profile');
     this.profileDropdown = document.querySelector('.profile-dropdown');
     this.searchBox = document.querySelector('.search-box input');
+    this.hamburgerBtn = document.querySelector('.header-hamburger');
+    this.mobileNav = document.querySelector('.header-nav-mobile');
 
     this.init();
   }
@@ -39,6 +41,15 @@ class SharedHeader {
     // Search box functionality
     if (this.searchBox) {
       this.searchBox.addEventListener('keyup', (e) => this.handleSearch(e));
+    }
+
+    // Hamburger menu toggle (mobile)
+    if (this.hamburgerBtn && this.mobileNav) {
+      this.hamburgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hamburgerBtn.classList.toggle('active');
+        this.mobileNav.classList.toggle('open');
+      });
     }
 
     // Close dropdowns when clicking outside

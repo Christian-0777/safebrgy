@@ -1,3 +1,5 @@
+// File: safebrgy/assets/css/public/dashboard.css (547 lines, 8641 bytes)
+
 /* SafeBrgy Resident Dashboard Styles */
 
 * {
@@ -98,7 +100,7 @@ p, span, a, button, .btn, label {
 /* ============== STATUS TRACKER SECTION ============== */
 
 .status-tracker-section {
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 .section-title {
@@ -252,7 +254,7 @@ p, span, a, button, .btn, label {
 /* ============== SERVICES SECTION ============== */
 
 .services-section {
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 .service-card {
@@ -545,3 +547,19 @@ p, span, a, button, .btn, label {
     padding: 10px 16px;
   }
 }
+
+
+/* Small mobile responsive */
+@media (max-width: 480px) {
+  .main-content { padding: 10px !important; }
+  h1, h2, h3 { font-size: 14px; }
+  p, span, a, button, .btn, label { font-size: 11px; }
+  .card, .panel, .box { padding: 12px; }
+  .btn { padding: 6px 10px; font-size: 11px; }
+  .d-flex, .flex-row { flex-direction: column; gap: 8px; }
+  .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Table horizontal scroll wrapper */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: 400px; }

@@ -1,3 +1,5 @@
+// File: safebrgy/assets/css/public/request.css (358 lines, 6477 bytes)
+
 :root {
   --request-page-bg: var(--color-ancient-background, #f7f7f7);
   --request-surface: var(--color-neutral-white, #ffffff);
@@ -355,3 +357,20 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+
+/* Small mobile responsive */
+@media (max-width: 480px) {
+  .main-content { padding: 10px !important; }
+  h1, h2, h3 { font-size: 14px; }
+  p, span, a, button, .btn, label { font-size: 11px; }
+  .card, .panel, .box { padding: 12px; }
+  .btn { padding: 6px 10px; font-size: 11px; }
+  .d-flex, .flex-row { flex-direction: column; gap: 8px; }
+  .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Table horizontal scroll wrapper */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: 400px; }

@@ -1,3 +1,5 @@
+// File: safebrgy/assets/css/admin/dashboard.css (729 lines, 10528 bytes)
+
 /* Custom SafeBrgy Admin Dashboard Styles */
 
 * {
@@ -570,7 +572,7 @@ p, span, a, button, .btn, label {
 
 /* ===== FOOTER ===== */
 footer {
-  margin-top: 50px;
+  margin-top: 20px;
   text-align: center;
   color: #999;
   padding: 20px 0;
@@ -726,3 +728,22 @@ footer a:hover {
   color: #28a745;
 }
 
+
+
+
+/* Small mobile responsive */
+@media (max-width: 480px) {
+  #sidebar { min-width: 180px; }
+  .main-content { padding: 10px; }
+  h1, h2, h3 { font-size: 14px; }
+  p, span, a, button, .btn, label { font-size: 11px; }
+  .card { padding: 12px; }
+  .table { font-size: 11px; }
+  .table th, .table td { padding: 6px 4px; }
+  .btn { padding: 6px 10px; font-size: 11px; }
+  .d-flex { flex-direction: column; gap: 8px; }
+}
+
+/* Table horizontal scroll wrapper */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: 500px; }

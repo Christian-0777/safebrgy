@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../config/mailer.php';
 // admin_reports.php - SafeBrgy Admin Reports
 
 $pdo = safeBrgy_db_connect();
@@ -42,6 +43,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         
         $stmt = $pdo->prepare('UPDATE reports SET status = ?, updated_at = NOW() WHERE id = ?');
         $result = $stmt->execute([$newStatus, $reportId]);
+        
+        // Send email notification to the resident
+        if ($result) {
+            $stmt = $pdo->prepare('
+                SELECT r.case_number, r.report_type, r.title, u.email, res.first_name, res.last_name
+                FROM reports r
+                LEFT JOIN users u ON r.user_id = u.id
+                LEFT JOIN residents res ON u.id = res.user_id
+                WHERE r.id = ?
+            ');
+            $stmt->execute([$reportId]);
+            $report = $stmt->fetch();
+            
+            if ($report && !empty($report['email'])) {
+                $residentName = trim(($report['first_name'] ?? '') . ' ' . ($report['last_name'] ?? ''));
+                $residentName = $residentName !== '' ? $residentName : null;
+                sendReportStatusEmail(
+                    $report['email'],
+                    $report['case_number'] ?? 'N/A',
+                    $report['report_type'] ?? 'N/A',
+                    $report['title'] ?? 'N/A',
+                    $newStatus,
+                    $residentName
+                );
+            }
+        }
         
         echo json_encode(['success' => $result]);
         exit;

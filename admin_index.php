@@ -55,6 +55,6 @@ require_once __DIR__ . '/config/db.php';
     </div>
   </footer>
 
-  <script src="assets/js/admin.js"></script>
+  <script src="assets/admin_landing.js"></script>
 </body>
 </html>

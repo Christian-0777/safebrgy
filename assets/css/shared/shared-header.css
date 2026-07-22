@@ -1,46 +1,117 @@
-/* Shared Header Styles */
+/* ==================================
+   Shared Header Styles
+   Professional fixed header with logo,
+   navigation, search, notifications,
+   and user profile. Mobile: burger
+   menu dropdown.
+   ================================== */
 
-* {
-  font-family: Arial;
+/* ==================================
+   1. BASE RESET (header-scoped)
+   ================================== */
+
+.header,
+.header *:not(i) {
+  font-family: var(--font-sans);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: Arial;
-  font-size: 16px;
+.header h1,
+.header h2,
+.header h3,
+.header h4,
+.header h5,
+.header h6 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
 }
+
+/* ==================================
+   2. HEADER CONTAINER
+   ================================== */
 
 .header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background: linear-gradient(135deg, var(--color-neutral-white) 0%, var(--color-neutral-light-gray) 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: 64px;
+  background: var(--color-neutral-white);
+  border-bottom: 1px solid var(--color-neutral-light-gray);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 var(--space-6);
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: var(--transition-all);
 }
 
-/* Header Left Section - Logo */
+/* ==================================
+   3. HEADER LEFT — Logo + Burger
+   ================================== */
+
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-4);
+  flex-shrink: 0;
 }
 
+/* Burger Menu Button (hidden on desktop, shown on mobile) */
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-color);
+  padding: var(--space-2);
+  gap: 5px;
+}
+
+.burger-menu:hover {
+  background-color: var(--color-neutral-light-gray);
+}
+
+.burger-menu .burger-line {
+  width: 22px;
+  height: 2.5px;
+  background-color: var(--color-neutral-dark-gray);
+  border-radius: var(--radius-full);
+  transition: var(--transition-all);
+}
+
+/* Burger animation → X when active */
+.burger-menu.active .burger-line:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.burger-menu.active .burger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.burger-menu.active .burger-line:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* Logo */
 .header-logo {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary-deep);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  transition: color 0.3s ease;
+  gap: var(--space-3);
+  transition: var(--transition-color);
+  white-space: nowrap;
 }
 
 .header-logo:hover {
@@ -48,16 +119,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-logo i {
-  font-size: 28px;
+  font-size: var(--font-size-xl);
   color: var(--color-accent-orange);
 }
 
 .header-logo .logo-image {
-  height: 50px;
-  border-radius: 50px;
+  height: 40px;
   width: auto;
+  border-radius: var(--radius-full);
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: var(--transition-transform);
 }
 
 .header-logo:hover .logo-image {
@@ -65,28 +136,34 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-neutral-dark-gray);
   margin: 0;
+  line-height: var(--line-height-tight);
 }
 
-/* Header Center Section - Navigation */
+/* ==================================
+   4. HEADER CENTER — Navigation
+   ================================== */
+
 .header-nav {
   display: flex;
-  gap: 30px;
+  gap: var(--space-6);
   flex: 1;
   justify-content: center;
+  align-items: center;
 }
 
 .header-nav a {
   color: var(--color-neutral-medium-gray);
   text-decoration: none;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-color);
   position: relative;
-  padding: 5px 0;
+  padding: var(--space-2) 0;
+  white-space: nowrap;
 }
 
 .header-nav a:hover,
@@ -97,12 +174,13 @@ h1, h2, h3, h4, h5, h6 {
 .header-nav a::after {
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -2px;
   left: 0;
   width: 0;
   height: 2px;
   background-color: var(--color-accent-orange);
-  transition: width 0.3s ease;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
 }
 
 .header-nav a:hover::after,
@@ -110,11 +188,15 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
-/* Header Right Section */
+/* ==================================
+   5. HEADER RIGHT — Search, Notifs, Profile
+   ================================== */
+
 .header-right {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: var(--space-5);
+  flex-shrink: 0;
 }
 
 /* Search Box */
@@ -122,15 +204,17 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   background-color: var(--color-neutral-light-gray);
-  border-radius: 25px;
-  padding: 8px 15px;
-  width: 250px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
+  width: 240px;
+  transition: var(--transition-all);
+  border: 1px solid transparent;
 }
 
 .search-box:focus-within {
-  background-color: rgba(164, 124, 254, 0.1);
-  box-shadow: 0 0 10px rgba(84, 110, 210, 0.2);
+  background-color: var(--color-neutral-white);
+  border-color: var(--color-primary-deep);
+  box-shadow: 0 0 0 3px var(--focus-ring-color);
 }
 
 .search-box input {
@@ -139,8 +223,8 @@ h1, h2, h3, h4, h5, h6 {
   outline: none;
   width: 100%;
   color: var(--color-neutral-dark-gray);
-  font-size: 12px;
-  font-family: Arial;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
 }
 
 .search-box input::placeholder {
@@ -149,56 +233,63 @@ h1, h2, h3, h4, h5, h6 {
 
 .search-box i {
   color: var(--color-neutral-medium-gray);
-  margin-right: 10px;
+  margin-right: var(--space-3);
+  font-size: var(--font-size-sm);
 }
 
 /* Notifications */
 .notifications {
   position: relative;
   cursor: pointer;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   color: var(--color-neutral-medium-gray);
-  transition: color 0.3s ease;
+  transition: var(--transition-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
 }
 
 .notifications:hover {
   color: var(--color-accent-orange);
+  background-color: var(--color-neutral-light-gray);
 }
 
 .notification-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: #ff4444;
+  top: 2px;
+  right: 2px;
+  background-color: var(--color-secondary-red);
   color: var(--color-neutral-white);
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  border: 2px solid var(--color-neutral-white);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .notification-dropdown {
   position: absolute;
-  top: 70px;
+  top: 56px;
   right: 0;
   background: var(--color-neutral-white);
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  min-width: 300px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-neutral-light-gray);
+  min-width: 320px;
   max-height: 400px;
   overflow-y: auto;
   display: none;
@@ -207,13 +298,19 @@ h1, h2, h3, h4, h5, h6 {
 
 .notification-dropdown.active {
   display: block;
+  animation: dropdownFade var(--transition-fast);
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .notification-item {
-  padding: 15px;
+  padding: var(--space-4);
   border-bottom: 1px solid var(--color-neutral-light-gray);
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: var(--transition-color);
 }
 
 .notification-item:hover {
@@ -225,19 +322,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .notification-item-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-neutral-dark-gray);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
 }
 
 .notification-item-text {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-neutral-medium-gray);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-1);
 }
 
 .notification-item-time {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-neutral-medium-gray);
 }
 
@@ -245,30 +343,33 @@ h1, h2, h3, h4, h5, h6 {
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 10px 15px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--color-neutral-light-gray);
-  border-radius: 25px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition-all);
+  border: 1px solid transparent;
 }
 
 .user-profile:hover {
-  background-color: rgba(84, 110, 210, 0.1);
+  background-color: rgba(11, 99, 214, 0.08);
+  border-color: rgba(11, 99, 214, 0.15);
 }
 
 .profile-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--color-primary-deep), var(--color-accent-orange));
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-neutral-white);
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .profile-avatar img {
@@ -284,24 +385,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .profile-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-neutral-dark-gray);
+  line-height: var(--line-height-tight);
 }
 
 .profile-role {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-neutral-medium-gray);
+  line-height: var(--line-height-tight);
 }
 
 .profile-dropdown {
   position: absolute;
-  top: 75px;
-  right: 30px;
+  top: 56px;
+  right: var(--space-6);
   background: var(--color-neutral-white);
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-neutral-light-gray);
+  min-width: 220px;
   display: none;
   z-index: 1001;
   overflow: hidden;
@@ -309,6 +413,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .profile-dropdown.active {
   display: block;
+  animation: dropdownFade var(--transition-fast);
 }
 
 .profile-dropdown a,
@@ -316,15 +421,16 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 12px 20px;
+  padding: var(--space-3) var(--space-5);
   border: none;
   background: none;
   text-decoration: none;
   color: var(--color-neutral-dark-gray);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  gap: 10px;
+  transition: var(--transition-color);
+  gap: var(--space-3);
 }
 
 .profile-dropdown a:hover,
@@ -334,81 +440,99 @@ h1, h2, h3, h4, h5, h6 {
 
 .profile-dropdown a i,
 .profile-dropdown button i {
-  font-size: 16px;
+  font-size: var(--font-size-base);
   color: var(--color-neutral-medium-gray);
+  width: 20px;
+  text-align: center;
 }
 
 .profile-dropdown .logout:hover {
-  background-color: #ffe0e0;
-  color: #ff4444;
+  background-color: var(--status-rejected-bg);
+  color: var(--color-secondary-red);
 }
 
 .profile-dropdown .logout:hover i {
-  color: #ff4444;
+  color: var(--color-secondary-red);
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .header {
-    padding: 0 15px;
-    height: 60px;
-  }
+/* ==================================
+   6. MOBILE BURGER DROPDOWN NAV
+   ================================== */
 
-  .header-nav {
-    display: none;
-  }
-
-  .search-box {
-    display: none;
-  }
-
-  .header-title {
-    font-size: 16px;
-  }
-
-  .header-left {
-    gap: 10px;
-  }
-
-  .header-right {
-    gap: 15px;
-  }
-
-  .profile-info {
-    display: none;
-  }
-
-  .user-profile {
-    padding: 8px 10px;
-  }
-
-  .profile-avatar {
-    width: 35px;
-    height: 35px;
-    font-size: 14px;
-  }
-
-  .notification-dropdown,
-  .profile-dropdown {
-    right: 0;
-    top: 65px;
-  }
+.mobile-nav-dropdown {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: var(--color-neutral-white);
+  border-bottom: 1px solid var(--color-neutral-light-gray);
+  box-shadow: var(--shadow-lg);
+  z-index: 999;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-duration-slow) var(--ease-in-out);
 }
 
-/* Breadcrumb */
+.mobile-nav-dropdown.active {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.mobile-nav-dropdown .mobile-nav-list {
+  list-style: none;
+  padding: var(--space-2) 0;
+  margin: 0;
+}
+
+.mobile-nav-dropdown .mobile-nav-list a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  color: var(--color-neutral-dark-gray);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-color);
+  border-left: 3px solid transparent;
+}
+
+.mobile-nav-dropdown .mobile-nav-list a:hover,
+.mobile-nav-dropdown .mobile-nav-list a.active {
+  background-color: var(--color-neutral-light-gray);
+  border-left-color: var(--color-accent-orange);
+  color: var(--color-accent-orange);
+}
+
+.mobile-nav-dropdown .mobile-nav-list a i {
+  width: 24px;
+  text-align: center;
+  font-size: var(--font-size-lg);
+  color: var(--color-neutral-medium-gray);
+}
+
+.mobile-nav-dropdown .mobile-nav-list a:hover i,
+.mobile-nav-dropdown .mobile-nav-list a.active i {
+  color: var(--color-accent-orange);
+}
+
+/* ==================================
+   7. BREADCRUMB
+   ================================== */
+
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
   color: var(--color-neutral-medium-gray);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .breadcrumb a {
   color: var(--color-primary-deep);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: var(--transition-color);
 }
 
 .breadcrumb a:hover {
@@ -422,5 +546,116 @@ h1, h2, h3, h4, h5, h6 {
 
 .breadcrumb .current {
   color: var(--color-neutral-dark-gray);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================================
+   8. MOBILE RESPONSIVE (≤768px)
+   ================================== */
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 var(--space-4);
+    height: 56px;
+  }
+
+  /* Show burger menu on mobile */
+  .burger-menu {
+    display: flex;
+  }
+
+  /* Hide desktop nav — use burger dropdown instead */
+  .header-nav {
+    display: none;
+  }
+
+  /* Hide search on mobile */
+  .search-box {
+    display: none;
+  }
+
+  .header-title {
+    font-size: var(--font-size-sm);
+  }
+
+  .header-left {
+    gap: var(--space-2);
+  }
+
+  .header-right {
+    gap: var(--space-3);
+  }
+
+  /* Compact profile on mobile */
+  .profile-info {
+    display: none;
+  }
+
+  .user-profile {
+    padding: var(--space-1);
+    background-color: transparent;
+  }
+
+  .user-profile:hover {
+    background-color: var(--color-neutral-light-gray);
+  }
+
+  .profile-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: var(--font-size-xs);
+  }
+
+  /* Dropdowns adjust for shorter header */
+  .notification-dropdown {
+    right: 0;
+    top: 48px;
+    min-width: 280px;
+  }
+
+  .profile-dropdown {
+    right: var(--space-4);
+    top: 48px;
+  }
+
+  .mobile-nav-dropdown {
+    top: 56px;
+  }
+
+  /* Smaller logo on mobile */
+  .header-logo .logo-image {
+    height: 32px;
+  }
+
+  .header-logo {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* ==================================
+   9. SMALL MOBILE (≤480px)
+   ================================== */
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 var(--space-3);
+  }
+
+  .header-logo .logo-image {
+    height: 28px;
+  }
+
+  .header-title {
+    display: none;
+  }
+
+  .notification-dropdown {
+    min-width: 260px;
+    right: -10px;
+  }
+
+  .profile-dropdown {
+    right: 0;
+    min-width: 200px;
+  }
 }

@@ -12,6 +12,7 @@ session_start();
   <title>SafeBrgy — Barangay San Jose</title>
   <link rel="icon" type="image/png" href="assets/img/seal.png">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/css/shared/shared-header.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/public/modals/login.css">
 </head>
@@ -30,7 +31,23 @@ session_start();
         <a href="#register" class="btn-outline">Register</a>
         <a href="public/login.php" class="btn-primary">Login</a>
       </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+      <button class="burger-menu" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+    </div>
+    <!-- Mobile Nav Dropdown -->
+    <div class="mobile-nav-dropdown" id="mobileNavDropdown">
+      <ul class="mobile-nav-list">
+        <li><a href="#home" class="active"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="#about"><i class="fas fa-info-circle"></i> About</a></li>
+        <li><a href="#services"><i class="fas fa-concierge-bell"></i> Services</a></li>
+        <li><a href="#officials"><i class="fas fa-users"></i> Officials</a></li>
+        <li><a href="#contact"><i class="fas fa-envelope"></i> Contact</a></li>
+        <li><a href="#register"><i class="fas fa-user-plus"></i> Register</a></li>
+        <li><a href="public/login.php"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+      </ul>
     </div>
   </header>
 
@@ -399,6 +416,48 @@ session_start();
     </div>
   </div>
 
+  <script src="assets/js/shared/shared-header.js"></script>
   <script src="assets/js/public/modals/login.js"></script>
+  <script>
+  (function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+      var navToggle = document.getElementById('navToggle');
+      var mobileNav = document.getElementById('mobileNavDropdown');
+      if (!navToggle || !mobileNav) return;
+      var isOpen = false;
+      function openMenu() {
+        mobileNav.classList.add('active');
+        navToggle.classList.add('active');
+        navToggle.setAttribute('aria-expanded', 'true');
+        isOpen = true;
+      }
+      function closeMenu() {
+        mobileNav.classList.remove('active');
+        navToggle.classList.remove('active');
+        navToggle.setAttribute('aria-expanded', 'false');
+        isOpen = false;
+      }
+      navToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (isOpen) { closeMenu(); } else { openMenu(); }
+      });
+      mobileNav.querySelectorAll('a').forEach(function(link) {
+        link.addEventListener('click', function() { closeMenu(); });
+      });
+      document.addEventListener('click', function(e) {
+        if (isOpen && !mobileNav.contains(e.target) && !navToggle.contains(e.target)) {
+          closeMenu();
+        }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isOpen) { closeMenu(); }
+      });
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && isOpen) { closeMenu(); }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

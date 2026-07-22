@@ -11,19 +11,33 @@ require_once __DIR__ . '/config/db.php';
   <title>SafeBrgy Admin — Barangay San Jose</title>
   <link rel="icon" type="image/png" href="assets/img/seal.png">
   <link rel="stylesheet" href="assets/admin_landing.css">
+  <link rel="stylesheet" href="assets/css/shared/shared-header.css">
 </head>
 <body>
   <!-- Navigation -->
   <header class="admin-header">
     <div class="container nav-inner">
       <h1 class="brand">SafeBrgy Admin</h1>
-      <nav class="admin-nav" id="adminNav">
+      <nav class="admin-nav">
         <a href="#dashboard">Dashboard</a>
         <a href="#residents">Residents</a>
         <a href="#reports">Reports</a>
         <a href="#announcements">Announcements</a>
       </nav>
-      <button class="nav-toggle" id="navToggle">☰</button>
+      <button class="burger-menu" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+    </div>
+    <!-- Mobile Nav Dropdown -->
+    <div class="mobile-nav-dropdown" id="adminNav">
+      <ul class="mobile-nav-list">
+        <li><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#residents"><i class="fas fa-users"></i> Residents</a></li>
+        <li><a href="#reports"><i class="fas fa-file-alt"></i> Reports</a></li>
+        <li><a href="#announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+      </ul>
     </div>
   </header>
 

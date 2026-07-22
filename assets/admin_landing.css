@@ -1,110 +1,269 @@
-:root{
-  --bg:#f9fafb;
-  --nav:#0b63d6;
-  --primary:#0b63d6;
+/* ============================================
+   SafeBrgy — Admin Landing Page Styles
+   Depends on: assets/css/shared/colors.css
+   Target page: admin_index.php
+   ============================================ */
+
+@import url('css/shared/colors.css');
+
+/* --------------------------------------------
+   Base & Layout
+   -------------------------------------------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background: var(--page-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  font-family: Arial;
-}
-
-body{
-  margin:0;
-  font-family: Arial;
-  background:var(--bg);
-  color:#111827;
-}
-
-.container{
-  width:90%;
-  max-width:1100px;
-  margin:0 auto;
-}
-
-/* Header */
-.admin-header{
-  background:#fff;
-  border-bottom:1px solid #e5e7eb;
-  position:sticky;
-  top:0;
-  z-index:50;
-}
-.nav-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 0;
-}
 h1, h2, h3, h4, h5, h6 {
-  font-family: Arial;
+  font-family: var(--font-sans);
+  color: var(--text-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
+}
+h1 { font-size: var(--font-size-h1); font-weight: var(--font-weight-bold); }
+h2 { font-size: var(--font-size-h2); font-weight: var(--font-weight-bold); }
+h3 { font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); }
+h4 { font-size: var(--font-size-h4); font-weight: var(--font-weight-semibold); }
+h5 { font-size: var(--font-size-h5); font-weight: var(--font-weight-semibold); }
+h6 { font-size: var(--font-size-h6); font-weight: var(--font-weight-semibold); }
+
+p { margin: 0; line-height: var(--line-height-normal); }
+
+.container {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-h1 { font-size: 16px; }
-h2 { font-size: 16px; }
-h3 { font-size: 16px; }
-h4 { font-size: 14px; }
-h5 { font-size: 14px; }
-h6 { font-size: 14px; }
-
-.brand{color:var(--nav);font-size: 16px;margin:0}
-.admin-nav a{
-  margin-left:18px;
-  text-decoration:none;
-  color:#1f2937;
-  font-weight:600;
-  font-size: 12px;
-}
-.nav-toggle{display:none;background:none;border:0;font-size:20px}
-
-/* Hero */
-.hero{
-  background-image:url('../assets/img/hero.jpg');
-  background-size:cover;
-  background-position:center;
-  min-height:815px;
-  display:flex;
-  align-items:center;
-  color:#fff;
-}
-.hero-overlay{
-  width:100%;
-  background:rgba(0,0,0,0.55);
-  padding:330px 0;
-}
-.hero-content{
-  text-align:center;
-}
-.hero-content h2{font-size:2rem;margin-bottom:10px}
-.hero-content p{margin-bottom:20px}
-.btn-login{
-  background:var(--primary);
-  color:#fff;
-  padding:12px 20px;
-  border-radius:8px;
-  text-decoration:none;
-  font-weight:600;
-  font-size: 12px;
+/* --------------------------------------------
+   Header / Navigation
+   -------------------------------------------- */
+.admin-header {
+  background: var(--color-neutral-white);
+  border-bottom: 1px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Footer */
-.admin-footer{
-  background:#0b63d6;
-  color:#fff;
-  padding:20px 0;
-  margin-top:0px;
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
 }
-.footer-grid{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.admin-footer a{color:#fff;text-decoration:none;margin:0 6px}
-.admin-footer a:hover{text-decoration:underline}
-.copyright{text-align:center;margin-top:10px;color:rgba(255,255,255,0.85)}
 
-/* Responsive */
-@media(max-width:900px){
-  .admin-nav{display:none}
-  .nav-toggle{display:block;color:#0b63d6}
-  .footer-grid{flex-direction:column;gap:10px}
+.brand {
+  color: var(--color-primary-deep);
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.admin-nav a {
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  transition: var(--transition-color);
+}
+
+.admin-nav a:hover {
+  color: var(--color-primary-deep);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 0;
+  font-size: 1.5rem;
+  color: var(--color-primary-deep);
+  cursor: pointer;
+  padding: var(--space-2);
+}
+
+/* --------------------------------------------
+   Hero
+   -------------------------------------------- */
+.hero {
+  background-image: url('../assets/img/hero.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 550px;
+  display: flex;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.hero-overlay {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(11, 99, 214, 0.85) 0%, rgba(0, 0, 0, 0.65) 100%);
+  padding: var(--space-20) 0;
+}
+
+.hero-content {
+  text-align: center;
+}
+
+.hero-content h2 {
+  font-size: var(--font-size-h1);
+  color: var(--text-light);
+  margin-bottom: var(--space-3);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.hero-content p {
+  font-size: var(--font-size-lg);
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: var(--space-6);
+  line-height: var(--line-height-relaxed);
+}
+
+.btn-login {
+  display: inline-block;
+  background: var(--button-accent);
+  color: var(--text-light);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  transition: var(--transition-all);
+}
+
+.btn-login:hover {
+  background: var(--button-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent);
+}
+
+/* --------------------------------------------
+   Footer
+   -------------------------------------------- */
+.admin-footer {
+  background: var(--color-primary-deep);
+  color: var(--text-light);
+  padding: var(--space-6) 0;
+}
+
+.footer-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-footer h4 {
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+}
+
+.admin-footer a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  margin: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  transition: var(--transition-color);
+}
+
+.admin-footer a:hover {
+  color: var(--text-light);
+  text-decoration: underline;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* --------------------------------------------
+   Responsive — Burger Menu Dropdown
+   -------------------------------------------- */
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: block;
+  }
+
+  .admin-nav {
+    display: none;
+    position: absolute;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--color-neutral-white);
+    border-bottom: 1px solid var(--card-border);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-4) 0;
+    z-index: var(--z-dropdown);
+  }
+
+  .admin-nav.open {
+    display: flex;
+    animation: navSlideDown 0.2s var(--ease-out);
+  }
+
+  .admin-nav a {
+    padding: var(--space-3) var(--space-5);
+    margin: 0;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .admin-nav a:last-child {
+    border-bottom: 0;
+  }
+
+  .footer-grid {
+    flex-direction: column;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .hero-content h2 {
+    font-size: var(--font-size-h2);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-content h2 {
+    font-size: var(--font-size-h3);
+  }
+
+  .hero-content p {
+    font-size: var(--font-size-base);
+  }
+}
+
+@keyframes navSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

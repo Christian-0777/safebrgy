@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../config/mailer.php';
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
@@ -38,6 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         } else {
             $stmt = $pdo->prepare('UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?');
             $result = $stmt->execute([$newStatus, $requestId]);
+        }
+
+        if ($result) {
+            $requestStmt = $pdo->prepare('SELECT resident_email, resident_name, document_type, reference_no FROM requests WHERE id = ?');
+            $requestStmt->execute([$requestId]);
+            $requestDetails = $requestStmt->fetch();
+
+            if ($requestDetails && !empty($requestDetails['resident_email'])) {
+                $residentName = trim($requestDetails['resident_name'] ?: 'Resident');
+                $recipientEmail = $requestDetails['resident_email'];
+                $requestNumber = $requestDetails['reference_no'] ?: $requestId;
+                $documentType = $requestDetails['document_type'] ?: 'Request';
+                sendRequestStatusEmail($recipientEmail, $residentName, $requestNumber, $documentType, $newStatus);
+            }
         }
 
         echo json_encode(['success' => $result]);

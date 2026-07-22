@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../config/mailer.php';
 // announcements.php - SafeBrgy Announcements Admin - REWORKED
 
 $pdo = safeBrgy_db_connect();
@@ -111,6 +112,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $scheduledAt,
                 $publishedAt
             ]);
+
+            if ($result) {
+                $announcementId = (int) $pdo->lastInsertId();
+                $residentEmailStmt = $pdo->prepare('SELECT email FROM users WHERE role = ?');
+                $residentEmailStmt->execute(['resident']);
+                $residentEmails = $residentEmailStmt->fetchAll(PDO::FETCH_COLUMN);
+
+                $baseUrl = (!empty($_SERVER['HTTPS']) ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+                $attachmentPayload = is_array($attachmentsArray) ? $attachmentsArray : [];
+
+                foreach ($residentEmails as $recipientEmail) {
+                    $residentNameStmt = $pdo->prepare('SELECT username FROM users WHERE email = ?');
+                    $residentNameStmt->execute([$recipientEmail]);
+                    $residentName = $residentNameStmt->fetchColumn() ?: 'Resident';
+                    sendAnnouncementEmail($recipientEmail, $residentName, $title, $description, $priority, $attachmentPayload, $baseUrl);
+                }
+            }
             
             echo json_encode(['success' => $result]);
             exit;

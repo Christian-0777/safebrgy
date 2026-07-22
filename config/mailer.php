@@ -97,3 +97,57 @@ function sendAdminOtpEmail(string $recipient, string $otpCode): bool
 
     return sendMail($recipient, $subject, $htmlBody, $plainBody);
 }
+
+function sendRequestStatusEmail(string $recipient, string $residentName, string $requestNumber, string $documentType, string $newStatus): bool
+{
+    $subject = 'SafeBrgy Request Status Updated';
+    $htmlBody = "<p>Hello {$residentName},</p>"
+        . "<p>Your request <strong>{$requestNumber}</strong> for <strong>{$documentType}</strong> has been updated to <strong>{$newStatus}</strong>.</p>"
+        . "<p>Please log in to your SafeBrgy account to view the latest update.</p>"
+        . "<p>Thank you,<br>SafeBrgy Team</p>";
+    $plainBody = "Hello {$residentName},\n\nYour request {$requestNumber} for {$documentType} has been updated to {$newStatus}.\n\nPlease log in to your SafeBrgy account to view the latest update.\n\nThank you,\nSafeBrgy Team";
+
+    return sendMail($recipient, $subject, $htmlBody, $plainBody);
+}
+
+function sendReportStatusEmail(string $recipient, string $residentName, string $caseNumber, string $newStatus): bool
+{
+    $subject = 'SafeBrgy Report Status Updated';
+    $htmlBody = "<p>Hello {$residentName},</p>"
+        . "<p>The status of your report <strong>{$caseNumber}</strong> has been updated to <strong>{$newStatus}</strong>.</p>"
+        . "<p>Please log in to your SafeBrgy account for more details.</p>"
+        . "<p>Thank you,<br>SafeBrgy Team</p>";
+    $plainBody = "Hello {$residentName},\n\nThe status of your report {$caseNumber} has been updated to {$newStatus}.\n\nPlease log in to your SafeBrgy account for more details.\n\nThank you,\nSafeBrgy Team";
+
+    return sendMail($recipient, $subject, $htmlBody, $plainBody);
+}
+
+function sendAnnouncementEmail(string $recipient, string $residentName, string $title, string $description, string $priority, array $attachments = [], string $baseUrl = ''): bool
+{
+    $priorityLabel = ucfirst($priority);
+    $attachmentHtml = '';
+
+    if (!empty($attachments)) {
+        $attachmentHtml .= '<div style="margin-top: 16px;"><strong>Pictures:</strong><br>';
+        foreach ($attachments as $attachment) {
+            $fileName = $attachment['file'] ?? '';
+            if ($fileName) {
+                $imageUrl = $baseUrl ? rtrim($baseUrl, '/') . '/uploads/announcements/' . rawurlencode($fileName) : '/uploads/announcements/' . rawurlencode($fileName);
+                $attachmentHtml .= '<img src="' . htmlspecialchars($imageUrl, ENT_QUOTES) . '" alt="' . htmlspecialchars($title, ENT_QUOTES) . '" style="max-width: 100%; max-height: 240px; margin: 8px 0; border-radius: 8px;" />';
+            }
+        }
+        $attachmentHtml .= '</div>';
+    }
+
+    $subject = 'SafeBrgy New Announcement: ' . $title;
+    $htmlBody = "<p>Hello {$residentName},</p>"
+        . "<p>A new announcement has been published on SafeBrgy.</p>"
+        . "<p><strong>Title:</strong> {$title}<br>"
+        . "<strong>Priority:</strong> {$priorityLabel}</p>"
+        . "<p><strong>Message:</strong><br>{$description}</p>"
+        . $attachmentHtml
+        . "<p>Thank you,<br>SafeBrgy Team</p>";
+    $plainBody = "Hello {$residentName},\n\nA new announcement has been published on SafeBrgy.\n\nTitle: {$title}\nPriority: {$priorityLabel}\n\nMessage:\n{$description}\n\nThank you,\nSafeBrgy Team";
+
+    return sendMail($recipient, $subject, $htmlBody, $plainBody);
+}

@@ -1,3 +1,24 @@
+## What's New in V2.2.7 (Minor Update)
+
+### Email Notifications for Admin Updates
+
+#### Overview
+Added automated email notifications so residents are informed whenever an admin updates the status of their request or report, and whenever a new announcement is published. These emails include the relevant update details and, for announcements, attached images when available.
+
+#### Highlights
+- Residents receive email updates when a request status changes
+- Residents receive email updates when a report status changes
+- Residents receive email notifications for newly created announcements
+- Announcement emails include title, priority, message content, and attached pictures
+
+#### Files Updated
+- config/mailer.php
+- admin/main-pages/requests.php
+- admin/main-pages/reports.php
+- admin/main-pages/announcement.php
+
+---
+
 ## What's New in V2.2.6 (Minor Update)
 
 ### Resident Request Page - New Resident Request Portal

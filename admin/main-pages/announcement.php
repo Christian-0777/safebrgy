@@ -277,6 +277,7 @@ function displayAudience($audienceJson) {
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/admin/announcement.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Bootstrap CSS -->

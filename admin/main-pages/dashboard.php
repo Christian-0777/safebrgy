@@ -181,6 +181,7 @@ $scheduledEvents = $pdo->query('
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/admin/dashboard.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -549,5 +550,6 @@ $scheduledEvents = $pdo->query('
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Page-specific scripts -->
   <script src="../../assets/js/admin/dashboard.js"></script>
+  <script src="../../assets/js/shared/layout_functions.js"></script>
 </body>
 </html>

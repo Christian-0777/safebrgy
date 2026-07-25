@@ -93,6 +93,7 @@ if ($residentEmail !== '') {
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/public/dashboard.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
 </head>
 <body>
 
@@ -354,6 +355,7 @@ if ($residentEmail !== '') {
 
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/shared/layout_functions.js"></script>
 <!-- Shared JS -->
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>

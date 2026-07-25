@@ -27,6 +27,7 @@ $requests = $stmt->fetchAll();
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <link rel="stylesheet" href="../../assets/css/public/request.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>

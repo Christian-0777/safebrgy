@@ -1,3 +1,39 @@
+## What's New in V2.2.7.1 (Minor Update)
+
+### UI/UX Redesign Layout Refresh
+
+#### Overview
+A full redesign of the overall layout and visual system across the landing page, public pages, and admin pages. The update introduces a more professional Bootstrap-based interface with improved spacing, card styling, modern navigation, and responsive behavior for both desktop and mobile screens.
+
+#### Highlights
+- Redesigned landing page with a cleaner hero section and polished content layout
+- Applied a consistent shared layout system to public and admin pages
+- Reworked header, sidebar, cards, buttons, and form styling for a more professional look
+- Added responsive mobile navigation with burger menu support
+- Sidebar now opens as a mobile drawer for both resident and admin main pages
+- Improved overall readability and visual hierarchy across the application
+
+#### Files Updated
+- assets/css/shared/layout.css
+- assets/js/shared/layout_functions.js
+- assets/style.css
+- index.php
+- admin/main-pages/dashboard.php
+- admin/main-pages/profile.php
+- admin/main-pages/announcement.php
+- admin/main-pages/requests.php
+- admin/main-pages/reports.php
+- admin/main-pages/user_verification.php
+- admin/main-pages/account_settings.php
+- public/public-pages/dashboard.php
+- public/public-pages/profile.php
+- public/public-pages/announcement.php
+- public/public-pages/requests.php
+- public/public-pages/reports.php
+- public/public-pages/account.php
+
+---
+
 ## What's New in V2.2.7 (Minor Update)
 
 ### Email Notifications for Admin Updates

@@ -11,9 +11,11 @@ session_start();
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SafeBrgy — Barangay San Jose</title>
   <link rel="icon" type="image/png" href="assets/img/seal.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/shared/layout.css">
   <link rel="stylesheet" href="assets/style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/public/modals/login.css">
 </head>
 <body>
   <header class="site-header">
@@ -30,8 +32,17 @@ session_start();
         <a href="#register" class="btn-outline">Register</a>
         <a href="public/login.php" class="btn-primary">Login</a>
       </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+      <button class="nav-toggle" data-nav-toggle aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
     </div>
+    <nav class="mobile-nav" id="mobileNav">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#officials">Officials</a>
+      <a href="#contact">Contact</a>
+      <a href="#register">Register</a>
+      <a href="public/login.php">Login</a>
+    </nav>
   </header>
 
   <main>
@@ -400,5 +411,7 @@ session_start();
   </div>
 
   <script src="assets/js/public/modals/login.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/shared/layout_functions.js"></script>
 </body>
 </html>

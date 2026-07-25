@@ -115,6 +115,7 @@ $stats = $statsStmt->fetch();
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/admin/reports.css">
   <!-- Font Awesome -->

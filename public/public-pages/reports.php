@@ -67,6 +67,7 @@ if ($userId) {
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/public/reports.css">
+  <link rel="stylesheet" href="../../assets/css/shared/layout.css">
 </head>
 <body>
 

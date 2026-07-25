@@ -1,3 +1,6 @@
+## What's New in V2.2.7.1.1 (Minor Update)
+The cards in the first row now use col-md-4 for equal width distribution, and the second row has two col-md-6 columns side-by-side without the offset.
+
 ## What's New in V2.2.7.1 (Minor Update)
 
 ### UI/UX Redesign Layout Refresh

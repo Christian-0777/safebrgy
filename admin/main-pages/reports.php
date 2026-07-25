@@ -180,34 +180,34 @@ $stats = $statsStmt->fetch();
 
       <!-- Statistics Cards -->
       <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="stat-card">
             <div class="stat-value"><?php echo $stats['total'] ?? 0; ?></div>
             <div class="stat-label">Total Reports</div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="stat-card stat-card-pending">
             <div class="stat-value"><?php echo $stats['pending'] ?? 0; ?></div>
             <div class="stat-label">Pending</div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="stat-card stat-card-ongoing">
             <div class="stat-value"><?php echo $stats['ongoing'] ?? 0; ?></div>
             <div class="stat-label">Ongoing</div>
           </div>
         </div>
-        <div class="col-md-3">
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-6">
           <div class="stat-card stat-card-resolved">
             <div class="stat-value"><?php echo $stats['resolved'] ?? 0; ?></div>
             <div class="stat-label">Resolved</div>
           </div>
         </div>
-      </div>
-
-      <div class="row mb-4">
-        <div class="col-md-6 offset-md-6">
+        <div class="col-md-6">
           <div class="stat-card stat-card-dismissed">
             <div class="stat-value"><?php echo $stats['dismissed'] ?? 0; ?></div>
             <div class="stat-label">Dismissed</div>

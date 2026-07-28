@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../config/mailer.php';
 session_start();
 
 // Check if user is logged in and is a resident
@@ -84,6 +85,17 @@ try {
         $location,
         $attachments
     ]);
+
+    $userStmt = $pdo->prepare('SELECT r.mobile_number FROM residents r WHERE r.user_id = ?');
+    $userStmt->execute([$userId]);
+    $userRow = $userStmt->fetch(PDO::FETCH_ASSOC);
+    $mobileNumber = $userRow['mobile_number'] ?? null;
+    $residentName = trim($_SESSION['user']['name'] ?? '') ?: 'Resident';
+    $email = $_SESSION['user']['email'] ?? null;
+
+    if ($email) {
+        sendReportSubmissionNotification($email, $residentName, $mobileNumber, $case_number, $userId);
+    }
 
     echo json_encode([
         'success' => true,

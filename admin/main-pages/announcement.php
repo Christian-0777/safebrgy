@@ -115,21 +115,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             if ($result) {
                 $announcementId = (int) $pdo->lastInsertId();
-                $residentEmailStmt = $pdo->prepare('SELECT email FROM users WHERE role = ?');
-                $residentEmailStmt->execute(['resident']);
-                $residentEmails = $residentEmailStmt->fetchAll(PDO::FETCH_COLUMN);
+                $residentRecipientsStmt = $pdo->prepare('SELECT u.id AS user_id, u.email, COALESCE(NULLIF(CONCAT(TRIM(res.first_name), " ", TRIM(res.last_name)), " "), u.username, "Resident") AS resident_name, res.mobile_number FROM users u LEFT JOIN residents res ON u.id = res.user_id WHERE u.role = ?');
+                $residentRecipientsStmt->execute(['resident']);
+                $residentRecipients = $residentRecipientsStmt->fetchAll(PDO::FETCH_ASSOC);
 
                 $baseUrl = (!empty($_SERVER['HTTPS']) ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
                 $attachmentPayload = is_array($attachmentsArray) ? $attachmentsArray : [];
 
-                foreach ($residentEmails as $recipientEmail) {
-                    $residentNameStmt = $pdo->prepare('SELECT username FROM users WHERE email = ?');
-                    $residentNameStmt->execute([$recipientEmail]);
-                    $residentName = $residentNameStmt->fetchColumn() ?: 'Resident';
-                    sendAnnouncementEmail($recipientEmail, $residentName, $title, $description, $priority, $attachmentPayload, $baseUrl);
+                foreach ($residentRecipients as $recipient) {
+                    sendAnnouncementNotification(
+                        $recipient['email'],
+                        $recipient['resident_name'] ?? 'Resident',
+                        $recipient['mobile_number'] ?? null,
+                        $title,
+                        $description,
+                        $priority,
+                        $attachmentPayload,
+                        $baseUrl,
+                        !empty($recipient['user_id']) ? (int) $recipient['user_id'] : null
+                    );
                 }
             }
-            
+
             echo json_encode(['success' => $result]);
             exit;
         } elseif ($action === 'pin') {
@@ -782,6 +789,7 @@ function displayAudience($audienceJson) {
   <?php endforeach; ?>
 
 <!-- Shared JS -->
+<script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Bootstrap JS -->

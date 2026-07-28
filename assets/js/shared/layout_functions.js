@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
+  const header = document.querySelector('.header, .site-header');
   const sidebar = document.querySelector('.sidebar');
   const mainContent = document.querySelector('.main-content');
   const sidebarToggle = document.querySelector('.sidebar-toggle');
+  const landingToggle = document.querySelector('.nav-toggle, [data-nav-toggle]');
+  const toggleButton = sidebarToggle || landingToggle;
   let backdrop = document.querySelector('.sidebar-backdrop');
-  const navToggle = document.querySelector('[data-nav-toggle]');
   let mobileNav = document.querySelector('.mobile-nav');
 
   if (!backdrop && sidebar) {
@@ -12,22 +14,51 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.appendChild(backdrop);
   }
 
-  if (!mobileNav && document.querySelector('.main-nav')) {
+  if (!mobileNav && header) {
     mobileNav = document.createElement('nav');
     mobileNav.className = 'mobile-nav';
-    const links = Array.from(document.querySelectorAll('.main-nav a'));
-    links.forEach((link) => {
-      const clone = link.cloneNode(true);
-      clone.classList.remove('btn-outline', 'btn-primary');
-      mobileNav.appendChild(clone);
-    });
-    document.querySelector('.site-header')?.appendChild(mobileNav);
+    mobileNav.id = 'mobileNav';
+    header.appendChild(mobileNav);
   }
 
-  const closeMobileNav = () => {
-    if (mobileNav) {
-      mobileNav.classList.remove('open');
+  const buildMobileNav = () => {
+    if (!mobileNav) {
+      return;
     }
+
+    mobileNav.innerHTML = '';
+
+    const sidebarLinks = Array.from(document.querySelectorAll('.sidebar-menu a'));
+    let linksToUse = sidebarLinks;
+
+    if (!linksToUse.length) {
+      linksToUse = Array.from(document.querySelectorAll('.main-nav a, .admin-nav a, .header-nav a'));
+    }
+
+    if (!linksToUse.length) {
+      linksToUse = Array.from(document.querySelectorAll('.header-actions a'));
+    }
+
+    linksToUse.forEach((link) => {
+      const clone = link.cloneNode(true);
+      clone.classList.remove('btn-outline', 'btn-primary', 'active');
+      clone.classList.add('mobile-nav-link');
+      mobileNav.appendChild(clone);
+    });
+
+    if (!mobileNav.children.length) {
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = 'index.php';
+      fallbackLink.textContent = 'Home';
+      fallbackLink.className = 'mobile-nav-link';
+      mobileNav.appendChild(fallbackLink);
+    }
+  };
+
+  buildMobileNav();
+
+  const closeMobileNav = () => {
+    mobileNav?.classList.remove('open');
   };
 
   const closeSidebar = () => {
@@ -54,32 +85,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function (event) {
+  if (toggleButton) {
+    toggleButton.addEventListener('click', function (event) {
       event.stopPropagation();
+
+      if (window.innerWidth <= 768) {
+        const shouldOpen = !mobileNav?.classList.contains('open');
+        closeSidebar();
+        mobileNav?.classList.toggle('open', shouldOpen);
+        return;
+      }
+
       if (sidebar && sidebar.classList.contains('open')) {
         closeSidebar();
-      } else {
+      } else if (sidebar) {
         openSidebar();
-        closeMobileNav();
       }
+      closeMobileNav();
     });
   }
 
   if (backdrop) {
-    backdrop.addEventListener('click', closeSidebar);
-  }
-
-  if (navToggle && mobileNav) {
-    navToggle.addEventListener('click', function (event) {
-      event.stopPropagation();
-      mobileNav.classList.toggle('open');
+    backdrop.addEventListener('click', function () {
       closeSidebar();
+      closeMobileNav();
     });
   }
 
   document.addEventListener('click', function (event) {
-    if (!event.target.closest('.mobile-nav') && !event.target.closest('[data-nav-toggle]')) {
+    if (!event.target.closest('.mobile-nav') && !event.target.closest('.sidebar-toggle') && !event.target.closest('.nav-toggle') && !event.target.closest('[data-nav-toggle]')) {
       closeMobileNav();
     }
     if (!event.target.closest('.sidebar') && !event.target.closest('.sidebar-toggle')) {

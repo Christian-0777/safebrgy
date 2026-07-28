@@ -39,7 +39,7 @@ p, span, a, button, .btn, label {
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #007bff;
+  border-left: 4px solid #0b63d6;
   transition: all 0.3s ease;
 }
 
@@ -51,7 +51,7 @@ p, span, a, button, .btn, label {
 .stat-value {
   font-size: 32px;
   font-weight: bold;
-  color: #007bff;
+  color: #0b63d6;
   margin-bottom: 10px;
 }
 
@@ -76,14 +76,14 @@ p, span, a, button, .btn, label {
 }
 
 .nav-tabs .nav-link:hover {
-  color: #007bff;
-  border-bottom-color: #007bff;
+  color: #0b63d6;
+  border-bottom-color: #0b63d6;
 }
 
 .nav-tabs .nav-link.active {
-  color: #007bff;
+  color: #0b63d6;
   background-color: transparent;
-  border-bottom-color: #007bff;
+  border-bottom-color: #0b63d6;
 }
 
 .tab-content {
@@ -211,8 +211,8 @@ p, span, a, button, .btn, label {
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #0b63d6;
+  box-shadow: 0 0 0 0.2rem rgba(11, 99, 214, 0.25);
 }
 
 .form-check {
@@ -236,17 +236,17 @@ p, span, a, button, .btn, label {
 }
 
 .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #0b63d6;
+  border-color: #0b63d6;
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: #083d96;
+  border-color: #083d96;
 }
 
 .btn-outline-primary:hover {
-  background-color: #007bff;
+  background-color: #0b63d6;
   color: white;
 }
 

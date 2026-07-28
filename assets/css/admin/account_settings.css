@@ -28,14 +28,14 @@ p, span, a, button, .btn, label {
 }
 
 form .btn-primary {
-  background-color: #007bff;
+  background-color: #0b63d6;
   border: none;
   font-size: 12px;
   font-family: Arial;
 }
 
 form .btn-primary:hover {
-  background-color: #0056b3;
+  background-color: #083d96;
 }
 
 .main-content {

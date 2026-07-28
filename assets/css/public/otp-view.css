@@ -10,8 +10,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 :root {
-  --primary-color: #007bff;
-  --primary-dark: #0056b3;
+  --primary-color: #0b63d6;
+  --primary-dark: #083d96;
   --success-color: #28a745;
   --danger-color: #dc3545;
   --warning-color: #ffc107;
@@ -64,7 +64,7 @@ body {
   justify-content: center;
   color: white;
   font-size: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
+  box-shadow: 0 4px 15px rgba(11, 99, 214, 0.25);
 }
 
 /* OTP Input Group */
@@ -91,7 +91,7 @@ body {
 .otp-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(11, 99, 214, 0.1);
   background-color: #f8f9ff;
 }
 
@@ -133,7 +133,7 @@ body {
 .btn-primary:hover {
   background-color: var(--primary-dark);
   border-color: var(--primary-dark);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(11, 99, 214, 0.3);
 }
 
 .btn-primary:active {

@@ -593,6 +593,7 @@ $stats = $statsStmt->fetch();
   <?php endforeach; ?>
 
 <!-- Shared JS -->
+<script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Bootstrap JS -->

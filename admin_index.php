@@ -16,15 +16,25 @@ require_once __DIR__ . '/config/db.php';
   <!-- Navigation -->
   <header class="admin-header">
     <div class="container nav-inner">
-      <h1 class="brand">SafeBrgy Admin</h1>
+      <a href="index.php" class="brand">
+        <img src="assets/img/seal.png" alt="Barangay Seal" class="brand-logo">
+        <span>Brgy San Jose</span>
+      </a>
       <nav class="admin-nav" id="adminNav">
         <a href="#dashboard">Dashboard</a>
         <a href="#residents">Residents</a>
         <a href="#reports">Reports</a>
         <a href="#announcements">Announcements</a>
       </nav>
-      <button class="nav-toggle" id="navToggle">☰</button>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
     </div>
+    <nav class="mobile-nav" id="mobileNav">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#residents">Residents</a>
+      <a href="#reports">Reports</a>
+      <a href="#announcements">Announcements</a>
+      <a href="admin/login.php">Admin Login</a>
+    </nav>
   </header>
 
   <!-- Hero -->
@@ -55,6 +65,7 @@ require_once __DIR__ . '/config/db.php';
     </div>
   </footer>
 
-  <script src="assets/js/admin.js"></script>
+  <script src="assets/js/shared/logo_functions.js"></script>
+  <script src="assets/admin_landing.js"></script>
 </body>
 </html>

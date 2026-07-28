@@ -37,6 +37,11 @@ function safeBrgy_db_connect(): PDO
                 if ($statement === '') {
                     continue;
                 }
+
+                if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?/i', $statement)) {
+                    $statement = preg_replace('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?/i', 'CREATE TABLE IF NOT EXISTS ', $statement, 1);
+                }
+
                 $pdo->exec($statement);
             }
         }

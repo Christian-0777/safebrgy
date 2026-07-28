@@ -15,6 +15,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/mailer.php';
 require_once __DIR__ . '/includes/functions.php';
 
 function respond(bool $success, string $message = '', array $extra = []): void
@@ -178,8 +179,17 @@ try {
 
     $conn->commit();
 
-    // ---- 3. Notify the resident by email ----
-    sendNotificationEmail($residentEmail, $residentName, $documentType);
+    // ---- 3. Notify the resident by email and SMS if available ----
+    $userStmt = $conn->prepare('SELECT u.id AS user_id, r.mobile_number FROM users u LEFT JOIN residents r ON u.id = r.user_id WHERE u.email = ?');
+    $userStmt->bind_param('s', $residentEmail);
+    $userStmt->execute();
+    $userResult = $userStmt->get_result();
+    $userRow = $userResult ? $userResult->fetch_assoc() : null;
+    $userStmt->close();
+
+    $userId = $userRow['user_id'] ?? null;
+    $mobileNumber = $userRow['mobile_number'] ?? null;
+    sendRequestSubmissionNotification($residentEmail, $residentName, $mobileNumber, $documentType, $userId);
 
     // ---- 4. Respond with data needed to update the UI ----
     respond(true, 'Request submitted successfully.', [

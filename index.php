@@ -20,18 +20,21 @@ session_start();
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <div class="brand">
-        <h1>Barangay San Jose</h1>
-      </div>
+      <a href="#home" class="header-logo">
+        <img src="assets/img/seal.png" alt="Barangay San Jose Logo" class="logo-image">
+        <span>Barangay San Jose</span>
+      </a>
       <nav class="main-nav">
         <a href="#home" class="active">Home</a>
         <a href="#about">About</a>
         <a href="#services">Services</a>
         <a href="#officials">Officials</a>
         <a href="#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
         <a href="#register" class="btn-outline">Register</a>
         <a href="public/login.php" class="btn-primary">Login</a>
-      </nav>
+      </div>
       <button class="nav-toggle" data-nav-toggle aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
     </div>
     <nav class="mobile-nav" id="mobileNav">
@@ -412,6 +415,7 @@ session_start();
 
   <script src="assets/js/public/modals/login.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/shared/logo_functions.js"></script>
   <script src="assets/js/shared/layout_functions.js"></script>
 </body>
 </html>

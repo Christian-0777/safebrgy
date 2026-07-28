@@ -45,14 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $result = $stmt->execute([$newStatus, $reportId]);
 
         if ($result) {
-            $reportStmt = $pdo->prepare('SELECT r.case_number, u.email, res.first_name, res.last_name FROM reports r LEFT JOIN users u ON r.user_id = u.id LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
+            $reportStmt = $pdo->prepare('SELECT r.case_number, u.id AS user_id, u.email, res.first_name, res.last_name, res.mobile_number FROM reports r LEFT JOIN users u ON r.user_id = u.id LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
             $reportStmt->execute([$reportId]);
             $reportDetails = $reportStmt->fetch();
 
             if ($reportDetails && !empty($reportDetails['email'])) {
-                $residentName = trim(($reportDetails['first_name'] ?? '') . ' ' . ($reportDetails['last_name'] ?? '')) ?: 'Resident';
+                $residentName = trim(($reportDetails['first_name'] ?? '') . ' ' . ($reportDetails['last_name'] ?? '')) ?: ($reportDetails['username'] ?? 'Resident');
                 $caseNumber = $reportDetails['case_number'] ?: $reportId;
-                sendReportStatusEmail($reportDetails['email'], $residentName, $caseNumber, $newStatus);
+                $mobileNumber = $reportDetails['mobile_number'] ?? null;
+                $userId = !empty($reportDetails['user_id']) ? (int) $reportDetails['user_id'] : null;
+                sendReportStatusNotification($reportDetails['email'], $residentName, $mobileNumber, $caseNumber, $newStatus, $userId);
             }
         }
         
@@ -332,6 +334,7 @@ $stats = $statsStmt->fetch();
   </div>
 
 <!-- Shared JS -->
+<script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Bootstrap JS -->

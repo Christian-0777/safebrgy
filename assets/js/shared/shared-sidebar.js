@@ -1,6 +1,6 @@
 /**
  * Shared Sidebar JavaScript
- * Handles sidebar functionality including collapsing, menu navigation, and mobile responsiveness
+ * Handles sidebar highlighting and desktop collapsing while leaving mobile navigation to the shared layout script.
  */
 
 class SharedSidebar {
@@ -23,25 +23,24 @@ class SharedSidebar {
   }
 
   attachEventListeners() {
-    // Toggle sidebar on button click
+    if (this.isMobile) {
+      this.closeSidebarMobile();
+      return;
+    }
+
     if (this.toggleBtn) {
       this.toggleBtn.addEventListener('click', () => this.toggleSidebar());
     }
 
-    // Menu item click handlers
     this.menuItems.forEach((item) => {
-      item.addEventListener('click', (e) => {
-        this.handleMenuItemClick(e, item);
-      });
+      item.addEventListener('click', (e) => this.handleMenuItemClick(e, item));
     });
 
-    // Submenu toggle
     this.menuItems.forEach((item) => {
       const submenu = item.nextElementSibling;
       if (submenu && submenu.classList.contains('submenu')) {
         item.style.cursor = 'pointer';
         item.addEventListener('click', (e) => {
-          // Only prevent default if it's not a link
           if (item.tagName === 'DIV') {
             e.preventDefault();
             this.toggleSubmenu(submenu);
@@ -50,36 +49,18 @@ class SharedSidebar {
       }
     });
 
-    // Close sidebar when clicking on main content (mobile)
-    if (this.isMobile && this.mainContent) {
-      this.mainContent.addEventListener('click', () => this.closeSidebarMobile());
-    }
-
-    // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
-
-    // Close sidebar on link click (mobile)
-    const sidebarLinks = this.sidebar.querySelectorAll('a');
-    sidebarLinks.forEach((link) => {
-      link.addEventListener('click', () => {
-        if (this.isMobile && this.sidebar.classList.contains('open')) {
-          this.closeSidebarMobile();
-        }
-      });
-    });
   }
 
   handleMenuItemClick(event, item) {
     const submenu = item.nextElementSibling;
 
-    // If there's a submenu, toggle it
     if (submenu && submenu.classList.contains('submenu')) {
       event.preventDefault();
       this.toggleSubmenu(submenu);
       return;
     }
 
-    // Set active state for regular links
     if (item.tagName === 'A') {
       this.menuItems.forEach((m) => m.classList.remove('active'));
       item.classList.add('active');
@@ -89,12 +70,10 @@ class SharedSidebar {
   toggleSubmenu(submenu) {
     const isActive = submenu.classList.contains('active');
 
-    // Close all other submenus
     document.querySelectorAll('.submenu').forEach((menu) => {
       menu.classList.remove('active');
     });
 
-    // Toggle current submenu
     if (!isActive) {
       submenu.classList.add('active');
     }
@@ -102,19 +81,17 @@ class SharedSidebar {
 
   toggleSidebar() {
     if (this.isMobile) {
-      this.sidebar.classList.toggle('open');
-      this.mainContent?.classList.toggle('sidebar-open');
-    } else {
-      this.sidebar.classList.toggle('collapsed');
-      this.mainContent?.classList.toggle('collapsed');
+      this.closeSidebarMobile();
+      return;
     }
+
+    this.sidebar.classList.toggle('collapsed');
+    this.mainContent?.classList.toggle('collapsed');
   }
 
   closeSidebarMobile() {
-    if (this.isMobile) {
-      this.sidebar.classList.remove('open');
-      this.mainContent?.classList.remove('sidebar-open');
-    }
+    this.sidebar.classList.remove('open');
+    this.mainContent?.classList.remove('sidebar-open');
   }
 
   setActiveMenuItem() {
@@ -127,7 +104,6 @@ class SharedSidebar {
         this.menuItems.forEach((m) => {
           m.classList.remove('active');
 
-          // Remove active from submenu items
           const submenu = m.nextElementSibling;
           if (submenu && submenu.classList.contains('submenu')) {
             submenu.querySelectorAll('a').forEach((link) => link.classList.remove('active'));
@@ -136,7 +112,6 @@ class SharedSidebar {
 
         item.classList.add('active');
 
-        // Activate parent menu if item is in submenu
         const parent = item.closest('.submenu')?.previousElementSibling;
         if (parent) {
           parent.classList.add('active');
@@ -148,13 +123,11 @@ class SharedSidebar {
       }
     });
 
-    // Check submenu items
     document.querySelectorAll('.submenu a').forEach((link) => {
       const href = link.getAttribute('href');
       if (href && href.includes(fileName)) {
         link.classList.add('active');
 
-        // Activate parent menu
         const submenu = link.closest('.submenu');
         if (submenu) {
           submenu.classList.add('active');
@@ -171,14 +144,12 @@ class SharedSidebar {
     const wasOnMobile = this.isMobile;
     this.isMobile = window.innerWidth <= 768;
 
-    // If switching from desktop to mobile or vice versa
     if (wasOnMobile !== this.isMobile) {
       this.sidebar.classList.remove('open', 'collapsed');
       this.mainContent?.classList.remove('sidebar-open', 'collapsed');
     }
   }
 
-  // Public methods to control sidebar from other scripts
   collapse() {
     if (!this.isMobile) {
       this.sidebar.classList.add('collapsed');
@@ -212,7 +183,6 @@ class SharedSidebar {
   }
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   window.sharedSidebar = new SharedSidebar();
 });

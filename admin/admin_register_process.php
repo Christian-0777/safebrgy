@@ -38,9 +38,15 @@ if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
     redirectWithError('Password must be at least 8 characters and contain uppercase, lowercase, and numbers.');
 }
 
-$normalizedPhone = preg_replace('/\s+/', '', $phone);
-if (!preg_match('/^(\+?63|0)?9\d{9}$/', $normalizedPhone)) {
-    redirectWithError('Please enter a valid Philippine mobile number.');
+$normalizedPhone = preg_replace('/[^0-9\+]/', '', $phone);
+if (str_starts_with($normalizedPhone, '0')) {
+    $normalizedPhone = '+63' . substr($normalizedPhone, 1);
+}
+if (str_starts_with($normalizedPhone, '63')) {
+    $normalizedPhone = '+' . $normalizedPhone;
+}
+if (!preg_match('/^\+63[0-9]{10}$/', $normalizedPhone)) {
+    redirectWithError('Please enter a valid Philippine mobile number in +63 format.');
 }
 
 if (!$agreeTerms) {

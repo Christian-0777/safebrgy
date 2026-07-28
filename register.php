@@ -49,6 +49,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Passwords do not match';
     }
 
+    // Normalize and validate mobile number
+    $mobileInput = trim($_POST['mobile'] ?? '');
+    $mobileNormalized = null;
+    if ($mobileInput !== '') {
+        $mobileOnly = preg_replace('/[^0-9\+]/', '', $mobileInput);
+        if (str_starts_with($mobileOnly, '0')) {
+            $mobileOnly = '+63' . substr($mobileOnly, 1);
+        }
+        if (str_starts_with($mobileOnly, '63')) {
+            $mobileOnly = '+' . $mobileOnly;
+        }
+        if (preg_match('/^\+63[0-9]{10}$/', $mobileOnly)) {
+            $mobileNormalized = $mobileOnly;
+        }
+    }
+
+    if (!$mobileNormalized) {
+        $errors[] = 'Please enter a valid Philippine mobile number in +63 format';
+    }
+
     // Check if email already exists
     $pdo = safeBrgy_db_connect();
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
@@ -101,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'complete_address' => $_POST['address'],
             'purok' => $_POST['purok'],
             'years_of_residency' => (int)$_POST['years_residency'],
-            'mobile_number' => $_POST['mobile'],
+            'mobile_number' => $mobileNormalized,
             'email' => $_POST['email'],
             'voter_status' => $_POST['voter_status'],
             'employment_status' => $_POST['employment_status'],

@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
 
         if ($result) {
-            $requestStmt = $pdo->prepare('SELECT resident_email, resident_name, document_type, reference_no FROM requests WHERE id = ?');
+            $joinCondition = $hasUserIdColumn ? 'r.user_id = u.id' : 'u.email = r.resident_email';
+            $requestStmt = $pdo->prepare('SELECT r.resident_email, r.resident_name, r.document_type, r.reference_no, u.id AS user_id, res.mobile_number FROM requests r LEFT JOIN users u ON ' . $joinCondition . ' LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
             $requestStmt->execute([$requestId]);
             $requestDetails = $requestStmt->fetch();
 
@@ -51,7 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $recipientEmail = $requestDetails['resident_email'];
                 $requestNumber = $requestDetails['reference_no'] ?: $requestId;
                 $documentType = $requestDetails['document_type'] ?: 'Request';
-                sendRequestStatusEmail($recipientEmail, $residentName, $requestNumber, $documentType, $newStatus);
+                $mobileNumber = $requestDetails['mobile_number'] ?? null;
+                $userId = !empty($requestDetails['user_id']) ? (int) $requestDetails['user_id'] : null;
+
+                sendRequestStatusNotification($recipientEmail, $residentName, $mobileNumber, $requestNumber, $documentType, $newStatus, $userId);
             }
         }
 
@@ -532,6 +536,7 @@ $stats = $statsStmt->fetch();
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Shared JS -->
+  <script src="../../assets/js/shared/logo_functions.js"></script>
   <script src="../../assets/js/shared/shared-header.js"></script>
   <script src="../../assets/js/shared/shared-sidebar.js"></script>
   <!-- Page-specific JS -->

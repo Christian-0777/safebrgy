@@ -206,7 +206,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 24px 16px;
-  z-index: 1100;
+  z-index: 1200;
   overflow-y: auto;
 }
 
@@ -245,6 +245,45 @@ body {
 
 .modal-body {
   padding: 20px 24px 24px;
+}
+
+.details-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.details-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.details-item strong {
+  color: var(--request-text);
+}
+
+.details-item span {
+  color: var(--request-muted);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+  color: var(--request-accent);
+  background: transparent;
+  border: 1px solid var(--request-accent);
+}
+
+.btn-outline:hover {
+  background: rgba(11, 99, 214, 0.08);
 }
 
 .form-alert {

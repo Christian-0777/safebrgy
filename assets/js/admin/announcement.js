@@ -71,6 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (createForm) {
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (window.showLoadingOverlay) {
+        window.showLoadingOverlay();
+      }
       
       const formData = new FormData(createForm);
       formData.append('action', 'create');
@@ -112,6 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Failed to create announcement: ' + (data.error || 'Unknown error'));
         }
       } catch (error) {
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
         console.error('Error:', error);
         alert('An error occurred while creating the announcement.');
       }
@@ -123,6 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
       const pinned = btn.dataset.pinned === '1' ? 0 : 1;
+
+      if (window.showLoadingOverlay) {
+        window.showLoadingOverlay();
+      }
 
       try {
         const response = await fetch('announcement.php', {

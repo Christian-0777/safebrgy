@@ -117,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apply status update
   applyStatusBtn.addEventListener('click', async () => {
+    if (window.showLoadingOverlay) {
+      window.showLoadingOverlay();
+    }
+
     const statusSelect = document.getElementById('statusSelect');
     const newStatus = statusSelect.value;
 
@@ -128,6 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+      if (window.hideLoadingOverlay) {
+        window.hideLoadingOverlay();
+      }
       if (data.success) {
         alert('Report status updated successfully!');
         location.reload();
@@ -135,6 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Failed to update report status.');
       }
     } catch (error) {
+      if (window.hideLoadingOverlay) {
+        window.hideLoadingOverlay();
+      }
       console.error('Error:', error);
       alert('An error occurred while updating the status.');
     }

@@ -367,7 +367,7 @@ table.requests-table tbody tr:hover { background: #fbfaf6; }
   justify-content: center;
   padding: 40px 16px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1200;
 }
 
 .modal-overlay.active { display: flex; }

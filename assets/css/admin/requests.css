@@ -110,6 +110,10 @@ p, span, a, button, .btn, label {
   border-bottom: 1px solid #dee2e6;
 }
 
+body .modal-dialog {
+  margin-top: calc(var(--admin-header-height, 74px) + 1rem);
+}
+
 .modal-body {
   padding: 20px;
 }

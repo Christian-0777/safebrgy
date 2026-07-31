@@ -117,7 +117,6 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <h2 class="mb-2">Announcements</h2>
           <p class="text-muted">Stay updated with the latest notices and updates from the municipality</p>
         </div>
-        <span class="fw-bold"><?php echo htmlspecialchars($name); ?></span>
       </div>
 
       <!-- Search and Filter -->

@@ -1,3 +1,24 @@
+## What's New in V2.3 (Minor Update)
+
+### SMS Notifications Migrated to Textbee.dev
+
+#### Overview
+The SMS notification system has been updated to use Textbee.dev as the active provider for automated resident notifications.
+
+#### Highlights
+- Switched SMS delivery to the Textbee.dev API
+- Added Textbee device ID and API key configuration via environment settings
+- Updated the mailer integration to send SMS through the new provider
+- Removed the active Twilio SMS dependency from project configuration
+
+#### Files Updated
+- config/mailer.php
+- .env
+- composer.json
+- wiki.md
+
+---
+
 ## What's New in V2.2.7.1.1 (Minor Update)
 The cards in the first row now use col-md-4 for equal width distribution, and the second row has two col-md-6 columns side-by-side without the offset.
 

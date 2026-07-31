@@ -126,6 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
     createReportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      if (window.showLoadingOverlay) {
+        window.showLoadingOverlay();
+      }
+
       const formData = new FormData(createReportForm);
 
       try {
@@ -153,6 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
           alert('Error: ' + (data.message || 'Failed to create report'));
         }
       } catch (error) {
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
         console.error('Error:', error);
         alert('An error occurred while creating the report');
       }

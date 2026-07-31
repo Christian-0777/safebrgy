@@ -42,13 +42,13 @@ if ($userId) {
 // Get requested documents history
 $documentsHistory = [];
 if ($userId) {
-    $stmt = $pdo->prepare('
-        SELECT id, request_type, created_at, status 
-        FROM requests 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC 
-        LIMIT 10
-    ');
+    $stmt = $pdo->prepare(
+        'SELECT id, document_type AS request_type, submitted_at AS created_at, status
+           FROM requests
+          WHERE user_id = ?
+          ORDER BY submitted_at DESC
+          LIMIT 10'
+    );
     $stmt->execute([$userId]);
     $documentsHistory = $stmt->fetchAll();
 }

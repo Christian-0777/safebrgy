@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update status button click handler
   updateStatusButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
+      if (window.showLoadingOverlay) {
+        window.showLoadingOverlay();
+      }
+
       const requestId = btn.dataset.requestId;
       const modal = btn.closest('.modal');
       const statusSelect = modal.querySelector('.status-select');
@@ -24,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const data = await response.json();
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
         if (data.success) {
           alert('Status updated successfully!');
           location.reload();
@@ -31,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Failed to update status.');
         }
       } catch (error) {
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
         console.error('Error:', error);
         alert('An error occurred while updating the status.');
       }

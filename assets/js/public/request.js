@@ -1,9 +1,16 @@
 document.addEventListener('DOMContentLoaded', function () {
   const overlays = document.querySelectorAll('.modal-overlay');
+
+  window.addEventListener('beforeunload', function () {
+    if (window.showLoadingOverlay) {
+      window.showLoadingOverlay();
+    }
+  });
   const requestButtons = document.querySelectorAll('[data-modal]');
   const closeButtons = document.querySelectorAll('[data-close]');
   const forms = document.querySelectorAll('.request-form');
   const confirmOkButton = document.getElementById('confirm-ok');
+  const requestsTableBody = document.getElementById('requests-table-body');
 
   function openModal(modal) {
     if (!modal) return;
@@ -49,6 +56,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  if (requestsTableBody) {
+    requestsTableBody.addEventListener('click', function (event) {
+      const button = event.target.closest('.view-request-btn');
+      if (!button) return;
+
+      const modal = document.getElementById('modal-request-details');
+      const title = document.getElementById('requestDetailsTitle');
+      const submittedAt = document.getElementById('detail-submitted-at');
+      const purpose = document.getElementById('detail-purpose');
+      const status = document.getElementById('detail-status');
+
+      if (title) {
+        title.textContent = button.dataset.documentType + ' — ' + button.dataset.referenceNo;
+      }
+      if (submittedAt) {
+        submittedAt.textContent = button.dataset.submittedAt || 'N/A';
+      }
+      if (purpose) {
+        purpose.textContent = button.dataset.purpose || 'N/A';
+      }
+      if (status) {
+        status.textContent = button.dataset.status || 'N/A';
+      }
+
+      openModal(modal);
+    });
+  }
+
   const indigencyPurpose = document.getElementById('indigency-purpose');
   const indigencyOtherWrap = document.getElementById('indigency-other-wrap');
   const indigencyOtherInput = document.getElementById('indigency-other');
@@ -76,10 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const submitButton = form.querySelector('button[type="submit"]');
     const formData = new FormData(form);
     const docType = form.getAttribute('data-doctype');
+    const formPurpose = getFormPurpose(form);
 
     if (alertBox) {
       alertBox.style.display = 'none';
       alertBox.textContent = '';
+    }
+
+    if (window.showLoadingOverlay) {
+      window.showLoadingOverlay();
     }
 
     if (submitButton) {
@@ -97,6 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return response.json();
       })
       .then(function (data) {
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
+
         if (submitButton) {
           submitButton.disabled = false;
           submitButton.textContent = 'Submit Request';
@@ -109,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (indigencyOtherWrap) indigencyOtherWrap.style.display = 'none';
 
           showSuccess(docType, data.reference_no);
-          addRowToTable(data.reference_no, docType, data.submitted_at);
+          addRowToTable(data.reference_no, docType, data.submitted_at, formPurpose, 'Pending');
         } else if (alertBox) {
           alertBox.textContent = data.message || 'Unable to submit your request right now.';
           alertBox.style.display = 'block';
@@ -118,6 +162,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       })
       .catch(function () {
+        if (window.hideLoadingOverlay) {
+          window.hideLoadingOverlay();
+        }
+
         if (submitButton) {
           submitButton.disabled = false;
           submitButton.textContent = 'Submit Request';
@@ -127,6 +175,34 @@ document.addEventListener('DOMContentLoaded', function () {
           alertBox.style.display = 'block';
         }
       });
+  }
+
+  function getFormPurpose(form) {
+    const purposeField = form.querySelector('[name="purpose"]');
+    let purpose = purposeField ? purposeField.value.trim() : '';
+
+    if (!purpose) {
+      return 'No purpose provided';
+    }
+
+    if (purpose === 'Other') {
+      const otherField = form.querySelector('[name="purpose_other"]');
+      return otherField && otherField.value.trim() ? otherField.value.trim() : 'Other';
+    }
+
+    return purpose;
+  }
+
+  function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, function (match) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[match];
+    });
   }
 
   function showSuccess(docType, referenceNo) {
@@ -148,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
     openModal(confirmModal);
   }
 
-  function addRowToTable(referenceNo, docType, submittedAt) {
+  function addRowToTable(referenceNo, docType, submittedAt, purpose, status) {
     const tbody = document.getElementById('requests-table-body');
     if (!tbody) return;
 
@@ -159,11 +235,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const row = document.createElement('tr');
     row.innerHTML = [
-      '<td><strong>' + referenceNo + '</strong></td>',
-      '<td>' + docType + '</td>',
-      '<td>' + submittedAt + '</td>',
-      '<td><span class="status-pill status-pending">Pending</span></td>',
-      '<td><span class="text-muted">Submitted</span></td>'
+      '<td><strong>' + escapeHtml(referenceNo) + '</strong></td>',
+      '<td>' + escapeHtml(docType) + '</td>',
+      '<td>' + escapeHtml(submittedAt) + '</td>',
+      '<td><span class="status-pill status-pending">' + escapeHtml(status) + '</span></td>',
+      '<td><button type="button" class="btn btn-outline view-request-btn" '
+        + 'data-document-type="' + escapeHtml(docType) + '" '
+        + 'data-reference-no="' + escapeHtml(referenceNo) + '" '
+        + 'data-submitted-at="' + escapeHtml(submittedAt) + '" '
+        + 'data-status="' + escapeHtml(status) + '" '
+        + 'data-purpose="' + escapeHtml(purpose) + '">View</button></td>'
     ].join('');
 
     tbody.prepend(row);

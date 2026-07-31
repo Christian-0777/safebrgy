@@ -285,6 +285,7 @@ function displayAudience($audienceJson) {
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/admin/announcement.css">
   <link rel="stylesheet" href="../../assets/css/shared/layout.css">
+  <link rel="stylesheet" href="../../assets/css/shared/loading-overlay.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Bootstrap CSS -->
@@ -313,6 +314,7 @@ function displayAudience($audienceJson) {
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
           <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
+          <a href="../logs/logs.php"><i class="fas fa-history"></i> Logs</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -795,6 +797,7 @@ function displayAudience($audienceJson) {
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Page-specific JS -->
+<script src="../../assets/js/shared/loading-overlay.js"></script>
 <script src="../../assets/js/admin/announcement.js"></script>
 </body>
 </html>

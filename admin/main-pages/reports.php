@@ -148,6 +148,7 @@ $stats = $statsStmt->fetch();
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
           <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
+          <a href="../logs/logs.php"><i class="fas fa-history"></i> Logs</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -340,6 +341,7 @@ $stats = $statsStmt->fetch();
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Page-specific JS -->
+<script src="../../assets/js/shared/loading-overlay.js"></script>
 <script src="../../assets/js/admin/reports.js"></script>
 </body>
 </html>

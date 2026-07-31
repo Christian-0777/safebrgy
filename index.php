@@ -29,10 +29,10 @@ session_start();
         <a href="#about">About</a>
         <a href="#services">Services</a>
         <a href="#officials">Officials</a>
+        <a href="#register">Register</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="header-actions">
-        <a href="#register" class="btn-outline">Register</a>
         <a href="public/login.php" class="btn-primary">Login</a>
       </div>
       <button class="nav-toggle" data-nav-toggle aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>

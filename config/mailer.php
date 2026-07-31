@@ -4,7 +4,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
-use Twilio\Rest\Client as TwilioClient;
 // use SendGrid\SendGrid;
 // use SendGrid\Mail\Mail as SendGridMail;
 
@@ -25,12 +24,9 @@ function getMailerConfig(): array
         'sendgrid_api_key' => getenv('SENDGRID_API_KEY') ?: '',
         'sendgrid_from_email' => getenv('SENDGRID_FROM_EMAIL') ?: getenv('MAIL_FROM_ADDRESS') ?: 'no-reply@safebrgy.local',
         'sendgrid_from_name' => getenv('SENDGRID_FROM_NAME') ?: getenv('MAIL_FROM_NAME') ?: 'SafeBRGY',
-        'twilio_account_sid' => getenv('TWILIO_ACCOUNT_SID') ?: '',
-        'twilio_auth_token' => getenv('TWILIO_AUTH_TOKEN') ?: '',
-        'twilio_from_number' => getenv('TWILIO_FROM_NUMBER') ?: '',
-        'httpsms_api_key' => getenv('HTTPSMS_API_KEY') ?: '',
-        'httpsms_api_url' => getenv('HTTPSMS_API_URL') ?: '',
-        'httpsms_sender' => getenv('HTTPSMS_SENDER') ?: '',
+        'textbee_device_id' => getenv('TEXTBEE_DEVICE_ID') ?: '',
+        'textbee_api_key' => getenv('TEXTBEE_API_KEY') ?: '',
+        'textbee_api_url' => getenv('TEXTBEE_API_URL') ?: 'https://api.textbee.dev/api/v1/gateway/devices/{device_id}/send-sms',
     ];
 }
 
@@ -123,29 +119,31 @@ function sendMail(string $recipient, string $subject, string $htmlBody, string $
     return false;
 }
 
-function sendHttpSms(string $recipient, string $message): bool
+function sendTextbeeSms(string $recipient, string $message): bool
 {
     $config = getMailerConfig();
-    $apiKey = $config['httpsms_api_key'];
-    $sender = $config['httpsms_sender'];
-    $apiUrl = $config['httpsms_api_url'] ?: 'https://api.httpsms.com/v1/sms/send';
+    $deviceId = $config['textbee_device_id'];
+    $apiKey = $config['textbee_api_key'];
+    $apiUrl = $config['textbee_api_url'] ?: 'https://api.textbee.dev/api/v1/gateway/devices/{device_id}/send-sms';
+    $apiUrl = str_replace('{device_id}', rawurlencode($deviceId), $apiUrl);
 
-    if (empty($apiKey) || empty($sender)) {
-        error_log('HTTP SMS configuration missing api key or sender.');
+    if (empty($deviceId) || empty($apiKey)) {
+        error_log('Textbee SMS configuration missing device ID or API key.');
         return false;
     }
 
     $payload = json_encode([
-        'api_key' => $apiKey,
-        'sender' => $sender,
-        'to' => $recipient,
+        'recipients' => [$recipient],
         'message' => $message,
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
     $ch = curl_init($apiUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'x-api-key: ' . $apiKey,
+    ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
@@ -155,20 +153,13 @@ function sendHttpSms(string $recipient, string $message): bool
     curl_close($ch);
 
     if ($response === false) {
-        error_log('HTTP SMS request failed: ' . $curlError);
+        error_log('Textbee SMS request failed: ' . $curlError);
         return false;
     }
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        error_log("HTTP SMS returned status {$httpCode}: {$response}");
+        error_log("Textbee SMS returned status {$httpCode}: {$response}");
         return false;
-    }
-
-    $decoded = json_decode($response, true);
-    if (is_array($decoded)) {
-        if ((isset($decoded['success']) && $decoded['success']) || (isset($decoded['status']) && strtolower($decoded['status']) === 'sent')) {
-            return true;
-        }
     }
 
     return true;
@@ -180,31 +171,16 @@ function sendSms(string $recipient, string $message): bool
     $toNumber = normalizePhoneNumber($recipient);
 
     if (!$toNumber) {
-        error_log('HTTP SMS blocked for ' . $recipient . ': invalid phone number.');
+        error_log('Textbee SMS blocked for ' . $recipient . ': invalid phone number.');
         return false;
     }
 
-    if (!empty($config['httpsms_api_key']) && !empty($config['httpsms_sender'])) {
-        return sendHttpSms($toNumber, $message);
+    if (!empty($config['textbee_device_id']) && !empty($config['textbee_api_key'])) {
+        return sendTextbeeSms($toNumber, $message);
     }
 
-    $fromNumber = $config['twilio_from_number'];
-    if (empty($config['twilio_account_sid']) || empty($config['twilio_auth_token']) || empty($fromNumber)) {
-        error_log('Twilio SMS blocked for ' . $recipient . ': invalid configuration or phone number.');
-        return false;
-    }
-
-    try {
-        $client = new TwilioClient($config['twilio_account_sid'], $config['twilio_auth_token']);
-        $client->messages->create($toNumber, [
-            'from' => $fromNumber,
-            'body' => $message,
-        ]);
-        return true;
-    } catch (Exception $exception) {
-        error_log('Twilio SMS error: ' . $exception->getMessage());
-        return false;
-    }
+    error_log('Textbee SMS blocked for ' . $recipient . ': invalid configuration or phone number.');
+    return false;
 }
 
 function logNotificationEvent(array $data): bool

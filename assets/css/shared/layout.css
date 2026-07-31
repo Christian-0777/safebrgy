@@ -9,6 +9,7 @@
   --app-muted: #64748b;
   --app-dark: #0f172a;
   --shadow-soft: 0 12px 32px rgba(15, 23, 42, 0.07);
+  --admin-header-height: 74px;
 }
 
 body {
@@ -17,6 +18,7 @@ body {
   background: linear-gradient(135deg, var(--color-background) 0%, #eef5ff 100%);
   color: var(--text-primary);
   min-height: 100vh;
+  --admin-header-height: 74px;
 }
 
 body, .header, .sidebar, .main-content {
@@ -218,11 +220,11 @@ img {
   z-index: 1250;
 }
 
-.modal-dialog {
-  margin: 5rem auto 1rem;
+body .modal-dialog {
+  margin: calc(var(--admin-header-height, 74px) + 1rem) auto 1rem;
 }
 
-.modal-dialog-centered {
+body .modal-dialog-centered {
   align-items: flex-start;
 }
 

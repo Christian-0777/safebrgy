@@ -208,6 +208,7 @@ $scheduledEvents = $pdo->query('
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
           <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
+          <a href="../logs/logs.php"><i class="fas fa-history"></i> Logs</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>

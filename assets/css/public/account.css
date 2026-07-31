@@ -21,7 +21,7 @@ p, span, a, button, .btn, label {
 }
 
 .main-content {
-  padding-top: 80px;
+  padding-top: 90px;
   padding-bottom: 40px;
   min-height: calc(100vh - 80px);
   background-color: #f8f9fa;

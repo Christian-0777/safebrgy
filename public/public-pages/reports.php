@@ -68,6 +68,7 @@ if ($userId) {
   <!-- Page-specific styles -->
   <link rel="stylesheet" href="../../assets/css/public/reports.css">
   <link rel="stylesheet" href="../../assets/css/shared/layout.css">
+  <link rel="stylesheet" href="../../assets/css/shared/loading-overlay.css">
 </head>
 <body>
 
@@ -368,6 +369,7 @@ if ($userId) {
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
 <!-- Page-specific JS -->
+<script src="../../assets/js/shared/loading-overlay.js"></script>
 <script src="../../assets/js/public/reports.js"></script>
 </body>
 </html>

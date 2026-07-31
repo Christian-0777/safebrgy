@@ -21,6 +21,10 @@ function viewUser(userId) {
 }
 
 function verifyUser(userId) {
+  if (window.showLoadingOverlay) {
+    window.showLoadingOverlay();
+  }
+
   fetch('verify_user.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -28,12 +32,23 @@ function verifyUser(userId) {
   })
   .then(response => response.json())
   .then(data => {
+    if (window.hideLoadingOverlay) {
+      window.hideLoadingOverlay();
+    }
+
     if (data.success) {
       new bootstrap.Modal(document.getElementById('approveModal')).show();
       setTimeout(() => location.reload(), 2000);
     } else {
       alert('Error: ' + data.message);
     }
+  })
+  .catch(error => {
+    if (window.hideLoadingOverlay) {
+      window.hideLoadingOverlay();
+    }
+    console.error('Error:', error);
+    alert('An error occurred while verifying the user.');
   });
 }
 
@@ -44,6 +59,10 @@ function rejectUser(userId) {
 }
 
 function confirmReject() {
+  if (window.showLoadingOverlay) {
+    window.showLoadingOverlay();
+  }
+
   const reason = document.getElementById('rejectReason').value.trim();
   if (!reason) {
     alert('Please enter a reason for rejection');
@@ -61,11 +80,22 @@ function confirmReject() {
   })
   .then(response => response.json())
   .then(data => {
+    if (window.hideLoadingOverlay) {
+      window.hideLoadingOverlay();
+    }
+
     if (data.success) {
       bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
       location.reload();
     } else {
       alert('Error: ' + data.message);
     }
+  })
+  .catch(error => {
+    if (window.hideLoadingOverlay) {
+      window.hideLoadingOverlay();
+    }
+    console.error('Error:', error);
+    alert('An error occurred while rejecting the user.');
   });
 }

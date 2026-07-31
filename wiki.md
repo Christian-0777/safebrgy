@@ -96,7 +96,7 @@ A comprehensive Barangay management system designed to streamline document reque
 ### External Libraries
 - **PHPMailer 7.0** - Email sending library
 - **SendGrid 8.1** - Email delivery service integration
-- **Twilio 8.11** - SMS and communication services
+- **Textbee.dev** - SMS gateway integration for automated notifications
 
 ### Development Tools
 - **XAMPP/LAMP** - Local development server
@@ -330,7 +330,6 @@ vendor/                    # Composer packages
 ├── autoload.php
 ├── phpmailer/
 ├── sendgrid/
-├── twilio/
 └── [others]
 ```
 

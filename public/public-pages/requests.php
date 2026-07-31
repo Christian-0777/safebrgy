@@ -12,7 +12,17 @@ $user = $_SESSION['user'];
 $residentName = $user['name'] ?? $user['username'] ?? 'Resident';
 $residentEmail = $user['email'] ?? '';
 
-$stmt = $pdo->prepare('SELECT reference_no, document_type, status, submitted_at FROM requests WHERE resident_email = ? ORDER BY submitted_at DESC');
+$stmt = $pdo->prepare(
+    'SELECT r.reference_no, r.document_type, r.status, r.submitted_at,
+            COALESCE(bc.purpose, br.purpose, bi.purpose, bb.purpose) AS purpose
+       FROM requests r
+  LEFT JOIN barangay_clearance bc ON bc.request_id = r.id
+  LEFT JOIN barangay_residency br ON br.request_id = r.id
+  LEFT JOIN barangay_indigency bi ON bi.request_id = r.id
+  LEFT JOIN barangay_business_clearance bb ON bb.request_id = r.id
+      WHERE resident_email = ?
+      ORDER BY submitted_at DESC'
+);
 $stmt->execute([$residentEmail]);
 $requests = $stmt->fetchAll();
 ?>
@@ -29,6 +39,7 @@ $requests = $stmt->fetchAll();
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <link rel="stylesheet" href="../../assets/css/public/request.css">
+  <link rel="stylesheet" href="../../assets/css/shared/loading-overlay.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -79,11 +90,7 @@ $requests = $stmt->fetchAll();
           </p>
         </div>
       </div>
-
-      <div class="hero-card">
-        <p>Choose a document type below, fill out the short form, and our barangay office will review it and update the status after submission.</p>
-      </div>
-
+      
       <div class="service-grid">
         <div class="service-card">
           <div class="service-icon"><i class="fas fa-certificate"></i></div>
@@ -121,7 +128,7 @@ $requests = $stmt->fetchAll();
                 <th>Document Type</th>
                 <th>Submitted On</th>
                 <th>Status</th>
-                <th>Remarks</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="requests-table-body">
@@ -132,20 +139,22 @@ $requests = $stmt->fetchAll();
               <?php else: ?>
                 <?php foreach ($requests as $request): ?>
                   <?php $statusLabel = trim($request['status'] ?? '') ?: 'Unknown'; ?>
-                  <?php $remarks = match ($statusLabel) {
-                      'Approved' => 'Approved',
-                      'Rejected' => 'Denied',
-                      'Processing' => 'Processing',
-                      'Ready for Pickup' => 'Ready for Pickup',
-                      'Received' => 'Received',
-                      default => 'Pending review',
-                  }; ?>
+                  <?php $purposeText = trim($request['purpose'] ?? '') ?: 'No purpose provided'; ?>
                   <tr>
                     <td><strong><?php echo htmlspecialchars($request['reference_no']); ?></strong></td>
                     <td><?php echo htmlspecialchars($request['document_type']); ?></td>
                     <td><?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($request['submitted_at']))); ?></td>
                     <td><span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $statusLabel)); ?>"><?php echo htmlspecialchars($statusLabel); ?></span></td>
-                    <td><?php echo htmlspecialchars($remarks); ?></td>
+                    <td>
+                      <button type="button" class="btn btn-outline view-request-btn"
+                        data-document-type="<?php echo htmlspecialchars($request['document_type'], ENT_QUOTES); ?>"
+                        data-reference-no="<?php echo htmlspecialchars($request['reference_no'], ENT_QUOTES); ?>"
+                        data-submitted-at="<?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($request['submitted_at'])), ENT_QUOTES); ?>"
+                        data-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES); ?>"
+                        data-purpose="<?php echo htmlspecialchars($purposeText, ENT_QUOTES); ?>">
+                        View
+                      </button>
+                    </td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
@@ -366,6 +375,25 @@ $requests = $stmt->fetchAll();
     </div>
   </div>
 
+  <div class="modal-overlay" id="modal-request-details">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="requestDetailsTitle">Request Details</h3>
+        <button type="button" class="modal-close" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="details-list">
+          <div class="details-item"><strong>Date Requested</strong><span id="detail-submitted-at">N/A</span></div>
+          <div class="details-item"><strong>Purpose of Request</strong><span id="detail-purpose">N/A</span></div>
+          <div class="details-item"><strong>Status</strong><span id="detail-status">N/A</span></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:center;">
+        <button type="button" class="btn-primary" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-confirm">
     <div class="modal-box confirm-box">
       <div class="confirm-icon"><i class="fas fa-check"></i></div>
@@ -382,6 +410,7 @@ $requests = $stmt->fetchAll();
   <script src="../../assets/js/shared/logo_functions.js"></script>
   <script src="../../assets/js/shared/shared-header.js"></script>
   <script src="../../assets/js/shared/shared-sidebar.js"></script>
+  <script src="../../assets/js/shared/loading-overlay.js"></script>
   <script src="../../assets/js/public/request.js"></script>
 </body>
 </html>

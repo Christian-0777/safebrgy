@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .branding-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            width: 40%;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            font-size: 40px;
+        }
+
+        .brand-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .brand-description {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .form-section {
+            padding: 60px 40px;
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .error-message {
+            display: none;
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .form-group.error input {
+            border-color: #dc3545;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .forgot-link:hover {
+            color: #764ba2;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+
+            .branding-section {
+                width: 100%;
+                min-height: auto;
+                padding: 40px 20px;
+            }
+
+            .form-section {
+                width: 100%;
+                padding: 40px 20px;
+            }
+
+            .brand-title {
+                font-size: 24px;
+            }
+
+            .form-title {
+                font-size: 24px;
+            }
+
+            .brand-description {
+                font-size: 14px;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .login-container {
+                border-radius: 8px;
+            }
+
+            .branding-section {
+                padding: 30px 20px;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+
+            .brand-title {
+                font-size: 20px;
+            }
+
+            .form-title {
+                font-size: 20px;
+            }
+
+            .brand-logo {
+                width: 60px;
+                height: 60px;
+                font-size: 32px;
+            }
+
+            input[type="email"],
+            input[type="password"] {
+                font-size: 16px;
+                padding: 14px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="branding-section">
+            <div class="brand-logo">🔐</div>
+            <h1 class="brand-title">SecureHub</h1>
+            <p class="brand-description">Your trusted platform for secure access and data protection</p>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-title">Sign In</h2>
+            <p class="form-subtitle">Welcome back! Please sign in to your account</p>
+
+            <div class="success-message" id="successMessage">Login successful! Redirecting...</div>
+
+            <form id="loginForm" method="POST" action="process-login.php">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                    <span class="error-message">Please enter a valid email address</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <span class="error-message">Password is required</span>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember" style="margin-bottom: 0; font-weight: 400;">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" id="loginBtn">Sign In</button>
+
+                <div class="signup-link">
+                    Do not have an account? <a href="#">Create one</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const successMessage = document.getElementById('successMessage');
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            if (!validateEmail(emailInput.value)) {
+                emailInput.parentElement.classList.add('error');
+                isValid = false;
+            } else {
+                emailInput.parentElement.classList.remove('error');
+            }
+
+            if (passwordInput.value.trim() === '') {
+                passwordInput.parentElement.classList.add('error');
+                isValid = false;
+            } else {
+                passwordInput.parentElement.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        emailInput.addEventListener('blur', () => {
+            if (emailInput.value && !validateEmail(emailInput.value)) {
+                emailInput.parentElement.classList.add('error');
+            } else {
+                emailInput.parentElement.classList.remove('error');
+            }
+        });
+
+        passwordInput.addEventListener('blur', () => {
+            if (passwordInput.value.trim() === '') {
+                passwordInput.parentElement.classList.add('error');
+            } else {
+                passwordInput.parentElement.classList.remove('error');
+            }
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            const formData = new FormData(loginForm);
+
+            fetch('process-login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = data.redirect || 'dashboard.php';
+                    }, 1500);
+                } else {
+                    alert('Login failed: ' + data.message);
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            });
+        });
+    </script>
+</body>
+</html>

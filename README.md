@@ -1,25 +1,30 @@
-## What's New in V2.3 (Minor Update)
+## What's New in V2.3.1 (Minor Update)
 
-### SMS Notifications Migrated to Textbee.dev
+### UI/UX Login + Auth Design Refresh
 
 #### Overview
-The SMS notification system has been updated to use Textbee.dev as the active provider for automated resident notifications.
+The authentication pages now use a new shared design system with a modern hero background, polished login/register forms, consistent admin and resident styling, and consolidated authentication styling into a shared CSS file.
 
 #### Highlights
-- Switched SMS delivery to the Textbee.dev API
-- Added Textbee device ID and API key configuration via environment settings
-- Updated the mailer integration to send SMS through the new provider
-- Removed the active Twilio SMS dependency from project configuration
+- Added shared auth stylesheet for login, register, OTP, and reset-password pages
+- Applied `assets/img/hero.jpg` as the auth background image
+- Standardized admin and resident login pages with a consistent branded layout
+- Updated admin register page to use the same polished auth UI
+- Consolidated redundant page-specific auth CSS and removed unnecessary CSS files
 
 #### Files Updated
-- config/mailer.php
-- .env
-- composer.json
-- wiki.md
+- assets/css/shared/auth.css
+- public/login.php
+- admin/login.php
+- admin/register.php
+- public/otp-view.php
+- admin/otp-view.php
+- public/reset-password.php
+- admin/reset-password.php
 
 ---
 
-## What's New in V2.2.7.1.1 (Minor Update)
+## What's New in V2.3 (Minor Update)
 The cards in the first row now use col-md-4 for equal width distribution, and the second row has two col-md-6 columns side-by-side without the offset.
 
 ## What's New in V2.2.7.1 (Minor Update)

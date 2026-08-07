@@ -23,7 +23,8 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
   <link rel="icon" type="image/png" href="../assets/img/seal.png">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="../assets/css/admin/otp-view.css" rel="stylesheet">
+  <link href="../assets/css/shared/colors.css" rel="stylesheet">
+  <link href="../assets/css/shared/auth.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>

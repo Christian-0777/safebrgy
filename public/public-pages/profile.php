@@ -15,6 +15,7 @@ $userId = $user['id'] ?? null;
 $name = $user['name'] ?? 'Resident';
 $email = $user['email'] ?? '';
 $phone = $user['phone'] ?? '';
+$residentEmail = $user['email'] ?? '';
 
 // Get resident detailed information
 $residentData = null;
@@ -41,15 +42,15 @@ if ($userId) {
 
 // Get requested documents history
 $documentsHistory = [];
-if ($userId) {
+if ($residentEmail !== '') {
     $stmt = $pdo->prepare(
         'SELECT id, document_type AS request_type, submitted_at AS created_at, status
            FROM requests
-          WHERE user_id = ?
+          WHERE resident_email = ?
           ORDER BY submitted_at DESC
           LIMIT 10'
     );
-    $stmt->execute([$userId]);
+    $stmt->execute([$residentEmail]);
     $documentsHistory = $stmt->fetchAll();
 }
 
@@ -133,7 +134,6 @@ function getStatusBadgeClass($status) {
         </div>
         <div class="profile-dropdown">
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
-          <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account.php"><i class="fas fa-cog"></i> Settings</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>

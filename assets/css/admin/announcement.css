@@ -201,6 +201,11 @@ body .modal-dialog {
   padding: 20px;
 }
 
+/* Ensure the success modal appears above the loading overlay */
+#successModal {
+  z-index: 1060 !important;
+}
+
 .form-label {
   font-weight: 600;
   margin-bottom: 8px;

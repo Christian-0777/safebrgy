@@ -87,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
+          if (window.hideLoadingOverlay) {
+            window.hideLoadingOverlay();
+          }
           console.error('Invalid response:', response.statusText);
           alert('Server error. Please check the console for details.');
           return;
@@ -105,6 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
           otherAudienceWrapper.style.display = 'none';
 
           // Show success modal
+          // Ensure loading overlay is hidden so the modal is clickable
+          if (window.hideLoadingOverlay) {
+            window.hideLoadingOverlay();
+          }
+
           const successModal = new bootstrap.Modal(document.getElementById('successModal'));
           successModal.show();
 
@@ -113,6 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
             location.reload();
           }, { once: true });
         } else {
+          if (window.hideLoadingOverlay) {
+            window.hideLoadingOverlay();
+          }
           alert('Failed to create announcement: ' + (data.error || 'Unknown error'));
         }
       } catch (error) {

@@ -14,6 +14,22 @@ if ($adminId) {
     $user = 'Admin';
 }
 
+// Inspect requests table columns early so AJAX handlers can reuse flags
+$requestsColumns = $pdo->query('SHOW COLUMNS FROM requests')->fetchAll(PDO::FETCH_COLUMN);
+$requestNumberColumn = in_array('request_number', $requestsColumns, true) ? 'request_number' : (in_array('reference_no', $requestsColumns, true) ? 'reference_no' : 'id');
+$requestTypeColumn = in_array('request_type', $requestsColumns, true) ? 'request_type' : (in_array('document_type', $requestsColumns, true) ? 'document_type' : null);
+$createdAtColumn = in_array('created_at', $requestsColumns, true) ? 'created_at' : (in_array('submitted_at', $requestsColumns, true) ? 'submitted_at' : 'id');
+$dateReceivedColumn = in_array('date_received', $requestsColumns, true) ? 'date_received' : null;
+$hasDateReceivedColumn = in_array('date_received', $requestsColumns, true);
+$documentDataColumn = in_array('document_data', $requestsColumns, true) ? 'document_data' : null;
+$purposeColumn = in_array('purpose', $requestsColumns, true) ? 'r.purpose' : null;
+$locationColumn = in_array('location', $requestsColumns, true) ? 'location' : null;
+$hasUserIdColumn = in_array('user_id', $requestsColumns, true);
+
+$purposeSelect = $purposeColumn
+  ? 'COALESCE(r.purpose, bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose'
+  : 'COALESCE(bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose';
+
 // Handle AJAX requests
 $response = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -30,8 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode(['success' => false]);
             exit;
         }
-
-        $hasDateReceivedColumn = (bool) $pdo->query("SHOW COLUMNS FROM requests LIKE 'date_received'")->fetch();
 
         if ($hasDateReceivedColumn) {
             $stmt = $pdo->prepare('UPDATE requests SET status = ?, date_received = CASE WHEN ? = "Received" THEN NOW() ELSE NULL END, updated_at = NOW() WHERE id = ?');
@@ -69,20 +83,6 @@ $search = $_GET['search'] ?? '';
 $status = $_GET['status'] ?? '';
 $sort = $_GET['sort'] ?? 'newest';
 
-$requestsColumns = $pdo->query('SHOW COLUMNS FROM requests')->fetchAll(PDO::FETCH_COLUMN);
-$requestNumberColumn = in_array('request_number', $requestsColumns, true) ? 'request_number' : (in_array('reference_no', $requestsColumns, true) ? 'reference_no' : 'id');
-$requestTypeColumn = in_array('request_type', $requestsColumns, true) ? 'request_type' : (in_array('document_type', $requestsColumns, true) ? 'document_type' : null);
-$createdAtColumn = in_array('created_at', $requestsColumns, true) ? 'created_at' : (in_array('submitted_at', $requestsColumns, true) ? 'submitted_at' : 'id');
-$dateReceivedColumn = in_array('date_received', $requestsColumns, true) ? 'date_received' : null;
-$hasDateReceivedColumn = in_array('date_received', $requestsColumns, true);
-$documentDataColumn = in_array('document_data', $requestsColumns, true) ? 'document_data' : null;
-$purposeColumn = in_array('purpose', $requestsColumns, true) ? 'r.purpose' : null;
-$locationColumn = in_array('location', $requestsColumns, true) ? 'location' : null;
-$hasUserIdColumn = in_array('user_id', $requestsColumns, true);
-
-$purposeSelect = $purposeColumn
-    ? 'COALESCE(r.purpose, bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose'
-    : 'COALESCE(bc.purpose, br.purpose, bi.purpose, bb.purpose) as purpose';
 
 $selectParts = [
     'r.id',
@@ -541,6 +541,7 @@ $stats = $statsStmt->fetch();
   <script src="../../assets/js/shared/logo_functions.js"></script>
   <script src="../../assets/js/shared/shared-header.js"></script>
   <script src="../../assets/js/shared/shared-sidebar.js"></script>
+  <script src="../../assets/js/shared/layout_functions.js"></script>
   <!-- Page-specific JS -->
   <script src="../../assets/js/shared/loading-overlay.js"></script>
   <script src="../../assets/js/admin/requests.js"></script>

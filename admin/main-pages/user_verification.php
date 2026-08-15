@@ -385,7 +385,7 @@ function confirmReject() {
 <script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
-<!-- Page-specific scripts -->
+<script src="../../assets/js/shared/layout_functions.js"></script><!-- Page-specific scripts -->
 <script src="../../assets/js/shared/loading-overlay.js"></script>
 <script src="../../assets/js/admin/user_verification.js"></script>
 </body>

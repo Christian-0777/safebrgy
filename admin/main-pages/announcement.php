@@ -794,6 +794,7 @@ function displayAudience($audienceJson) {
 <script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/layout_functions.js"></script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Page-specific JS -->

@@ -137,6 +137,7 @@ $position = "System Administrator";
 <script src="../../assets/js/shared/logo_functions.js"></script>
 <script src="../../assets/js/shared/shared-header.js"></script>
 <script src="../../assets/js/shared/shared-sidebar.js"></script>
+<script src="../../assets/js/shared/layout_functions.js"></script>
 <!-- Page-specific JS -->
 <script src="../../assets/js/admin/account_settings.js"></script>
 </body>

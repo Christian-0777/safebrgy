@@ -10,6 +10,7 @@ unset($_SESSION['flash_error']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/safebrgy/admin/">
     <title>SafeBrgy - Admin Login</title>
     <link rel="icon" type="image/png" href="../assets/img/seal.png">
     <link rel="stylesheet" href="../assets/css/shared/colors.css">

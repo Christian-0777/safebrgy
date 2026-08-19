@@ -82,6 +82,7 @@ $age = calculateAge($birthdate);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/safebrgy/public/public-pages/">
   <title>SafeBrgy - Account Settings</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->

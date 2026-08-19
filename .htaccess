@@ -2,4 +2,34 @@ RewriteEngine On
 
 RewriteRule ^$ index.php [R=301,L]
 
+# Redirect physical page paths to their clean public URLs.
+RewriteCond %{THE_REQUEST} \s/+safebrgy/public/public-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
+RewriteRule ^public/public-pages/([a-z0-9_-]+)\.php$ /safebrgy/$1 [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/main-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
+RewriteRule ^admin/main-pages/([a-z0-9_-]+)\.php$ /safebrgy/admin/$1 [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/public/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
+RewriteRule ^public/(login|logout|otp-view|reset-password)\.php$ /safebrgy/$1 [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
+RewriteRule ^admin/(login|logout|otp-view|reset-password)\.php$ /safebrgy/admin/$1 [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/logs/logs\.php(?:[?\s]) [NC]
+RewriteRule ^admin/logs/logs\.php$ /safebrgy/admin/logs [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/register\.php(?:[?\s]) [NC]
+RewriteRule ^register\.php$ /safebrgy/register [R=301,L]
+
+# Resident pages.
+RewriteRule ^(dashboard|announcement|reports|requests|profile|account)$ public/public-pages/$1.php [L]
+RewriteRule ^(login|logout|otp-view|reset-password)$ public/$1.php [L]
+RewriteRule ^register$ register.php [L]
+
+# Admin pages. The admin landing page remains outside clean URL routing.
+RewriteRule ^admin/(dashboard|announcement|reports|requests|profile|account_settings|notifications|user_verification)$ admin/main-pages/$1.php [L]
+RewriteRule ^admin/logs$ admin/logs/logs.php [L]
+RewriteRule ^admin/(login|logout|otp-view|reset-password)$ admin/$1.php [L]
+RewriteRule ^admin/register$ admin/register.php [L]
+
 RewriteRule ^safebrgy_admin$ admin_index.php [R=301,L]

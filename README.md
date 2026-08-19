@@ -1,3 +1,26 @@
+## What's New in V2.4 (Minor Update)
+
+### Clean URL Path Routing
+
+#### Overview
+Internal resident and admin pages now use clean URL paths without exposing their directory structure or `.php` filenames.
+
+#### Highlights
+- Resident pages use paths such as `/safebrgy/dashboard`, `/safebrgy/profile`, and `/safebrgy/requests`
+- Admin pages use paths such as `/safebrgy/admin/dashboard`, `/safebrgy/admin/reports`, and `/safebrgy/admin/requests`
+- Login, registration, OTP, password reset, and admin log pages have clean route aliases
+- Existing physical PHP paths redirect to their clean equivalents
+- Landing pages remain excluded from clean routing and continue using `index.php` and `admin_index.php`
+- Added page base URLs so existing CSS, JavaScript, forms, and navigation continue working with clean routes
+- Fixed resident login form submission so POST requests are sent directly to the clean login route without being converted by a redirect
+
+#### Files Updated
+- `.htaccess`
+- `public/login.php`
+- Resident and admin page templates with clean-route base URLs
+
+---
+
 ## What's New in V2.3.1 (Minor Update)
 
 ### UI/UX Login + Auth Design Refresh

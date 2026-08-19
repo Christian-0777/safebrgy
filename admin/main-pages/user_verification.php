@@ -48,6 +48,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/safebrgy/admin/main-pages/">
   <title>SafeBrgy - User Verification</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->

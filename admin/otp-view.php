@@ -19,6 +19,7 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/safebrgy/admin/">
   <title>SafeBrgy - OTP Verification</title>
   <link rel="icon" type="image/png" href="../assets/img/seal.png">
   <!-- Bootstrap CSS -->

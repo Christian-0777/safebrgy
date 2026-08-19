@@ -81,6 +81,7 @@ if ($residentEmail !== '') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/safebrgy/public/public-pages/">
   <title>SafeBrgy - Dashboard</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->

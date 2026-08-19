@@ -39,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         if ($user['role'] === 'admin') {
-            header('Location: ../admin/main-pages/dashboard.php');
+            header('Location: /safebrgy/admin/dashboard');
         } else {
-            header('Location: public-pages/dashboard.php');
+            header('Location: /safebrgy/dashboard');
         }
         exit;
     }
@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/safebrgy/public/">
     <title>SafeBrgy - Login</title>
     <link rel="icon" type="image/png" href="../assets/img/seal.png">
     <link rel="stylesheet" href="../assets/css/shared/colors.css">
@@ -74,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="error-banner"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form id="loginForm" method="POST" action="login.php">
+            <form id="loginForm" method="POST" action="/safebrgy/login">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="you@example.com" required>

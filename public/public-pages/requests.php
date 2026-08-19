@@ -33,6 +33,7 @@ $requests = $stmt->fetchAll();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeBrgy - Request Portal</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
+    <base href="/safebrgy/public/public-pages/">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">

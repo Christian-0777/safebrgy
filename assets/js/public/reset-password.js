@@ -13,6 +13,94 @@ document.addEventListener('DOMContentLoaded', function() {
   const backToEmailBtn = document.getElementById('backToEmailBtn');
   const resendLink = document.getElementById('resendLink');
 
+  // The resident reset flow is server-validated at every step.
+  if (document.getElementById('codeForm')) {
+    let resetEmail = '';
+    let resendInterval;
+    const codeForm = document.getElementById('codeForm');
+    const passwordForm = document.getElementById('passwordForm');
+    const emailInput = document.getElementById('email');
+    const codeInput = document.getElementById('code');
+    const passwordInput = document.getElementById('password');
+    const confirmationInput = document.getElementById('confirmation');
+    const confirmButton = document.getElementById('confirmButton');
+    const message = document.getElementById('resetMessage');
+
+    const showMessage = (text, type = 'error') => {
+      message.textContent = text;
+      message.className = `reset-message visible ${type}`;
+    };
+    const moveToStep = (step) => {
+      document.querySelectorAll('[data-content]').forEach((content) => content.classList.toggle('active', Number(content.dataset.content) === step));
+      document.querySelectorAll('[data-step]').forEach((item) => {
+        const itemStep = Number(item.dataset.step);
+        item.classList.toggle('active', itemStep === step);
+        item.classList.toggle('completed', itemStep < step);
+      });
+      document.querySelectorAll('.reset-connector').forEach((connector, index) => connector.classList.toggle('completed', index + 1 < step));
+      message.className = 'reset-message';
+    };
+    const postForm = async (form) => {
+      const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.message || 'Something went wrong.');
+      return data;
+    };
+    const maskEmail = (email) => {
+      const parts = email.split('@');
+      return `${parts[0].slice(0, 2)}${'*'.repeat(Math.max(1, parts[0].length - 2))}@${parts[1]}`;
+    };
+    const startResendTimer = () => {
+      const button = document.getElementById('resendButton');
+      const timer = document.getElementById('resendTimer');
+      let seconds = 60;
+      clearInterval(resendInterval);
+      button.disabled = true;
+      button.textContent = `Resend code in ${seconds}s`;
+      resendInterval = setInterval(() => {
+        seconds -= 1;
+        button.textContent = seconds ? `Resend code in ${seconds}s` : 'Resend code';
+        if (!seconds) { clearInterval(resendInterval); button.disabled = false; }
+        timer.textContent = seconds;
+      }, 1000);
+    };
+    const validPassword = (value) => value.length >= 8 && /[A-Z]/.test(value) && /[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value);
+    const updateConfirmState = () => { confirmButton.disabled = !validPassword(passwordInput.value) || passwordInput.value !== confirmationInput.value; };
+
+    emailForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = document.getElementById('sendCodeButton');
+      button.disabled = true;
+      try {
+        const data = await postForm(emailForm);
+        resetEmail = emailInput.value.trim().toLowerCase();
+        document.getElementById('maskedEmail').textContent = maskEmail(resetEmail);
+        moveToStep(2);
+        startResendTimer();
+        showMessage(data.message, 'success');
+      } catch (error) { showMessage(error.message); } finally { button.disabled = false; }
+    });
+    codeInput.addEventListener('input', () => { codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 6); });
+    codeForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try { const data = await postForm(codeForm); moveToStep(3); showMessage(data.message, 'success'); passwordInput.focus(); }
+      catch (error) { showMessage(error.message); }
+    });
+    document.getElementById('resendButton').addEventListener('click', async () => {
+      try { const data = await postForm(emailForm); startResendTimer(); showMessage(data.message, 'success'); }
+      catch (error) { showMessage(error.message); }
+    });
+    document.getElementById('backButton').addEventListener('click', () => { moveToStep(1); codeInput.value = ''; });
+    passwordInput.addEventListener('input', updateConfirmState);
+    confirmationInput.addEventListener('input', updateConfirmState);
+    passwordForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try { const data = await postForm(passwordForm); showMessage('Password confirmed. Redirecting to your dashboard...', 'success'); window.location.href = data.redirect; }
+      catch (error) { showMessage(error.message); }
+    });
+    return;
+  }
+
   // ============ STEP 1: EMAIL VERIFICATION ============
   if (emailForm) {
     emailForm.addEventListener('submit', function(e) {

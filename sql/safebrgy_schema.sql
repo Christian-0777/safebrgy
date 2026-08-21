@@ -213,6 +213,20 @@ CREATE TABLE `registration_otps` (
   KEY `idx_registration_otp_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Resident password reset codes are separate from registration verification codes.
+CREATE TABLE `password_reset_otps` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `otp_hash` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `consumed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_password_reset_user` (`user_id`),
+  CONSTRAINT `password_reset_otps_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `sms_logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,

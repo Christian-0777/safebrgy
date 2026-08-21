@@ -16,6 +16,10 @@ Replaced the previous resident registration form with a dedicated multi-step reg
 - Added a complete review step so applicants can verify all information before creating an account
 - Added password confirmation and Terms & Conditions acceptance before account creation
 - Added email OTP verification with resend support and five-minute code expiry
+- Added a resident three-step password reset flow that follows the login page layout
+- Added reset code delivery by email, server-side code verification, and resend support
+- Added new password and confirmation validation before completing the reset
+- Redirected residents to the dashboard after successfully resetting their password
 - Kept registration OTP records separate from password-reset and other authentication OTP flows
 - Added atomic creation of the canonical `users` and `residents` records with accounts initially marked as pending
 - Added post-registration email and SMS notifications with delivery status recorded in `sms_logs`
@@ -26,6 +30,8 @@ Replaced the previous resident registration form with a dedicated multi-step reg
 - Registration uses the shared SafeBrgy database connection in `config/db.php`
 - The authoritative schema is `sql/safebrgy_schema.sql`
 - Added the `registration_otps` table for registration-only verification codes
+- Added the `password_reset_otps` table for resident password-reset codes with expiry and consumption tracking
+- Added runtime migration support for the password-reset OTP table
 - Added resident storage for valid ID back images and cover photo paths
 - Added migration support for existing installations and compatible resident status values
 - Removed the unused standalone registration database schema
@@ -38,6 +44,11 @@ Replaced the previous resident registration form with a dedicated multi-step reg
 - `register/api/send_otp.php`
 - `register/api/verify_otp.php`
 - `register/assets/js/main.js`
+- `public/reset-password.php`
+- `public/send-reset.php`
+- `public/verify-reset-code.php`
+- `public/confirm-password-reset.php`
+- `assets/js/public/reset-password.js`
 - `config/db.php`
 - `config/env.php`
 - `config/mailer.php`

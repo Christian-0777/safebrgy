@@ -102,6 +102,19 @@ function safeBrgy_db_connect(): PDO
             KEY idx_registration_otp_email (email)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+        $pdo->exec("CREATE TABLE IF NOT EXISTS password_reset_otps (
+            id INT(11) NOT NULL AUTO_INCREMENT,
+            user_id INT(11) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            otp_hash VARCHAR(255) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            consumed_at DATETIME NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_password_reset_user (user_id),
+            CONSTRAINT password_reset_otps_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
         $pdo->exec("CREATE TABLE IF NOT EXISTS barangay_settings (
             id TINYINT UNSIGNED NOT NULL DEFAULT 1,
             name VARCHAR(150) NOT NULL DEFAULT 'Barangay San Jose',

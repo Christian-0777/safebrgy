@@ -13,6 +13,10 @@ $pdo = safeBrgy_db_connect();
 $user = $_SESSION['user'];
 $userId = $user['id'] ?? null;
 $name = $user['name'] ?? 'Resident';
+$requestedReportType = $_GET['report_type'] ?? '';
+$requestedReportType = in_array($requestedReportType, ['Incident', 'Lost Property'], true)
+  ? $requestedReportType
+  : '';
 
 // Get reports from database
 $reports = [];
@@ -290,8 +294,8 @@ if ($userId) {
               <label for="reportType" class="form-label">Report Type <span class="text-danger">*</span></label>
               <select id="reportType" name="report_type" class="form-select" required>
                 <option value="">Select a report type</option>
-                <option value="Incident">Incident</option>
-                <option value="Lost Property">Lost Property</option>
+                <option value="Incident"<?php echo $requestedReportType === 'Incident' ? ' selected' : ''; ?>>Incident</option>
+                <option value="Lost Property"<?php echo $requestedReportType === 'Lost Property' ? ' selected' : ''; ?>>Lost Property</option>
                 <option value="Blotter">Blotter</option>
               </select>
             </div>

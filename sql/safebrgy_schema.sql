@@ -22,6 +22,8 @@ CREATE TABLE `users` (
   `phone` varchar(20) DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
   `profile_image` varchar(255) DEFAULT NULL,
+  `cover_photo` varchar(255) DEFAULT NULL,
+  `two_factor_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `is_verified` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
@@ -29,6 +31,23 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Singleton configuration for the barangay identity shown across the portal.
+CREATE TABLE `barangay_settings` (
+  `id` tinyint unsigned NOT NULL DEFAULT 1,
+  `name` varchar(150) NOT NULL DEFAULT 'Barangay San Jose',
+  `address` varchar(255) DEFAULT NULL,
+  `contact_number` varchar(30) DEFAULT NULL,
+  `official_email` varchar(255) DEFAULT NULL,
+  `website_url` varchar(255) DEFAULT NULL,
+  `logo_path` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `barangay_settings_updated_by_fk` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT IGNORE INTO `barangay_settings` (`id`) VALUES (1);
 
 -- --------------------------------------------------------
 -- Parent Table: requests
@@ -112,6 +131,18 @@ CREATE TABLE `announcements` (
   CONSTRAINT `announcements_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `announcement_reads` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `announcement_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `read_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `announcement_user` (`announcement_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `announcement_reads_announcement_fk` FOREIGN KEY (`announcement_id`) REFERENCES `announcements` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `announcement_reads_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `case_number` varchar(10) DEFAULT NULL,
@@ -139,15 +170,15 @@ CREATE TABLE `residents` (
   `birthdate` date DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
   `place_of_birth` varchar(255) DEFAULT NULL,
-  `gender` enum('Male','Female','Other') DEFAULT NULL,
-  `civil_status` enum('Single','Married','Widowed','Separated','Divorced') DEFAULT NULL,
+  `gender` varchar(30) DEFAULT NULL,
+  `civil_status` varchar(50) DEFAULT NULL,
   `nationality` varchar(100) DEFAULT NULL,
   `religion` varchar(100) DEFAULT NULL,
   `complete_address` text DEFAULT NULL,
   `purok` varchar(100) DEFAULT NULL,
   `years_of_residency` int(11) DEFAULT NULL,
   `mobile_number` varchar(20) DEFAULT NULL,
-  `voter_status` enum('Yes','No','Not Sure') DEFAULT NULL,
+  `voter_status` varchar(50) DEFAULT NULL,
   `employment_status` varchar(100) DEFAULT NULL,
   `occupation` varchar(150) DEFAULT NULL,
   `household_head` varchar(150) DEFAULT NULL,
@@ -158,13 +189,28 @@ CREATE TABLE `residents` (
   `blood_type` varchar(10) DEFAULT NULL,
   `disabilities` text DEFAULT NULL,
   `valid_id_path` varchar(255) DEFAULT NULL,
+  `valid_id_back_path` varchar(255) DEFAULT NULL,
   `profile_image_path` varchar(255) DEFAULT NULL,
+  `cover_photo_path` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `resident_id` (`resident_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `residents_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Registration verification codes are intentionally separate from any
+-- password-reset verification flow.
+CREATE TABLE `registration_otps` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `otp_hash` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `consumed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_registration_otp_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `sms_logs` (

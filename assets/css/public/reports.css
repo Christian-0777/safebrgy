@@ -1,24 +1,5 @@
 /* SafeBrgy Reports Page Styles */
 
-* {
-  font-family: Arial, sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: Arial, sans-serif;
-  font-weight: 600;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
-}
-
-p, span, a, button, .btn, label {
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-}
-
 .main-content {
   padding-top: 80px;
   min-height: calc(100vh - 80px);

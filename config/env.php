@@ -34,4 +34,5 @@ if (!defined('SAFE_BRGY_ENV_LOADED')) {
     define('DB_PASS', getenv('DB_PASS') ?: '');
     define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
     define('DB_INIT_SCHEMA', true);
+    define('APP_DEBUG', filter_var(getenv('APP_DEBUG') ?: 'true', FILTER_VALIDATE_BOOLEAN));
 }

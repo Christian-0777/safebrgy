@@ -28,6 +28,7 @@ RewriteRule ^register$ register.php [L]
 
 # Admin pages. The admin landing page remains outside clean URL routing.
 RewriteRule ^admin/(dashboard|announcement|reports|requests|profile|account_settings|notifications|user_verification)$ admin/main-pages/$1.php [L]
+RewriteRule ^admin/(view_user|verify_user)$ admin/main-pages/$1.php [L]
 RewriteRule ^admin/logs$ admin/logs/logs.php [L]
 RewriteRule ^admin/(login|logout|otp-view|reset-password)$ admin/$1.php [L]
 RewriteRule ^admin/register$ admin/register.php [L]

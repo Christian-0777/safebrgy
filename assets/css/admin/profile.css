@@ -52,8 +52,17 @@ p, span, a, button, .btn, label {
 .admin-info-card {
   background: white;
   border-radius: 8px;
+  overflow: hidden;
   padding: 30px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-cover-photo {
+  height: 180px;
+  margin: -30px -30px 30px;
+  background: linear-gradient(135deg, #0b63d6, #083d96);
+  background-position: center;
+  background-size: cover;
 }
 
 .profile-picture-wrapper {

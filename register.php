@@ -1,4 +1,8 @@
 <?php
+header('Location: /safebrgy/public/register.php');
+exit;
+
+/* Legacy handler retained below only for compatibility with old bookmarks. */
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/config/mailer.php';
 session_start();

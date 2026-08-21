@@ -29,7 +29,7 @@ session_start();
         <a href="#about">About</a>
         <a href="#services">Services</a>
         <a href="#officials">Officials</a>
-        <a href="#register">Register</a>
+        <a href="/safebrgy/public/register.php">Register</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="header-actions">
@@ -43,7 +43,7 @@ session_start();
       <a href="#services">Services</a>
       <a href="#officials">Officials</a>
       <a href="#contact">Contact</a>
-      <a href="#register">Register</a>
+      <a href="/safebrgy/public/register.php">Register</a>
       <a href="public/login.php">Login</a>
     </nav>
   </header>
@@ -148,7 +148,7 @@ session_start();
       </div>
     </section>
 
-    <section id="register" class="section register">
+    <section id="register" class="section register" style="display:none">
       <div class="container">
         <h3>Create Resident Account</h3>
         <p><strong>Note:</strong> Your account will require admin approval before you can log in.</p>

@@ -196,7 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode(['success' => $result]);
             exit;
         }
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
+      http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'An error occurred: ' . $e->getMessage()]);
         exit;
     }
@@ -210,7 +211,9 @@ $view = $_GET['view'] ?? 'all';
 
 // Build query
 $query = '
-    SELECT a.id, a.title, a.body, a.published_at, a.priority, a.status, a.target_audience, a.pinned, a.archived, a.attachments, u.username as author
+        SELECT a.id, a.title, a.body, a.published_at, a.priority, a.status, a.target_audience, a.pinned, a.archived, a.attachments, u.username as author,
+          (SELECT COUNT(*) FROM announcement_reads ar WHERE ar.announcement_id = a.id) AS read_count,
+          (SELECT COUNT(*) FROM users residents WHERE residents.role = "resident") AS resident_count
     FROM announcements a
     LEFT JOIN users u ON a.author_id = u.id
     WHERE a.archived = 0
@@ -313,9 +316,7 @@ function displayAudience($audienceJson) {
         </div>
         <div class="profile-dropdown">
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
-          <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
-          <a href="../logs/logs.php"><i class="fas fa-history"></i> Logs</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -604,6 +605,7 @@ function displayAudience($audienceJson) {
                     <div class="d-flex justify-content-between align-items-center">
                       <small class="text-muted">
                         <strong>Target Audience:</strong> <?php echo displayAudience($a['target_audience']); ?>
+                        <span class="ms-3"><strong>Mark as Read:</strong> <?php echo (int) $a['read_count']; ?>/<?php echo (int) $a['resident_count']; ?></span>
                       </small>
                     </div>
                   </div>

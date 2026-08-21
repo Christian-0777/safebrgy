@@ -116,13 +116,31 @@ function handleCoverPhotoChange(e) {
       return;
     }
 
+    const uploadData = new FormData();
+    uploadData.append('coverPhoto', file);
+    fetch('../../api/account/update_cover.php', {
+      method: 'POST',
+      body: uploadData
+    })
+      .then(response => response.json())
+      .then(result => {
+        if (!result.success) {
+          throw new Error(result.message || 'Cover photo upload failed');
+        }
+      })
+      .catch(error => {
+        alert(error.message);
+        e.target.value = '';
+      });
+
     const reader = new FileReader();
     reader.onload = function(event) {
-      const placeholder = document.querySelector('.cover-placeholder');
+      const placeholder = document.querySelector('.cover-preview .cover-placeholder');
       if (placeholder) {
         placeholder.style.backgroundImage = `url('${event.target.result}')`;
         placeholder.style.backgroundSize = 'cover';
         placeholder.style.backgroundPosition = 'center';
+        placeholder.querySelectorAll('i, p').forEach(element => element.remove());
       }
     };
     reader.readAsDataURL(file);

@@ -1,3 +1,135 @@
+## What's New in V3.0 (Resident Registration Flow)
+
+### Reworked Resident Registration
+
+#### Overview
+Replaced the previous resident registration form with a dedicated multi-step registration wizard available at `/safebrgy/public/register.php`. The new flow follows the public login page's authentication layout and keeps entered information while applicants move between steps.
+
+#### Highlights
+- Added a seven-step resident registration wizard covering personal, contact and location, economic, other information, review, password, and email verification stages
+- Added automatic age calculation from the selected birthdate and a default years-of-residency value
+- Added dropdown selections for gender, civil status, nationality, religion, purok, voter status, education, employment, blood type, and disability status
+- Added Philippine mobile number validation with a fixed `+63` prefix and email format validation
+- Added occupation `N/A` support and disability `N/A (None)` handling
+- Added front and back valid ID uploads plus profile and optional cover photo uploads
+- Added upload and camera capture options for registration images with server-side image validation
+- Added a complete review step so applicants can verify all information before creating an account
+- Added password confirmation and Terms & Conditions acceptance before account creation
+- Added email OTP verification with resend support and five-minute code expiry
+- Kept registration OTP records separate from password-reset and other authentication OTP flows
+- Added atomic creation of the canonical `users` and `residents` records with accounts initially marked as pending
+- Added post-registration email and SMS notifications with delivery status recorded in `sms_logs`
+- Added a success modal that redirects applicants to the login page after registration
+- Added local debug details in the browser Console and Network response for registration failures
+
+#### Database and Integration
+- Registration uses the shared SafeBrgy database connection in `config/db.php`
+- The authoritative schema is `sql/safebrgy_schema.sql`
+- Added the `registration_otps` table for registration-only verification codes
+- Added resident storage for valid ID back images and cover photo paths
+- Added migration support for existing installations and compatible resident status values
+- Removed the unused standalone registration database schema
+
+#### Files Updated
+- `public/register.php`
+- `public/login.php`
+- `register/index.php`
+- `register/api/register.php`
+- `register/api/send_otp.php`
+- `register/api/verify_otp.php`
+- `register/assets/js/main.js`
+- `config/db.php`
+- `config/env.php`
+- `config/mailer.php`
+- `sql/safebrgy_schema.sql`
+
+---
+
+## What's New in V2.6 (Resident Profile Update)
+
+### Resident Profile Page Improvements
+
+#### Overview
+Reworked the resident profile page with a refreshed profile layout, database-backed cover photos, improved image handling, and clearer navigation between resident account areas.
+
+#### Highlights
+- Added a redesigned resident profile header with cover photo and profile image support
+- Added resident profile navigation for Profile, My Requests, My Reports, and Account Settings
+- Added the `users.cover_photo` database field for shared resident and admin cover photo storage
+- Added automatic database migration support for existing installations
+- Added resident cover photo upload support with file type and size validation
+- Fixed stored upload paths so profile, cover, and valid ID images load correctly under `/safebrgy`
+- Updated the resident profile page to fetch and render the saved cover photo from the database
+- Added responsive and print-friendly profile styling
+
+#### Files Updated
+- `public/public-pages/profile.php`
+- `public/public-pages/account.php`
+- `assets/css/public/profile.css`
+- `assets/js/public/account.js`
+- `api/account/update_cover.php`
+- `admin/main-pages/profile.php`
+- `assets/css/admin/profile.css`
+- `config/db.php`
+- `sql/safebrgy_schema.sql`
+
+### Admin Account Settings and Security Logs
+
+#### Overview
+Added a centralized administrator settings workspace with tab-based account, barangay identity, security, and system maintenance controls. The former standalone admin activity logs page is now integrated into the Security tab.
+
+#### Highlights
+- Added Account, Barangay Information, Security, and System Maintenance tabs
+- Added administrator profile photo, name, email, and phone number management
+- Added barangay name, address, contact number, official email, website, logo, and system description fields
+- Added administrator two-factor authentication toggle with database persistence
+- Added combined admin activity and notification logs inside the Security tab
+- Added log type badges, event metadata, recipients, delivery status, and responsive table scrolling
+- Added maintenance mode and database backup controls with a coming-soon modal
+- Added SafeBrgy system version and operational log navigation
+- Preserved the old `/admin/logs` route through a redirect to `account_settings#security`
+- Added automatic migration support for `two_factor_enabled` and `barangay_settings`
+
+#### Files Updated
+- `admin/main-pages/account_settings.php`
+- `admin/logs/logs.php`
+- `admin/update_settings.php`
+- `assets/css/admin/account_settings.css`
+- `assets/js/admin/account_settings.js`
+- `config/db.php`
+- `sql/safebrgy_schema.sql`
+
+---
+
+## What's New in V2.5 (Major UI/UX Redesign)
+
+### Shared Layout and Navigation Redesign
+
+#### Overview
+Resident/public pages and admin/main pages now use a unified visual system based on the SafeBrgy dashboard reference design. The redesign improves consistency across typography, spacing, navigation, cards, tables, forms, modals, and responsive behavior without changing existing backend workflows.
+
+#### Highlights
+- Reworked the shared header, sidebar, colors, typography, cards, tables, forms, buttons, modals, and tabs
+- Added a consistent deep-green and amber SafeBrgy visual theme
+- Standardized resident and admin sidebar/header dimensions and typography
+- Removed conflicting page-level font and layout resets that caused visual changes between pages
+- Removed duplicated top padding from main content containers
+- Replaced the mobile collapsible sidebar with a profile-dropdown-style burger menu
+- Added responsive mobile navigation generated from the existing page navigation links
+- Updated service-card actions so document services use "Request Now" while Incident Report and Lost Property use "Report Now"
+- Preserved existing PHP routes, database queries, forms, APIs, and page functionality
+
+#### Files Updated
+- `assets/css/shared/colors.css`
+- `assets/css/shared/layout.css`
+- `assets/css/shared/shared-header.css`
+- `assets/css/shared/shared_sidebar.css`
+- `assets/js/shared/layout_functions.js`
+- `assets/js/shared/shared-sidebar.js`
+- Resident page styles under `assets/css/public/`
+
+---
+
 ## What's New in V2.4 (Minor Update)
 
 ### Clean URL Path Routing

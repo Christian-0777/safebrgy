@@ -5,14 +5,35 @@ require_once __DIR__ . '/../admin_protect.php';
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
 
+function adminAssetUrl($path) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
+  $applicationRoot = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+
+  if (strpos($path, $applicationRoot . '/') === 0) {
+    return $path;
+  }
+
+  return $applicationRoot . $path;
+}
+
 if ($adminId) {
-    $stmt = $pdo->prepare('SELECT username, email, phone, profile_image, created_at, updated_at FROM users WHERE id = :id');
+  $stmt = $pdo->prepare('SELECT username, email, phone, profile_image, cover_photo, created_at, updated_at FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
     $user = $admin['username'] ?? 'Admin';
     $email = $admin['email'] ?? '';
     $phone = $admin['phone'] ?? '';
-    $profileImage = $admin['profile_image'] ?? null;
+    $profileImage = adminAssetUrl($admin['profile_image'] ?? '');
+    $coverPhoto = adminAssetUrl($admin['cover_photo'] ?? '');
     $dateJoined = $admin['created_at'] ?? null;
     $lastUpdated = $admin['updated_at'] ?? null;
 } else {
@@ -20,6 +41,7 @@ if ($adminId) {
     $email = '';
     $phone = '';
     $profileImage = null;
+    $coverPhoto = null;
     $dateJoined = null;
     $lastUpdated = null;
 }
@@ -108,9 +130,7 @@ $activityLogs = $stmtActivityLogs->fetchAll();
         </div>
         <div class="profile-dropdown">
           <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
-          <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
           <a href="account_settings.php"><i class="fas fa-cog"></i> Settings</a>
-          <a href="../logs/logs.php"><i class="fas fa-history"></i> Logs</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -138,6 +158,7 @@ $activityLogs = $stmtActivityLogs->fetchAll();
 
       <!-- ===== ADMIN INFORMATION SECTION ===== -->
       <div class="admin-info-card mb-5">
+        <div class="admin-cover-photo<?php echo $coverPhoto ? ' has-cover-photo' : ''; ?>"<?php echo $coverPhoto ? ' style="background-image: url(\'' . htmlspecialchars($coverPhoto, ENT_QUOTES, 'UTF-8') . '\');"' : ''; ?>></div>
         <div class="row">
           <!-- Profile Picture and Basic Info -->
           <div class="col-md-3 text-center">

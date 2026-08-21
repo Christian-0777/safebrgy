@@ -17,15 +17,37 @@ $email = $user['email'] ?? '';
 $phone = $user['phone'] ?? '';
 $residentEmail = $user['email'] ?? '';
 
+// Stored upload paths are relative to the application root, not this page's base URL.
+function residentAssetUrl($path) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
+  $applicationRoot = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+
+  if (strpos($path, $applicationRoot . '/') === 0) {
+    return $path;
+  }
+
+  return $applicationRoot . $path;
+}
+
 // Get resident detailed information
 $residentData = null;
 $profileImage = null;
+$coverPhoto = null;
 $validIdPath = null;
 $isVerified = false;
 
 if ($userId) {
     $stmt = $pdo->prepare('
-        SELECT r.*, u.is_verified, u.profile_image 
+        SELECT r.*, u.is_verified, u.profile_image, u.cover_photo
         FROM residents r 
         LEFT JOIN users u ON r.user_id = u.id 
         WHERE r.user_id = ?
@@ -34,8 +56,10 @@ if ($userId) {
     $residentData = $stmt->fetch();
     
     if ($residentData) {
-        $profileImage = $residentData['profile_image_path'] ?? $residentData['profile_image'];
-        $validIdPath = $residentData['valid_id_path'];
+      $profileImagePath = $residentData['profile_image_path'] ?: ($residentData['profile_image'] ?? '');
+      $profileImage = residentAssetUrl($profileImagePath);
+      $coverPhoto = residentAssetUrl($residentData['cover_photo'] ?? '');
+      $validIdPath = residentAssetUrl($residentData['valid_id_path'] ?? '');
         $isVerified = (bool) $residentData['is_verified'];
     }
 }
@@ -163,7 +187,11 @@ function getStatusBadgeClass($status) {
       <!-- ===== PROFILE HEADER SECTION ===== -->
       <div class="profile-header mb-5">
         <div class="profile-cover">
-          <div class="cover-placeholder"></div>
+          <?php if ($coverPhoto): ?>
+            <img src="<?php echo htmlspecialchars($coverPhoto, ENT_QUOTES, 'UTF-8'); ?>" alt="Resident cover photo" class="profile-cover-image">
+          <?php else: ?>
+            <div class="cover-placeholder"></div>
+          <?php endif; ?>
         </div>
         
         <div class="profile-header-content">
@@ -191,6 +219,13 @@ function getStatusBadgeClass($status) {
           </div>
         </div>
       </div>
+
+      <nav class="profile-nav mb-4" aria-label="Resident profile navigation">
+        <a class="profile-nav-link active" href="profile.php"><i class="fas fa-user-circle"></i> Profile</a>
+        <a class="profile-nav-link" href="requests.php"><i class="fas fa-clipboard-list"></i> My Requests</a>
+        <a class="profile-nav-link" href="reports.php"><i class="fas fa-file-alt"></i> My Reports</a>
+        <a class="profile-nav-link" href="account.php"><i class="fas fa-sliders-h"></i> Account Settings</a>
+      </nav>
 
       <!-- ===== PERSONAL INFORMATION SECTION ===== -->
       <section class="profile-section mb-5">

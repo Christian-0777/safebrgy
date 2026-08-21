@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const reportDetailsModal = document.getElementById('reportDetailsModal');
   const modalBody = document.getElementById('modalBody');
   const applyStatusBtn = document.getElementById('applyStatusBtn');
+  const reportsEndpoint = '/safebrgy/admin/reports';
   let currentReportId = null;
 
   // Load report details when View button is clicked
@@ -14,11 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
       currentReportId = reportId;
 
       try {
-        const response = await fetch('reports.php', {
+        const response = await fetch(reportsEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `action=get_report&id=${reportId}`
+          body: new URLSearchParams({ action: 'get_report', id: reportId })
         });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
 
         const data = await response.json();
         if (data.success && data.report) {
@@ -125,11 +130,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const newStatus = statusSelect.value;
 
     try {
-      const response = await fetch('reports.php', {
+      const response = await fetch(reportsEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `action=update_status&id=${currentReportId}&status=${newStatus}`
+        body: new URLSearchParams({
+          action: 'update_status',
+          id: currentReportId,
+          status: newStatus
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
       const data = await response.json();
       if (window.hideLoadingOverlay) {

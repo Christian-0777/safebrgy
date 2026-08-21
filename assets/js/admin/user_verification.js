@@ -3,13 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Existing code can stay
 });
 
+const verificationEndpoint = '/safebrgy/admin';
+
 function viewUser(userId) {
-  fetch('view_user.php', {
+  fetch(`${verificationEndpoint}/view_user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: userId })
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+    return response.json();
+  })
   .then(data => {
     if (data.success) {
       document.getElementById('userDetails').innerHTML = data.html;
@@ -17,6 +24,10 @@ function viewUser(userId) {
     } else {
       alert('Error: ' + data.message);
     }
+  })
+  .catch(error => {
+    console.error('Error loading user:', error);
+    alert('An error occurred while loading the user details.');
   });
 }
 
@@ -25,7 +36,7 @@ function verifyUser(userId) {
     window.showLoadingOverlay();
   }
 
-  fetch('verify_user.php', {
+  fetch(`${verificationEndpoint}/verify_user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: userId, action: 'approve' })
@@ -69,7 +80,7 @@ function confirmReject() {
     return;
   }
 
-  fetch('verify_user.php', {
+  fetch(`${verificationEndpoint}/verify_user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 

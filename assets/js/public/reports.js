@@ -5,12 +5,24 @@ document.addEventListener('DOMContentLoaded', function() {
   const reportsTable = document.getElementById('reportsTable');
   const reportRows = document.querySelectorAll('#reportsTable .report-row');
   const createReportForm = document.getElementById('createReportForm');
+  const reportType = document.getElementById('reportType');
   const pictureUploadArea = document.getElementById('pictureUploadArea');
   const reportPicture = document.getElementById('reportPicture');
   const picturePreview = document.getElementById('picturePreview');
   const viewReportModal = document.getElementById('viewReportModal');
   const reportDetailsContent = document.getElementById('reportDetailsContent');
   const reportButtons = document.querySelectorAll('.btn-view-report');
+
+  const requestedReportType = new URLSearchParams(window.location.search).get('report_type');
+  if (requestedReportType === 'Incident' || requestedReportType === 'Lost Property') {
+    if (reportType) {
+      reportType.value = requestedReportType;
+    }
+    const createReportModal = document.getElementById('createReportModal');
+    if (createReportModal && window.bootstrap) {
+      bootstrap.Modal.getOrCreateInstance(createReportModal).show();
+    }
+  }
 
   // Search functionality
   if (searchInput) {

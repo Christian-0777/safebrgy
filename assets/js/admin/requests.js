@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const updateStatusButtons = document.querySelectorAll('.update-status-btn');
   const statusSelects = document.querySelectorAll('.status-select');
+  const requestsEndpoint = new URL('/safebrgy/admin/requests', window.location.origin).href;
 
   // Update status button click handler
   updateStatusButtons.forEach(btn => {
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch('requests.php', {
+        const response = await fetch(requestsEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `action=update_status&request_id=${requestId}&status=${encodeURIComponent(newStatus)}`

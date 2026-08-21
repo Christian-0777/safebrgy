@@ -1,0 +1,4 @@
+# Allow the browser to display uploaded photos, but never execute code from here.
+<FilesMatch "\.(php|phtml|php\d)$">
+  Deny from all
+</FilesMatch>

@@ -16,14 +16,35 @@ $name = $user['name'] ?? 'Resident';
 $email = $user['email'] ?? '';
 $phone = $user['phone'] ?? '';
 
+function accountAssetUrl($path) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
+  $applicationRoot = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+
+  if (strpos($path, $applicationRoot . '/') === 0) {
+    return $path;
+  }
+
+  return $applicationRoot . $path;
+}
+
 // Get resident detailed information
 $residentData = null;
 $profileImage = null;
+$coverPhoto = null;
 $validIdPath = null;
 
 if ($userId) {
     $stmt = $pdo->prepare('
-        SELECT r.*, u.is_verified, u.profile_image, u.created_at
+        SELECT r.*, u.is_verified, u.profile_image, u.cover_photo, u.created_at
         FROM residents r 
         LEFT JOIN users u ON r.user_id = u.id 
         WHERE r.user_id = ?
@@ -32,8 +53,9 @@ if ($userId) {
     $residentData = $stmt->fetch();
     
     if ($residentData) {
-        $profileImage = $residentData['profile_image_path'] ?? $residentData['profile_image'];
-        $validIdPath = $residentData['valid_id_path'];
+        $profileImage = accountAssetUrl($residentData['profile_image_path'] ?: ($residentData['profile_image'] ?? ''));
+        $coverPhoto = accountAssetUrl($residentData['cover_photo'] ?? '');
+        $validIdPath = accountAssetUrl($residentData['valid_id_path'] ?? '');
     }
 }
 
@@ -234,10 +256,9 @@ $age = calculateAge($birthdate);
                 <div class="col-md-6">
                   <div class="media-item">
                     <label class="form-label fw-bold">Cover Photo</label>
-                    <div class="media-preview cover-preview">
+                    <div class="media-preview cover-preview"<?php echo $coverPhoto ? ' style="background-image: url(\'' . htmlspecialchars($coverPhoto, ENT_QUOTES, 'UTF-8') . '\'); background-size: cover; background-position: center;"' : ''; ?>>
                       <div class="cover-placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>Cover Photo</p>
+                        <?php if (!$coverPhoto): ?><i class="fas fa-image"></i><p>Cover Photo</p><?php endif; ?>
                       </div>
                     </div>
                     <input type="file" id="coverPhotoInput" class="form-control mt-3" accept="image/*">

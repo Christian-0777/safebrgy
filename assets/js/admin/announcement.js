@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const otherAudienceWrapper = document.getElementById('otherAudienceWrapper');
   const announcementAttachments = document.getElementById('announcementAttachments');
   const filePreview = document.getElementById('filePreview');
+  const announcementEndpoint = new URL('/safebrgy/admin/announcement', window.location.origin).href;
 
   // File preview for multiple uploads
   if (announcementAttachments) {
@@ -80,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('action', 'create');
 
       try {
-        const response = await fetch('announcement.php', {
+        const response = await fetch(announcementEndpoint, {
           method: 'POST',
           body: formData
         });
@@ -131,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.hideLoadingOverlay();
         }
         console.error('Error:', error);
-        alert('An error occurred while creating the announcement.');
+        alert(`Unable to reach the announcement server: ${error.message}`);
       }
     });
   }
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch('announcement.php', {
+        const response = await fetch(announcementEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `action=pin&id=${id}&pinned=${pinned}`
@@ -182,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = btn.dataset.id;
 
       try {
-        const response = await fetch('announcement.php', {
+        const response = await fetch(announcementEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `action=archive&id=${id}`
@@ -217,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = btn.dataset.id;
 
       try {
-        const response = await fetch('announcement.php', {
+        const response = await fetch(announcementEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `action=delete&id=${id}`

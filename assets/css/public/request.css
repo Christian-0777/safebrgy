@@ -11,17 +11,8 @@
 }
 
 body {
-  background: var(--request-page-bg);
-  color: var(--request-text);
-}
-
-.main-content {
-  padding-top: 80px;
+  font-family: 'Inter', 'Trebuchet MS', sans-serif;
   min-height: 100vh;
-}
-
-.page-shell {
-  padding: 24px;
 }
 
 .page-header,

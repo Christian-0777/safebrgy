@@ -270,32 +270,44 @@ if ($residentEmail !== '') {
             [
               "title" => "Barangay Clearance",
               "description" => "Proof of no bad record in the barangay, often needed for jobs or permits.",
-              "icon" => "fa-certificate"
+              "icon" => "fa-certificate",
+              "action" => "Request Now",
+              "url" => "requests.php?service=Barangay+Clearance"
             ],
             [
               "title" => "Barangay Residency",
               "description" => "Confirms that a person is a resident of the barangay.",
-              "icon" => "fa-home"
+              "icon" => "fa-home",
+              "action" => "Request Now",
+              "url" => "requests.php?service=Barangay+Residency"
             ],
             [
               "title" => "Barangay Indigency",
               "description" => "Issued to low income individuals for aid, scholarships, or subsidies.",
-              "icon" => "fa-hand-holding-heart"
+              "icon" => "fa-hand-holding-heart",
+              "action" => "Request Now",
+              "url" => "requests.php?service=Barangay+Indigency"
             ],
             [
               "title" => "Barangay Business Clearance",
               "description" => "Permission for a business to operate within the barangay.",
-              "icon" => "fa-briefcase"
+              "icon" => "fa-briefcase",
+              "action" => "Request Now",
+              "url" => "requests.php?service=Barangay+Business+Clearance"
             ],
             [
               "title" => "Incident Report",
               "description" => "Record of complaints or incidents filed at the barangay.",
-              "icon" => "fa-exclamation-triangle"
+              "icon" => "fa-exclamation-triangle",
+              "action" => "Report Now",
+              "url" => "reports.php?report_type=Incident"
             ],
             [
               "title" => "Lost Property",
               "description" => "Assistance for residents who lost items, with issuance of Lost & Found document.",
-              "icon" => "fa-search"
+              "icon" => "fa-search",
+              "action" => "Report Now",
+              "url" => "reports.php?report_type=Lost+Property"
             ]
           ];
           
@@ -307,8 +319,8 @@ if ($residentEmail !== '') {
                       </div>
                       <h5 class="service-title">' . htmlspecialchars($service['title']) . '</h5>
                       <p class="service-description">' . htmlspecialchars($service['description']) . '</p>
-                      <a href="requests.php?service=' . urlencode($service['title']) . '" class="btn btn-request-now">
-                        <i class="fas fa-plus-circle"></i> Request Now
+                      <a href="' . htmlspecialchars($service['url'], ENT_QUOTES) . '" class="btn btn-request-now">
+                        <i class="fas fa-plus-circle"></i> ' . htmlspecialchars($service['action']) . '
                       </a>
                     </div>
                   </div>';

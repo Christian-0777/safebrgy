@@ -1,58 +1,46 @@
 :root {
-  --color-primary: #0b63d6;
-  --color-primary-dark: #083d96;
-  --color-accent: #f4691f;
+  --color-primary: #2f6f5e;
+  --color-primary-dark: #15332b;
+  --color-accent: #e8a33d;
   --color-muted: #64748b;
-  --color-background: #f4f7fb;
+  --color-background: #f5f6f8;
   --color-card: #ffffff;
-  --color-border: #e2e8f0;
-
+  --color-border: #e4e7ec;
+  --color-text: #1a2332;
+  --color-success: #2f9e5b;
+  --color-danger: #d64545;
+  --color-warning: #96660e;
+  --sidebar-width: 264px;
+  --sidebar-collapsed-width: 78px;
+  --header-height: 68px;
+  --shadow-soft: 0 10px 26px rgba(26, 35, 50, 0.06);
   --color-primary-deep: var(--color-primary);
   --color-primary-muted: var(--color-primary);
   --color-accent-orange: var(--color-accent);
   --color-neutral-white: var(--color-card);
   --color-neutral-light-gray: var(--color-border);
   --color-neutral-medium-gray: var(--color-muted);
-  --color-neutral-dark-gray: #0f172a;
+  --color-neutral-dark-gray: var(--color-text);
   --page-background: var(--color-background);
-
-  --sidebar-background: var(--color-primary);
-  --sidebar-text: var(--color-card);
-
-  --header-background: var(--color-primary);
-  --header-text: var(--color-card);
-
+  --sidebar-background: #0e211c;
+  --sidebar-text: #afc4bd;
+  --header-background: var(--color-card);
+  --header-text: var(--color-text);
   --button-primary: var(--color-primary);
   --button-primary-hover: var(--color-primary-dark);
   --button-accent: var(--color-accent);
-
   --card-background: var(--color-card);
   --card-border: var(--color-border);
-
   --form-background: var(--color-card);
   --form-border: var(--color-border);
-  --form-text: var(--color-primary-dark);
-
+  --form-text: var(--color-text);
   --table-background: var(--color-card);
-  --table-header-background: var(--color-primary);
+  --table-header-background: #0e211c;
   --table-header-text: var(--color-card);
   --table-border: var(--color-border);
-
-  --document-background: var(--color-card);
-  --document-header: var(--color-primary);
-  --document-accent: var(--color-accent);
-
-  --text-primary: var(--color-primary-dark);
+  --text-primary: var(--color-text);
   --text-secondary: var(--color-muted);
   --text-light: var(--color-card);
-
   --highlight-color: var(--color-accent);
-  --highlight-background: rgba(244, 105, 31, 0.1);
+  --highlight-background: rgba(232, 163, 61, 0.14);
 }
-
-body {
-  background-color: var(--page-background);
-  color: var(--text-primary);
-  font-family: "Segoe UI", Arial, sans-serif;
-}
-

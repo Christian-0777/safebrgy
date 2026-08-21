@@ -71,6 +71,65 @@ function safeBrgy_db_connect(): PDO
             $pdo->exec('ALTER TABLE requests ADD COLUMN date_received DATETIME NULL AFTER updated_at');
         }
 
+        // Ensure existing installations have a shared cover photo field for all user roles.
+        $userColumns = $pdo->query('SHOW COLUMNS FROM users')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('cover_photo', $userColumns, true)) {
+            $pdo->exec('ALTER TABLE users ADD COLUMN cover_photo VARCHAR(255) NULL AFTER profile_image');
+        }
+        if (!in_array('two_factor_enabled', $userColumns, true)) {
+            $pdo->exec('ALTER TABLE users ADD COLUMN two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER cover_photo');
+        }
+
+        $residentColumns = $pdo->query('SHOW COLUMNS FROM residents')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('valid_id_back_path', $residentColumns, true)) {
+            $pdo->exec('ALTER TABLE residents ADD COLUMN valid_id_back_path VARCHAR(255) NULL AFTER valid_id_path');
+        }
+        if (!in_array('cover_photo_path', $residentColumns, true)) {
+            $pdo->exec('ALTER TABLE residents ADD COLUMN cover_photo_path VARCHAR(255) NULL AFTER profile_image_path');
+        }
+        $pdo->exec("ALTER TABLE residents
+            MODIFY gender VARCHAR(30) NULL,
+            MODIFY civil_status VARCHAR(50) NULL,
+            MODIFY voter_status VARCHAR(50) NULL");
+        $pdo->exec("CREATE TABLE IF NOT EXISTS registration_otps (
+            id INT(11) NOT NULL AUTO_INCREMENT,
+            email VARCHAR(255) NOT NULL,
+            otp_hash VARCHAR(255) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            consumed_at DATETIME NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_registration_otp_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS barangay_settings (
+            id TINYINT UNSIGNED NOT NULL DEFAULT 1,
+            name VARCHAR(150) NOT NULL DEFAULT 'Barangay San Jose',
+            address VARCHAR(255) NULL,
+            contact_number VARCHAR(30) NULL,
+            official_email VARCHAR(255) NULL,
+            website_url VARCHAR(255) NULL,
+            logo_path VARCHAR(255) NULL,
+            description TEXT NULL,
+            updated_by INT(11) NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            CONSTRAINT barangay_settings_updated_by_fk FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $pdo->exec("INSERT IGNORE INTO barangay_settings (id) VALUES (1)");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS announcement_reads (
+            id INT(11) NOT NULL AUTO_INCREMENT,
+            announcement_id INT(11) NOT NULL,
+            user_id INT(11) NOT NULL,
+            read_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY announcement_user (announcement_id, user_id),
+            KEY user_id (user_id),
+            CONSTRAINT announcement_reads_announcement_fk FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+            CONSTRAINT announcement_reads_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
         return $pdo;
     } catch (PDOException $exception) {
         http_response_code(500);

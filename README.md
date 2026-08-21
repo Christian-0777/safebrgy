@@ -3,7 +3,7 @@
 ### Reworked Resident Registration
 
 #### Overview
-Replaced the previous resident registration form with a dedicated multi-step registration wizard available at `/safebrgy/public/register.php`. The new flow follows the public login page's authentication layout and keeps entered information while applicants move between steps.
+Replaced the previous resident registration form with a dedicated multi-step registration wizard available at `/safebrgy/register`. The underlying PHP paths are hidden behind clean URL routing.
 
 #### Highlights
 - Added a seven-step resident registration wizard covering personal, contact and location, economic, other information, review, password, and email verification stages

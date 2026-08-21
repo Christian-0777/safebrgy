@@ -720,7 +720,7 @@
       const successModal = new bootstrap.Modal($('successModal'));
       successModal.show();
       window.setTimeout(() => {
-        window.location.href = '/safebrgy/public/login.php';
+        window.location.href = '/safebrgy/login';
       }, 4000);
     } catch (err) {
       showAlert('A network error occurred. Please try again.', 'danger');

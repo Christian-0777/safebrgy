@@ -58,7 +58,7 @@ if (!empty($_SESSION['user'])) {
             <div id="resetMessage" class="reset-message" role="alert"></div>
             <section class="reset-content active" data-content="1">
                 <p class="reset-note">Enter the email address linked to your verified resident account. We will send you a six-digit reset code.</p>
-                <form id="emailForm" method="post" action="send-reset.php">
+                <form id="emailForm" method="post" action="/safebrgy/reset-password/send-code">
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
@@ -69,7 +69,7 @@ if (!empty($_SESSION['user'])) {
             </section>
             <section class="reset-content" data-content="2">
                 <p class="reset-note">Enter the six-digit code sent to <strong id="maskedEmail"></strong>.</p>
-                <form id="codeForm" method="post" action="verify-reset-code.php">
+                <form id="codeForm" method="post" action="/safebrgy/reset-password/verify-code">
                     <div class="form-group">
                         <label for="code">Verification Code</label>
                         <input type="text" id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autocomplete="one-time-code">
@@ -81,7 +81,7 @@ if (!empty($_SESSION['user'])) {
             </section>
             <section class="reset-content" data-content="3">
                 <p class="reset-note">Create a new password for your SafeBrgy resident account.</p>
-                <form id="passwordForm" method="post" action="confirm-password-reset.php">
+                <form id="passwordForm" method="post" action="/safebrgy/reset-password/confirm">
                     <div class="form-group">
                         <label for="password">New Password</label>
                         <input type="password" id="password" name="password" placeholder="Enter a strong password" required autocomplete="new-password">

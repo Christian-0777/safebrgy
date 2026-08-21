@@ -21,10 +21,19 @@ RewriteRule ^admin/logs/logs\.php$ /safebrgy/admin/logs [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+safebrgy/register\.php(?:[?\s]) [NC]
 RewriteRule ^register\.php$ /safebrgy/register [R=301,L]
 
+RewriteCond %{THE_REQUEST} \s/+safebrgy/public/register\.php(?:[?\s]) [NC]
+RewriteRule ^public/register\.php$ /safebrgy/register [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/+safebrgy/register/index\.php(?:[?\s]) [NC]
+RewriteRule ^register/index\.php$ /safebrgy/register [R=301,L]
+
 # Resident pages.
 RewriteRule ^(dashboard|announcement|reports|requests|profile|account)$ public/public-pages/$1.php [L]
 RewriteRule ^(login|logout|otp-view|reset-password)$ public/$1.php [L]
-RewriteRule ^register$ register.php [L]
+RewriteRule ^reset-password/send-code$ public/send-reset.php [L]
+RewriteRule ^reset-password/verify-code$ public/verify-reset-code.php [L]
+RewriteRule ^reset-password/confirm$ public/confirm-password-reset.php [L]
+RewriteRule ^register/?$ register/index.php [L]
 
 # Admin pages. The admin landing page remains outside clean URL routing.
 RewriteRule ^admin/(dashboard|announcement|reports|requests|profile|account_settings|notifications|user_verification)$ admin/main-pages/$1.php [L]

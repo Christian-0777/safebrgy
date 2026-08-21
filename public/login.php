@@ -91,13 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember" style="margin-bottom:0; font-weight:400;">Remember me</label>
                     </div>
-                    <a href="reset-password.php" class="forgot-link">Forgot password?</a>
+                    <a href="/safebrgy/reset-password" class="forgot-link">Forgot password?</a>
                 </div>
 
                 <button type="submit" id="loginBtn">Sign In</button>
 
                 <div class="signup-link">
-                    Do not have an account? <a href="register.php">Create one</a>
+                    Do not have an account? <a href="/safebrgy/register">Create one</a>
                 </div>
             </form>
         </div>

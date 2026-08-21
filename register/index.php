@@ -546,7 +546,7 @@ $today = (new DateTime('today'))->format('Y-m-d');
         <h4 class="step-heading" style="font-size:22px;">Account created</h4>
         <p class="step-subheading mb-4">Your resident account was created and pending to review. We will sent an email/sms once your account is activated.</p>
         <p class="field-hint mb-3">Redirecting you to login...</p>
-        <a href="/safebrgy/public/login.php" class="btn btn-primary px-4">Go to login</a>
+        <a href="/safebrgy/login" class="btn btn-primary px-4">Go to login</a>
       </div>
     </div>
   </div>

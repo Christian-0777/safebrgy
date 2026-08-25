@@ -83,8 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        reportPicture.files = files;
-        handleFileSelect(files[0]);
+        setSelectedFiles(files);
       }
     });
   }
@@ -92,45 +91,51 @@ document.addEventListener('DOMContentLoaded', function() {
   // Picture file input change handler
   if (reportPicture) {
     reportPicture.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFileSelect(e.target.files[0]);
-      }
+      setSelectedFiles(e.target.files);
     });
   }
 
-  function handleFileSelect(file) {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
+  function setSelectedFiles(fileList) {
+    const files = Array.from(fileList);
+
+    if (files.length > 10) {
+      alert('You can upload up to 10 pictures.');
       return;
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+    if (files.some(file => !file.type.startsWith('image/'))) {
+      alert('Please select valid image files only.');
       return;
     }
 
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      picturePreview.innerHTML = `
-        <div class="picture-preview-item">
-          <img src="${e.target.result}" alt="Preview">
-          <button type="button" class="picture-remove-btn" title="Remove">
+    const dataTransfer = new DataTransfer();
+    files.forEach(file => dataTransfer.items.add(file));
+    reportPicture.files = dataTransfer.files;
+    renderPicturePreviews(files);
+  }
+
+  function renderPicturePreviews(files) {
+    picturePreview.innerHTML = '';
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'picture-preview-item';
+        previewItem.innerHTML = `
+          <img src="${e.target.result}" alt="Preview ${index + 1}">
+          <button type="button" class="picture-remove-btn" title="Remove picture" aria-label="Remove picture">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-      `;
-
-      // Remove button handler
-      const removeBtn = picturePreview.querySelector('.picture-remove-btn');
-      removeBtn.addEventListener('click', () => {
-        reportPicture.value = '';
-        picturePreview.innerHTML = '';
-      });
-    };
-    reader.readAsDataURL(file);
+        `;
+        previewItem.querySelector('.picture-remove-btn').addEventListener('click', () => {
+          const remainingFiles = Array.from(reportPicture.files).filter((_, fileIndex) => fileIndex !== index);
+          setSelectedFiles(remainingFiles);
+        });
+        picturePreview.appendChild(previewItem);
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   // Create report form submission
@@ -178,6 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function escapeHtml(value) {
+    const element = document.createElement('div');
+    element.textContent = value == null ? '' : String(value);
+    return element.innerHTML;
+  }
+
   // View report functionality
   reportButtons.forEach(btn => {
     btn.addEventListener('click', async function() {
@@ -192,7 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
           reportDetailsContent.innerHTML = `
             <div class="report-detail-section">
               <div class="detail-label">Case Number</div>
-              <div class="detail-value">${report.case_number || 'N/A'}</div>
+              <div class="detail-value case-number-detail">
+                <span id="reportCaseNumber">${escapeHtml(report.case_number || 'N/A')}</span>
+                <button type="button" class="copy-case-number-btn" id="copyCaseNumberBtn" title="Copy case number" aria-label="Copy case number">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
             </div>
 
             <div class="report-detail-section">
@@ -251,6 +267,38 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             ` : ''}
           `;
+
+          const copyCaseNumberButton = document.getElementById('copyCaseNumberBtn');
+          const caseNumberElement = document.getElementById('reportCaseNumber');
+          if (copyCaseNumberButton && caseNumberElement && caseNumberElement.textContent !== 'N/A') {
+            copyCaseNumberButton.addEventListener('click', async () => {
+              const caseNumber = caseNumberElement.textContent.trim();
+              let copied = false;
+
+              if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(caseNumber);
+                copied = true;
+              } else {
+                const temporaryInput = document.createElement('textarea');
+                temporaryInput.value = caseNumber;
+                temporaryInput.style.position = 'fixed';
+                temporaryInput.style.opacity = '0';
+                document.body.appendChild(temporaryInput);
+                temporaryInput.select();
+                copied = document.execCommand('copy');
+                temporaryInput.remove();
+              }
+
+              if (copied) {
+                copyCaseNumberButton.innerHTML = '<i class="fas fa-check"></i>';
+                copyCaseNumberButton.title = 'Copied';
+                window.setTimeout(() => {
+                  copyCaseNumberButton.innerHTML = '<i class="fas fa-copy"></i>';
+                  copyCaseNumberButton.title = 'Copy case number';
+                }, 1500);
+              }
+            });
+          }
         } else {
           reportDetailsContent.innerHTML = '<p class="text-danger">Failed to load report details</p>';
         }

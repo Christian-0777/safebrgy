@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/db.php';
 // account.php - SafeBrgy Account Settings
 session_start();
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 
 // Check if user is logged in and verified
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
@@ -29,6 +30,13 @@ function accountAssetUrl($path) {
   $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
   $applicationRoot = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 
+  foreach (['/uploads/profile/' => '/register/uploads/profile/', '/uploads/cover/' => '/register/uploads/cover/'] as $source => $target) {
+    if (strpos($path, $source) === 0) {
+      $path = $target . rawurlencode(basename($path));
+      break;
+    }
+  }
+
   if (strpos($path, $applicationRoot . '/') === 0) {
     return $path;
   }
@@ -36,11 +44,25 @@ function accountAssetUrl($path) {
   return $applicationRoot . $path;
 }
 
+function accountValidIdUrl($path) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  return accountAssetUrl('/uploads/id/' . basename(str_replace('\\', '/', $path)));
+}
+
 // Get resident detailed information
 $residentData = null;
 $profileImage = null;
 $coverPhoto = null;
 $validIdPath = null;
+$validIdBackPath = null;
 
 if ($userId) {
     $stmt = $pdo->prepare('
@@ -53,9 +75,11 @@ if ($userId) {
     $residentData = $stmt->fetch();
     
     if ($residentData) {
-        $profileImage = accountAssetUrl($residentData['profile_image_path'] ?: ($residentData['profile_image'] ?? ''));
-        $coverPhoto = accountAssetUrl($residentData['cover_photo'] ?? '');
-        $validIdPath = accountAssetUrl($residentData['valid_id_path'] ?? '');
+        $profileImage = accountAssetUrl($residentData['profile_image'] ?: ($residentData['profile_image_path'] ?? ''));
+        $coverPhotoPath = $residentData['cover_photo'] ?: ($residentData['cover_photo_path'] ?? '');
+        $coverPhoto = accountAssetUrl($coverPhotoPath);
+        $validIdPath = accountValidIdUrl($residentData['valid_id_path'] ?? '');
+        $validIdBackPath = accountValidIdUrl($residentData['valid_id_back_path'] ?? '');
     }
 }
 
@@ -104,7 +128,7 @@ $age = calculateAge($birthdate);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/public/public-pages/">
+  <base href="/public/public-pages/">
   <title>SafeBrgy - Account Settings</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->
@@ -133,7 +157,7 @@ $age = calculateAge($birthdate);
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($name, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
@@ -150,10 +174,10 @@ $age = calculateAge($birthdate);
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -248,7 +272,7 @@ $age = calculateAge($birthdate);
                         </div>
                       <?php endif; ?>
                     </div>
-                    <input type="file" id="profilePictureInput" class="form-control mt-3" accept="image/*">
+                    <input type="file" id="profilePictureInput" name="profilePhoto" form="personalInfoForm" class="form-control mt-3" accept="image/jpeg,image/png,image/webp">
                     <small class="text-muted d-block mt-2">Recommended size: 400x400px, Max 5MB</small>
                   </div>
                 </div>
@@ -257,9 +281,11 @@ $age = calculateAge($birthdate);
                   <div class="media-item">
                     <label class="form-label fw-bold">Cover Photo</label>
                     <div class="media-preview cover-preview"<?php echo $coverPhoto ? ' style="background-image: url(\'' . htmlspecialchars($coverPhoto, ENT_QUOTES, 'UTF-8') . '\'); background-size: cover; background-position: center;"' : ''; ?>>
-                      <div class="cover-placeholder">
-                        <?php if (!$coverPhoto): ?><i class="fas fa-image"></i><p>Cover Photo</p><?php endif; ?>
-                      </div>
+                      <?php if (!$coverPhoto): ?>
+                        <div class="cover-placeholder">
+                          <i class="fas fa-image"></i><p>Cover Photo</p>
+                        </div>
+                      <?php endif; ?>
                     </div>
                     <input type="file" id="coverPhotoInput" class="form-control mt-3" accept="image/*">
                     <small class="text-muted d-block mt-2">Recommended size: 1200x300px, Max 10MB</small>
@@ -269,7 +295,7 @@ $age = calculateAge($birthdate);
             </div>
 
             <!-- Personal Information Form -->
-            <form id="personalInfoForm" method="POST" action="../../api/account/update_personal.php">
+            <form id="personalInfoForm" method="POST" action="../../api/account/update_personal.php" enctype="multipart/form-data">
               <h5 class="mb-3"><i class="fas fa-pen"></i> Personal Details</h5>
               
               <div class="row">
@@ -415,31 +441,57 @@ $age = calculateAge($birthdate);
                 <i class="fas fa-info-circle"></i> Keep your valid ID updated for verification purposes
               </div>
 
-              <?php if ($validIdPath): ?>
+              <?php if ($validIdPath || $validIdBackPath): ?>
                 <div class="mb-4">
                   <h6 class="mb-3">Current ID</h6>
-                  <div class="id-preview-container">
-                    <img src="<?php echo htmlspecialchars($validIdPath); ?>" alt="Current ID" class="id-preview" id="currentIdPreview">
-                    <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="document.getElementById('currentIdPreview').click()">
-                      <i class="fas fa-expand"></i> View Full Size
-                    </button>
+                  <div class="id-preview-list">
+                    <?php if ($validIdPath): ?>
+                      <div class="id-preview-container">
+                        <strong>Front of Valid ID</strong>
+                        <img src="<?php echo htmlspecialchars($validIdPath); ?>" alt="Front of Valid ID" class="id-preview">
+                      </div>
+                    <?php endif; ?>
+                    <?php if ($validIdBackPath): ?>
+                      <div class="id-preview-container">
+                        <strong>Back of Valid ID</strong>
+                        <img src="<?php echo htmlspecialchars($validIdBackPath); ?>" alt="Back of Valid ID" class="id-preview">
+                      </div>
+                    <?php endif; ?>
                   </div>
                 </div>
               <?php endif; ?>
 
-              <div class="mb-4">
-                <label for="validIdFile" class="form-label">Upload New ID</label>
-                <div class="upload-area" id="idUploadArea">
-                  <i class="fas fa-cloud-upload-alt"></i>
-                  <p>Drag and drop your ID here or click to browse</p>
-                  <input type="file" id="validIdFile" name="validIdFile" class="form-control" accept="image/*,.pdf" required>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="validIdFrontFile" class="form-label">Upload New ID Front</label>
+                  <div class="upload-area" id="idFrontUploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag and drop the front of your ID or click to browse</p>
+                    <input type="file" id="validIdFrontFile" name="validIdFrontFile" class="form-control" accept="image/*" required>
+                  </div>
                 </div>
-                <small class="text-muted d-block mt-2">Supported formats: JPG, PNG, PDF | Max size: 10MB</small>
+                <div class="col-md-6">
+                  <label for="validIdBackFile" class="form-label">Upload New ID Back</label>
+                  <div class="upload-area" id="idBackUploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag and drop the back of your ID or click to browse</p>
+                    <input type="file" id="validIdBackFile" name="validIdBackFile" class="form-control" accept="image/*" required>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <small class="text-muted">Supported formats: JPG, PNG, WebP | Max size: 10MB per file</small>
+                </div>
               </div>
 
-              <div id="idPreviewNew" style="display:none;">
-                <h6 class="mb-2">Preview</h6>
-                <img id="newIdPreview" src="" alt="New ID Preview" class="img-fluid" style="max-width: 300px;">
+              <div class="row g-3" id="idPreviewNew" style="display:none;">
+                <div class="col-md-6" id="idFrontPreviewNew" style="display:none;">
+                  <h6 class="mb-2">Front Preview</h6>
+                  <img id="newIdFrontPreview" src="" alt="New ID Front Preview" class="img-fluid new-id-preview">
+                </div>
+                <div class="col-md-6" id="idBackPreviewNew" style="display:none;">
+                  <h6 class="mb-2">Back Preview</h6>
+                  <img id="newIdBackPreview" src="" alt="New ID Back Preview" class="img-fluid new-id-preview">
+                </div>
               </div>
 
               <div class="mt-4">

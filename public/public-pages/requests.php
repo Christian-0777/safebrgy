@@ -1,6 +1,7 @@
 ﻿<?php
 require_once __DIR__ . '/../../config/db.php';
 session_start();
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 
 if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'resident') {
     header('Location: ../login.php');
@@ -9,8 +10,19 @@ if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'resident
 
 $pdo = safeBrgy_db_connect();
 $user = $_SESSION['user'];
-$residentName = $user['name'] ?? $user['username'] ?? 'Resident';
-$residentEmail = $user['email'] ?? '';
+$residentStmt = $pdo->prepare(
+  'SELECT u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
+      r.years_of_residency
+     FROM users u
+     LEFT JOIN residents r ON r.user_id = u.id
+    WHERE u.id = ? AND u.role = "resident"'
+);
+$residentStmt->execute([(int) ($user['id'] ?? 0)]);
+$resident = $residentStmt->fetch() ?: [];
+$residentName = trim($resident['resident_name'] ?? '') ?: ($user['name'] ?? $user['username'] ?? 'Resident');
+$residentEmail = $resident['email'] ?? $user['email'] ?? '';
+$yearsOfResidency = max(0, (int) ($resident['years_of_residency'] ?? 0));
+$dateStarted = date('Y-m-d', strtotime('-' . $yearsOfResidency . ' years'));
 
 $stmt = $pdo->prepare(
     'SELECT r.reference_no, r.document_type, r.status, r.submitted_at,
@@ -20,10 +32,10 @@ $stmt = $pdo->prepare(
   LEFT JOIN barangay_residency br ON br.request_id = r.id
   LEFT JOIN barangay_indigency bi ON bi.request_id = r.id
   LEFT JOIN barangay_business_clearance bb ON bb.request_id = r.id
-      WHERE resident_email = ?
+      WHERE r.user_id = ? OR (r.user_id IS NULL AND r.resident_email = ?)
       ORDER BY submitted_at DESC'
 );
-$stmt->execute([$residentEmail]);
+    $stmt->execute([(int) ($user['id'] ?? 0), $residentEmail]);
 $requests = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -33,7 +45,7 @@ $requests = $stmt->fetchAll();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeBrgy - Request Portal</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
-    <base href="/safebrgy/public/public-pages/">
+    <base href="/public/public-pages/">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
@@ -55,7 +67,7 @@ $requests = $stmt->fetchAll();
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo htmlspecialchars(substr($residentName, 0, 1)); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($residentName, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($residentName); ?></div>
           <div class="profile-role">Resident</div>
@@ -71,10 +83,10 @@ $requests = $stmt->fetchAll();
 
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php" class="active"><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
     </ul>
     <div class="sidebar-footer">
       <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
@@ -174,16 +186,6 @@ $requests = $stmt->fetchAll();
       <div class="modal-body">
         <form class="request-form" data-doctype="Barangay Clearance" enctype="multipart/form-data">
           <div class="form-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="clearance-name">Full Name *</label>
-              <input type="text" id="clearance-name" name="resident_name" value="<?php echo htmlspecialchars($residentName); ?>" required>
-            </div>
-            <div class="form-group">
-              <label for="clearance-email">Email Address *</label>
-              <input type="email" id="clearance-email" name="resident_email" value="<?php echo htmlspecialchars($residentEmail); ?>" required>
-            </div>
-          </div>
           <div class="form-group">
             <label for="clearance-purpose">Purpose of Request *</label>
             <textarea id="clearance-purpose" name="purpose" required placeholder="e.g. Employment requirement, school requirement..."></textarea>
@@ -213,22 +215,12 @@ $requests = $stmt->fetchAll();
           <div class="form-alert"></div>
           <div class="form-row">
             <div class="form-group">
-              <label for="residency-name">Full Name *</label>
-              <input type="text" id="residency-name" name="resident_name" value="<?php echo htmlspecialchars($residentName); ?>" required>
-            </div>
-            <div class="form-group">
-              <label for="residency-email">Email Address *</label>
-              <input type="email" id="residency-email" name="resident_email" value="<?php echo htmlspecialchars($residentEmail); ?>" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label for="residency-years">Years of Residency *</label>
-              <input type="number" id="residency-years" name="years_of_residency" min="0" required>
+              <input type="number" id="residency-years" name="years_of_residency" value="<?php echo $yearsOfResidency; ?>" readonly>
             </div>
             <div class="form-group">
               <label for="residency-date">Date Started Living in Barangay *</label>
-              <input type="date" id="residency-date" name="date_started" required>
+              <input type="date" id="residency-date" name="date_started" value="<?php echo htmlspecialchars($dateStarted); ?>" readonly>
             </div>
           </div>
           <div class="form-group">
@@ -258,16 +250,6 @@ $requests = $stmt->fetchAll();
       <div class="modal-body">
         <form class="request-form" data-doctype="Barangay Indigency" enctype="multipart/form-data">
           <div class="form-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="indigency-name">Full Name *</label>
-              <input type="text" id="indigency-name" name="resident_name" value="<?php echo htmlspecialchars($residentName); ?>" required>
-            </div>
-            <div class="form-group">
-              <label for="indigency-email">Email Address *</label>
-              <input type="email" id="indigency-email" name="resident_email" value="<?php echo htmlspecialchars($residentEmail); ?>" required>
-            </div>
-          </div>
           <div class="form-row">
             <div class="form-group">
               <label for="indigency-income">Monthly Income (₱) *</label>
@@ -316,16 +298,6 @@ $requests = $stmt->fetchAll();
       <div class="modal-body">
         <form class="request-form" data-doctype="Barangay Business Clearance" enctype="multipart/form-data">
           <div class="form-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="business-name-owner">Full Name (Owner) *</label>
-              <input type="text" id="business-name-owner" name="resident_name" value="<?php echo htmlspecialchars($residentName); ?>" required>
-            </div>
-            <div class="form-group">
-              <label for="business-email">Email Address *</label>
-              <input type="email" id="business-email" name="resident_email" value="<?php echo htmlspecialchars($residentEmail); ?>" required>
-            </div>
-          </div>
           <div class="form-group">
             <label for="business-name">Business Name *</label>
             <input type="text" id="business-name" name="business_name" required>
@@ -383,9 +355,21 @@ $requests = $stmt->fetchAll();
       </div>
       <div class="modal-body">
         <div class="details-list">
-          <div class="details-item"><strong>Date Requested</strong><span id="detail-submitted-at">N/A</span></div>
+          <div class="details-item">
+            <strong>Reference Number</strong>
+            <span class="reference-value">
+              <span id="detail-reference-no">N/A</span>
+              <button type="button" class="copy-reference-btn" id="copy-reference-btn" title="Copy reference number" aria-label="Copy reference number">
+                <i class="fas fa-copy"></i>
+              </button>
+            </span>
+          </div>
+          <div class="details-item"><strong>Document Type</strong><span id="detail-document-type">N/A</span></div>
           <div class="details-item"><strong>Purpose of Request</strong><span id="detail-purpose">N/A</span></div>
-          <div class="details-item"><strong>Status</strong><span id="detail-status">N/A</span></div>
+          <div class="details-item details-item-inline">
+            <div><strong>Date Requested</strong><span id="detail-submitted-at">N/A</span></div>
+            <div><strong>Status</strong><span id="detail-status">N/A</span></div>
+          </div>
         </div>
       </div>
       <div class="modal-footer" style="justify-content:center;">

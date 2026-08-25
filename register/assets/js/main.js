@@ -699,6 +699,7 @@
         console.error('[SafeBrgy registration] Request failed:', {
           status: res.status,
           message: data.message,
+          errors: data.errors || null,
           debug: data.debug || null,
         });
         if (data.debug) {
@@ -708,8 +709,12 @@
           $('otpError').textContent = data.errors.otp;
           $('otpError').classList.remove('d-none');
         } else if (data.errors) {
-          const firstStepWithError = findStepForErrors(Object.keys(data.errors));
-          showAlert(data.message || 'Please correct the highlighted fields.', 'danger');
+          const errorEntries = Object.entries(data.errors);
+          const firstStepWithError = findStepForErrors(errorEntries.map(([key]) => key));
+          const errorSummary = errorEntries
+            .map(([field, message]) => field + ': ' + message)
+            .join(' ');
+          showAlert(errorSummary || data.message || 'Please correct the highlighted fields.', 'danger');
           if (firstStepWithError && firstStepWithError !== TOTAL_STEPS) goToStep(firstStepWithError);
         } else {
           showAlert(data.message || 'Something went wrong. Please try again.', 'danger');

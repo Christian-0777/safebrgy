@@ -1,25 +1,25 @@
 /* ==========================================================================
    Resident Registration — Style Sheet
-   Design language: civic registry / official ledger.
-   Palette: deep forest green + muted gold, warm paper background.
+  Design language: civic registry / official ledger.
+  Palette: clear blue + orange, cool paper background.
    Type: Fraunces (display) + Public Sans (UI/body).
    ========================================================================== */
 
 :root{
   /* -- Color tokens -- */
-  --color-primary:        #1B4332;
-  --color-primary-dark:   #0E2A1E;
-  --color-primary-light:  #2F6E4F;
-  --color-accent:         #C89B3C;
-  --color-accent-light:   #E4C77E;
-  --color-bg:             #F7F5EF;
+  --color-primary:        #0B63D6;
+  --color-primary-dark:   #083D96;
+  --color-primary-light:  #3B82F6;
+  --color-accent:         #F4691F;
+  --color-accent-light:   #FDBA74;
+  --color-bg:             #F4F7FB;
   --color-surface:        #FFFFFF;
-  --color-text:           #22261F;
-  --color-text-muted:     #6B6E63;
-  --color-border:         #E3DFD2;
-  --color-success:        #2F7D5B;
+  --color-text:           #0F172A;
+  --color-text-muted:     #64748B;
+  --color-border:         #E2E8F0;
+  --color-success:        #2563EB;
   --color-danger:         #B3261E;
-  --color-info:           #52796F;
+  --color-info:           #1D4ED8;
 
   /* -- Type tokens -- */
   --font-display: 'Fraunces', 'Georgia', serif;
@@ -30,7 +30,7 @@
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
-  --shadow-card: 0 20px 60px -25px rgba(14, 42, 30, 0.35);
+  --shadow-card: 0 20px 60px -25px rgba(8, 61, 150, 0.35);
 }
 
 *{ box-sizing: border-box; }
@@ -53,7 +53,7 @@ body{
   min-height: 100vh;
   display: flex;
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(27,67,50,0.06) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(8,61,150,0.06) 1px, transparent 0);
   background-size: 22px 22px;
 }
 
@@ -80,9 +80,9 @@ textarea:focus-visible,
   width: var(--brand-width);
   min-width: 360px;
   background:
-    radial-gradient(120% 140% at 15% -10%, #24523C 0%, transparent 55%),
+    radial-gradient(120% 140% at 15% -10%, #124E9B 0%, transparent 55%),
     linear-gradient(165deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: #F3F1E6;
+  color: #EFF6FF;
   padding: 56px 48px;
   position: sticky;
   top: 0;
@@ -103,12 +103,12 @@ textarea:focus-visible,
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 1.5px solid rgba(228, 199, 126, 0.55);
+  border: 1.5px solid rgba(253, 186, 116, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: radial-gradient(circle, rgba(228,199,126,0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(253,186,116,0.14) 0%, transparent 70%);
 }
 
 .brand-seal svg{ width: 26px; height: 26px; }
@@ -128,7 +128,7 @@ textarea:focus-visible,
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
-  color: #FBFAF4;
+  color: #F8FAFC;
 }
 
 .brand-copy h1{
@@ -142,7 +142,7 @@ textarea:focus-visible,
 }
 
 .brand-copy p{
-  color: rgba(243, 241, 230, 0.78);
+  color: rgba(239, 246, 255, 0.78);
   font-size: 15px;
   max-width: 38ch;
   margin-bottom: 40px;
@@ -166,7 +166,7 @@ textarea:focus-visible,
   top: 6px;
   bottom: 6px;
   width: 1px;
-  background: linear-gradient(180deg, rgba(228,199,126,0.5), rgba(228,199,126,0.08));
+  background: linear-gradient(180deg, rgba(253,186,116,0.5), rgba(253,186,116,0.08));
 }
 
 .ledger-item{
@@ -191,7 +191,7 @@ textarea:focus-visible,
   font-weight: 600;
   background: var(--color-primary-dark);
   border: 1.5px solid rgba(228, 199, 126, 0.35);
-  color: rgba(243, 241, 230, 0.55);
+  color: rgba(239, 246, 255, 0.55);
   position: relative;
   z-index: 1;
   transition: all .35s ease;
@@ -216,7 +216,7 @@ textarea:focus-visible,
 .ledger-text .label{
   display:block;
   font-size: 13px;
-  color: rgba(243, 241, 230, 0.5);
+  color: rgba(239, 246, 255, 0.5);
   letter-spacing: 0.03em;
 }
 .ledger-item.is-active .ledger-text .label,
@@ -227,18 +227,18 @@ textarea:focus-visible,
   display:block;
   font-weight: 600;
   font-size: 14.5px;
-  color: rgba(243, 241, 230, 0.62);
+  color: rgba(239, 246, 255, 0.62);
   margin-top: 1px;
 }
 .ledger-item.is-active .ledger-text .title{ color: #FFFFFF; }
-.ledger-item.is-done .ledger-text .title{ color: rgba(243, 241, 230, 0.85); }
+.ledger-item.is-done .ledger-text .title{ color: rgba(239, 246, 255, 0.85); }
 
 .brand-footnote{
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid rgba(228,199,126,0.18);
   font-size: 12.5px;
-  color: rgba(243, 241, 230, 0.45);
+  color: rgba(239, 246, 255, 0.45);
 }
 
 /* Condensed top bar shown only on small screens */
@@ -344,10 +344,10 @@ textarea:focus-visible,
 .form-control:focus,
 .form-select:focus{
   border-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3.5px rgba(27,67,50,0.10);
+  box-shadow: 0 0 0 3.5px rgba(8,61,150,0.10);
 }
 .form-control[readonly]{
-  background-color: #F1EFE6;
+  background-color: #EFF6FF;
   color: var(--color-text-muted);
 }
 .form-control.is-invalid,
@@ -361,7 +361,7 @@ textarea:focus-visible,
 .invalid-feedback{ font-size: 12px; }
 
 .input-group .input-group-text{
-  background: #F1EFE6;
+  background: #EFF6FF;
   border: 1.5px solid var(--color-border);
   border-right: none;
   color: var(--color-text-muted);
@@ -375,7 +375,7 @@ textarea:focus-visible,
   border-color: var(--color-primary);
 }
 .form-check-input:focus{
-  box-shadow: 0 0 0 3.5px rgba(27,67,50,0.10);
+  box-shadow: 0 0 0 3.5px rgba(8,61,150,0.10);
 }
 
 /* -- Navigation buttons -- */
@@ -560,13 +560,13 @@ textarea:focus-visible,
   background: var(--color-border);
 }
 .password-strength.s1 span:nth-child(1){ background: var(--color-danger); }
-.password-strength.s2 span:nth-child(-n+2){ background: #C77B12; }
-.password-strength.s3 span:nth-child(-n+3){ background: #C89B3C; }
+.password-strength.s2 span:nth-child(-n+2){ background: #ea580c; }
+.password-strength.s3 span:nth-child(-n+3){ background: var(--color-accent); }
 .password-strength.s4 span{ background: var(--color-success); }
 
 .toggle-visibility{
   cursor: pointer;
-  background: #F1EFE6;
+  background: #fff7ed;
   border: 1.5px solid var(--color-border);
   border-left: none;
 }

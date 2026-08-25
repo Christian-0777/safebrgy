@@ -1,7 +1,18 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/shared/remember_me.php';
 // admin_login.php - SafeBrgy Admin Login
 session_start();
+$pdo = safeBrgy_db_connect();
+$rememberedRole = restoreRememberedLogin($pdo);
+if ($rememberedRole === 'admin') {
+    header('Location: /safebrgy/admin/dashboard');
+    exit;
+}
+if ($rememberedRole === 'resident') {
+    header('Location: /safebrgy/dashboard');
+    exit;
+}
 $flashError = $_SESSION['flash_error'] ?? '';
 unset($_SESSION['flash_error']);
 ?>
@@ -10,7 +21,7 @@ unset($_SESSION['flash_error']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/safebrgy/admin/">
+    <base href="/admin/">
     <title>SafeBrgy - Admin Login</title>
     <link rel="icon" type="image/png" href="../assets/img/seal.png">
     <link rel="stylesheet" href="../assets/css/shared/colors.css">
@@ -32,7 +43,7 @@ unset($_SESSION['flash_error']);
               <div class="error-banner"><?php echo htmlspecialchars($flashError); ?></div>
             <?php endif; ?>
 
-            <form id="adminLoginForm" method="POST" action="/safebrgy/admin/admin_auth.php">
+            <form id="adminLoginForm" method="POST" action="/admin/admin_auth.php">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="admin@barangay.com" required>
@@ -48,7 +59,7 @@ unset($_SESSION['flash_error']);
                         <input type="checkbox" id="rememberMe" name="rememberMe">
                         <label for="rememberMe" style="margin-bottom:0; font-weight:400;">Remember me</label>
                     </div>
-                    <a href="forgot_password.php" class="forgot-link">Forgot password?</a>
+                    <a href="reset-password.php" class="forgot-link">Forgot password?</a>
                 </div>
 
                 <button type="submit">Sign In</button>

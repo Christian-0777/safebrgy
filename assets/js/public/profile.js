@@ -33,7 +33,7 @@ function handleLogout(e) {
     
     // Show confirmation dialog
     if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '../../public/logout.php';
+        window.location.href = new URL('../logout.php', document.baseURI).href;
     }
 }
 

@@ -55,13 +55,16 @@ try {
     }
 
     $pdo = safeBrgy_db_connect();
+    $pdo->beginTransaction();
     $stmt = $pdo->prepare('UPDATE users SET cover_photo = ?, updated_at = NOW() WHERE id = ? AND role = \'resident\'');
     $stmt->execute([$relativePath, $userId]);
-
-    if ($stmt->rowCount() !== 1) {
-        @unlink($uploadDir . $filename);
+    $savedCover = $pdo->prepare('SELECT cover_photo FROM users WHERE id = ? AND role = \'resident\'');
+    $savedCover->execute([$userId]);
+    if ($savedCover->fetchColumn() !== $relativePath) {
         throw new RuntimeException('Cover photo could not be linked to your account.');
     }
+    $pdo->prepare('UPDATE residents SET cover_photo_path = ? WHERE user_id = ?')->execute([$relativePath, $userId]);
+    $pdo->commit();
 
     echo json_encode(['success' => true, 'path' => $relativePath]);
 } catch (Throwable $exception) {

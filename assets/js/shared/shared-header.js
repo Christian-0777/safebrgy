@@ -152,10 +152,11 @@ class SharedHeader {
   }
 
   logout() {
-    // Clear any stored data and redirect to the proper logout endpoint
+    const logoutLink = document.querySelector('.sidebar-footer a[href*="logout"]');
+    const logoutUrl = logoutLink?.href || new URL('../logout.php', document.baseURI).href;
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = '../logout.php';
+    window.location.href = logoutUrl;
   }
 
   formatTime(timestamp) {

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 // admin_dashboard.php - SafeBrgy Admin Dashboard
 
 $pdo = safeBrgy_db_connect();
@@ -9,7 +10,7 @@ if ($adminId) {
     $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
-    $user = $admin['username'] ?? 'Admin';
+    $user = adminDisplayName($admin['username'] ?? 'Admin');
 } else {
     $user = 'Admin';
 }
@@ -43,34 +44,6 @@ $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pe
 
 // Pending Cases (Pending or Ongoing Reports)
 $pendingCases = $pdo->query("SELECT COUNT(*) FROM reports WHERE status IN ('Pending', 'Ongoing')")->fetchColumn();
-
-// ===== RESIDENTS STATISTICS =====
-// Gender Distribution
-$genderStats = $pdo->query('
-    SELECT gender, COUNT(*) as count 
-    FROM residents 
-    WHERE gender IS NOT NULL 
-    GROUP BY gender
-')->fetchAll(PDO::FETCH_KEY_PAIR);
-
-// Age Group Distribution
-$ageGroupStats = $pdo->query('
-    SELECT 
-        CASE 
-            WHEN age < 13 THEN "0-12"
-            WHEN age BETWEEN 13 AND 19 THEN "13-19"
-            WHEN age BETWEEN 20 AND 35 THEN "20-35"
-            WHEN age BETWEEN 36 AND 50 THEN "36-50"
-            WHEN age BETWEEN 51 AND 60 THEN "51-60"
-            WHEN age > 60 THEN "60+"
-            ELSE "Unknown"
-        END as age_group,
-        COUNT(*) as count
-    FROM residents
-    WHERE age IS NOT NULL
-    GROUP BY age_group
-    ORDER BY age_group
-')->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // ===== RECENT ACTIVITIES =====
 // Get recent admin logs and combined activities
@@ -171,7 +144,7 @@ $scheduledEvents = $pdo->query('
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - Admin Dashboard</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
@@ -200,7 +173,7 @@ $scheduledEvents = $pdo->query('
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -217,11 +190,11 @@ $scheduledEvents = $pdo->query('
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -232,15 +205,11 @@ $scheduledEvents = $pdo->query('
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div class="container-fluid p-4">
-      <!-- Welcome Section -->
-      <div class="mb-4">
-        <h2 class="welcome-title">Welcome back, <?php echo htmlspecialchars($user); ?>!</h2>
-        <p class="text-muted">Here's your administrative dashboard overview</p>
-      </div>
+      <h2 class="welcome-title">Administrative Dashboard</h2>
 
       <!-- ===== STATISTICS CARDS ===== -->
-      <h4 class="section-title mt-5 mb-3">Statistics Summary</h4>
-      <div class="row mb-4">
+      <h4 class="section-title">Statistics Summary</h4>
+      <div class="row section-block">
         <div class="col-md-6 col-lg-4 mb-3">
           <div class="stat-card stat-card-primary">
             <div class="stat-icon"><i class="fas fa-users"></i></div>
@@ -297,129 +266,59 @@ $scheduledEvents = $pdo->query('
         </div>
       </div>
 
-      <!-- ===== RESIDENTS STATISTICS ===== -->
-      <div class="row mt-5 mb-4">
-        <div class="col-lg-6 mb-4">
-          <div class="card stats-card">
-            <div class="card-header">
-              <h5 class="card-title mb-0"><i class="fas fa-venus-mars"></i> Gender Distribution</h5>
-            </div>
-            <div class="card-body">
-              <?php if (!empty($genderStats)): ?>
-                <div class="chart-container">
-                  <?php 
-                    $totalGender = array_sum($genderStats);
-                    foreach ($genderStats as $gender => $count):
-                      $percentage = ($count / $totalGender) * 100;
-                  ?>
-                    <div class="chart-item mb-3">
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="chart-label">
-                          <?php 
-                            $icon = match($gender) {
-                              'Male' => '<i class="fas fa-mars text-primary"></i>',
-                              'Female' => '<i class="fas fa-venus text-danger"></i>',
-                              default => '<i class="fas fa-user text-secondary"></i>'
-                            };
-                            echo $icon . ' ' . htmlspecialchars($gender);
-                          ?>
-                        </span>
-                        <span class="chart-value"><?php echo number_format($count); ?> (<?php echo number_format($percentage, 1); ?>%)</span>
-                      </div>
-                      <div class="progress" style="height: 20px;">
-                        <div class="progress-bar" role="progressbar" style="width: <?php echo $percentage; ?>%;" aria-valuenow="<?php echo $percentage; ?>" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-              <?php else: ?>
-                <p class="text-muted text-center py-3">No gender data available</p>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-          <div class="card stats-card">
-            <div class="card-header">
-              <h5 class="card-title mb-0"><i class="fas fa-birthday-cake"></i> Population by Age Group</h5>
-            </div>
-            <div class="card-body">
-              <?php if (!empty($ageGroupStats)): ?>
-                <div class="chart-container">
-                  <?php 
-                    $totalAge = array_sum($ageGroupStats);
-                    foreach ($ageGroupStats as $ageGroup => $count):
-                      $percentage = ($count / $totalAge) * 100;
-                  ?>
-                    <div class="chart-item mb-3">
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="chart-label">Age <?php echo htmlspecialchars($ageGroup); ?></span>
-                        <span class="chart-value"><?php echo number_format($count); ?> (<?php echo number_format($percentage, 1); ?>%)</span>
-                      </div>
-                      <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: <?php echo $percentage; ?>%;" aria-valuenow="<?php echo $percentage; ?>" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-              <?php else: ?>
-                <p class="text-muted text-center py-3">No age group data available</p>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== RECENT ACTIVITIES ===== -->
-      <h4 class="section-title mt-5 mb-3">Recent Activities</h4>
-      <div class="card activity-card">
+      <!-- ===== CALENDAR WIDGET - SCHEDULED EVENTS ===== -->
+      <h4 class="section-title">Scheduled Events & Announcements</h4>
+      <div class="card calendar-card section-block">
         <div class="card-body">
-          <?php if (!empty($recentActivities)): ?>
-            <div class="activity-list">
-              <?php foreach (array_slice($recentActivities, 0, 10) as $activity): ?>
-                <div class="activity-item">
-                  <div class="activity-marker">
-                    <div class="activity-dot"></div>
+          <?php if (!empty($scheduledEvents)): ?>
+            <div class="events-list">
+              <?php foreach ($scheduledEvents as $event): ?>
+                <div class="event-item">
+                  <div class="event-date">
+                    <span class="event-day"><?php echo date('d', strtotime($event['scheduled_at'])); ?></span>
+                    <span class="event-month"><?php echo date('M', strtotime($event['scheduled_at'])); ?></span>
                   </div>
-                  <div class="activity-content">
-                    <div class="activity-header">
-                      <span class="activity-actor">
-                        <?php 
-                          if ($activity['activity_type'] === 'admin_log') {
-                            echo '<i class="fas fa-user-shield"></i> ' . htmlspecialchars($activity['actor'] ?? 'Admin');
-                          } else {
-                            echo '<i class="fas fa-user"></i> ' . htmlspecialchars($activity['actor'] ?? 'Resident');
-                          }
-                        ?>
-                      </span>
-                      <span class="activity-time">
-                        <?php echo date('M d, Y H:i', strtotime($activity['created_at'])); ?>
-                      </span>
+                  <div class="event-content">
+                    <h6 class="event-title"><?php echo htmlspecialchars($event['title']); ?></h6>
+                    <div class="event-meta">
+                      <span class="event-time"><i class="fas fa-clock"></i> <?php echo date('H:i', strtotime($event['scheduled_at'])); ?></span>
+                      <span class="badge badge-priority priority-<?php echo strtolower($event['priority']); ?>"><?php echo ucfirst($event['priority']); ?></span>
+                      <span class="badge bg-<?php echo $event['status'] === 'active' ? 'success' : 'info'; ?>"><?php echo ucfirst($event['status']); ?></span>
                     </div>
-                    <p class="activity-description mb-0">
-                      <?php echo htmlspecialchars($activity['action']); ?>
-                    </p>
                   </div>
                 </div>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
-            <p class="text-muted text-center py-4">
-              <i class="fas fa-history fa-2x mb-3 d-block"></i>
-              No recent activities
-            </p>
+            <p class="text-muted text-center py-4"><i class="fas fa-calendar fa-2x mb-3 d-block"></i>No scheduled events</p>
           <?php endif; ?>
         </div>
       </div>
 
-      <!-- ===== NOTIFICATIONS SUMMARY ===== -->
-      <div class="row mt-5 mb-4">
-        <div class="col-lg-6 mb-4">
-          <div class="card notification-card">
-            <div class="card-header">
-              <h5 class="card-title mb-0"><i class="fas fa-bell"></i> Notifications Summary</h5>
+      <!-- ===== PENDING REQUESTS BY TYPE ===== -->
+      <div class="row section-block">
+        <!-- Pending Requests by Type -->
+        <div class="col-lg-6 mb-3">
+          <div class="card notification-card h-100">
+            <div class="card-header"><h5 class="card-title mb-0"><i class="fas fa-list-check"></i> Pending Requests by Type</h5></div>
+            <div class="card-body">
+              <?php if (!empty($pendingDocuments['by_type']) && count($pendingDocuments['by_type']) > 0): ?>
+                <div class="request-list">
+                  <?php foreach ($pendingDocuments['by_type'] as $requestType => $count): ?>
+                    <div class="request-item mb-3"><div class="d-flex justify-content-between align-items-center"><span class="request-type"><i class="fas fa-file"></i> <?php echo htmlspecialchars($requestType); ?></span><span class="badge bg-warning text-dark"><?php echo number_format($count); ?></span></div></div>
+                  <?php endforeach; ?>
+                </div>
+              <?php else: ?>
+                <p class="text-muted text-center py-4"><i class="fas fa-check-circle fa-2x mb-3 d-block text-success"></i>All requests are being processed</p>
+              <?php endif; ?>
             </div>
+          </div>
+        </div>
+
+        <!-- ===== NOTIFICATIONS SUMMARY ===== -->
+        <div class="col-lg-6 mb-3">
+          <div class="card notification-card">
+            <div class="card-header"><h5 class="card-title mb-0"><i class="fas fa-bell"></i> Notifications Summary</h5></div>
             <div class="card-body">
               <div class="notification-item mb-3">
                 <div class="notification-icon bg-warning">
@@ -464,77 +363,43 @@ $scheduledEvents = $pdo->query('
           </div>
         </div>
 
-        <!-- Pending Requests by Type -->
-        <div class="col-lg-6 mb-4">
-          <div class="card notification-card">
-            <div class="card-header">
-              <h5 class="card-title mb-0"><i class="fas fa-list-check"></i> Pending Requests by Type</h5>
-            </div>
-            <div class="card-body">
-              <?php if (!empty($pendingDocuments['by_type']) && count($pendingDocuments['by_type']) > 0): ?>
-                <div class="request-list">
-                  <?php foreach ($pendingDocuments['by_type'] as $requestType => $count): ?>
-                    <div class="request-item mb-3">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <span class="request-type">
-                          <i class="fas fa-file"></i> <?php echo htmlspecialchars($requestType); ?>
-                        </span>
-                        <span class="badge bg-warning text-dark"><?php echo number_format($count); ?></span>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-              <?php else: ?>
-                <p class="text-muted text-center py-4">
-                  <i class="fas fa-check-circle fa-2x mb-3 d-block text-success"></i>
-                  All requests are being processed
-                </p>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- ===== CALENDAR WIDGET - SCHEDULED EVENTS ===== -->
-      <h4 class="section-title mt-5 mb-3">Scheduled Events & Announcements</h4>
-      <div class="card calendar-card">
+      <!-- ===== RECENT ACTIVITIES ===== -->
+      <h4 class="section-title">Recent Activities</h4>
+      <div class="card activity-card section-block">
         <div class="card-body">
-          <?php if (!empty($scheduledEvents)): ?>
-            <div class="events-list">
-              <?php foreach ($scheduledEvents as $event): ?>
-                <div class="event-item">
-                  <div class="event-date">
-                    <span class="event-day"><?php echo date('d', strtotime($event['scheduled_at'])); ?></span>
-                    <span class="event-month"><?php echo date('M', strtotime($event['scheduled_at'])); ?></span>
-                  </div>
-                  <div class="event-content">
-                    <h6 class="event-title"><?php echo htmlspecialchars($event['title']); ?></h6>
-                    <div class="event-meta">
-                      <span class="event-time">
-                        <i class="fas fa-clock"></i> <?php echo date('H:i', strtotime($event['scheduled_at'])); ?>
+          <?php if (!empty($recentActivities)): ?>
+            <div class="activity-list">
+              <?php foreach (array_slice($recentActivities, 0, 10) as $activity): ?>
+                <div class="activity-item">
+                  <div class="activity-marker"><div class="activity-dot"></div></div>
+                  <div class="activity-content">
+                    <div class="activity-header">
+                      <span class="activity-actor">
+                        <?php
+                          if ($activity['activity_type'] === 'admin_log') {
+                            echo '<i class="fas fa-user-shield"></i> ' . htmlspecialchars($activity['actor'] ?? 'Admin');
+                          } else {
+                            echo '<i class="fas fa-user"></i> ' . htmlspecialchars($activity['actor'] ?? 'Resident');
+                          }
+                        ?>
                       </span>
-                      <span class="badge badge-priority priority-<?php echo strtolower($event['priority']); ?>">
-                        <?php echo ucfirst($event['priority']); ?>
-                      </span>
-                      <span class="badge bg-<?php echo $event['status'] === 'active' ? 'success' : 'info'; ?>">
-                        <?php echo ucfirst($event['status']); ?>
-                      </span>
+                      <span class="activity-time"><?php echo date('M d, Y H:i', strtotime($activity['created_at'])); ?></span>
                     </div>
+                    <p class="activity-description mb-0"><?php echo htmlspecialchars($activity['action']); ?></p>
                   </div>
                 </div>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
-            <p class="text-muted text-center py-4">
-              <i class="fas fa-calendar fa-2x mb-3 d-block"></i>
-              No scheduled events
-            </p>
+            <p class="text-muted text-center py-4"><i class="fas fa-history fa-2x mb-3 d-block"></i>No recent activities</p>
           <?php endif; ?>
         </div>
       </div>
 
       <!-- Footer -->
-      <footer style="margin-top: 50px; text-align: center; color: var(--color-neutral-medium-gray); padding: 20px 0;">
+      <footer style="margin-top: 18px; text-align: center; color: var(--color-neutral-medium-gray); padding: 20px 0;">
         <p>Barangay San Jose</p>
         <a href="../terms.php" style="margin-right: 15px; color: var(--color-primary-deep); text-decoration: none;">Terms of Service</a>
         <a href="../privacy.php" style="margin-right: 15px; color: var(--color-primary-deep); text-decoration: none;">Privacy Policy</a>

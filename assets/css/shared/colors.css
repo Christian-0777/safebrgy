@@ -1,15 +1,22 @@
 :root {
-  --color-primary: #2f6f5e;
-  --color-primary-dark: #15332b;
-  --color-accent: #e8a33d;
-  --color-muted: #64748b;
-  --color-background: #f5f6f8;
-  --color-card: #ffffff;
-  --color-border: #e4e7ec;
-  --color-text: #1a2332;
-  --color-success: #2f9e5b;
+  --primary: #0b63d6;
+  --primary-dark: #083d96;
+  --accent: #f4691f;
+  --muted: #64748b;
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-success: var(--primary);
   --color-danger: #d64545;
   --color-warning: #96660e;
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-background: var(--bg);
+  --color-border: var(--border);
   --sidebar-width: 264px;
   --sidebar-collapsed-width: 78px;
   --header-height: 68px;
@@ -22,8 +29,8 @@
   --color-neutral-medium-gray: var(--color-muted);
   --color-neutral-dark-gray: var(--color-text);
   --page-background: var(--color-background);
-  --sidebar-background: #0e211c;
-  --sidebar-text: #afc4bd;
+  --sidebar-background: var(--primary-dark);
+  --sidebar-text: #dbeafe;
   --header-background: var(--color-card);
   --header-text: var(--color-text);
   --button-primary: var(--color-primary);
@@ -35,12 +42,12 @@
   --form-border: var(--color-border);
   --form-text: var(--color-text);
   --table-background: var(--color-card);
-  --table-header-background: #0e211c;
+  --table-header-background: var(--primary-dark);
   --table-header-text: var(--color-card);
   --table-border: var(--color-border);
   --text-primary: var(--color-text);
   --text-secondary: var(--color-muted);
   --text-light: var(--color-card);
   --highlight-color: var(--color-accent);
-  --highlight-background: rgba(232, 163, 61, 0.14);
+  --highlight-background: rgba(244, 105, 31, 0.14);
 }

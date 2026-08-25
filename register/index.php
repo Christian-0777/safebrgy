@@ -21,7 +21,7 @@ $today = (new DateTime('today'))->format('Y-m-d');
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Resident Registration</title>
 <meta name="description" content="Register as a resident — personal, contact, and household information collected in one guided form.">
-<base href="/safebrgy/register/">
+<base href="/register/">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@ $today = (new DateTime('today'))->format('Y-m-d');
   <div class="brand-bar">
     <div class="brand-mark">
       <span class="brand-seal">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16 16.5 20.2 12 22C7.5 20.2 4 16 4 11V6L12 2Z" stroke="#E4C77E" stroke-width="1.4"/><path d="M8.5 12L11 14.5L16 9" stroke="#E4C77E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16 16.5 20.2 12 22C7.5 20.2 4 16 4 11V6L12 2Z" stroke="#FDBA74" stroke-width="1.4"/><path d="M8.5 12L11 14.5L16 9" stroke="#FDBA74" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <span class="brand-wordmark">
         <span class="line1">Barangay Resident</span>
@@ -53,7 +53,7 @@ $today = (new DateTime('today'))->format('Y-m-d');
   <aside class="brand-panel">
     <div class="brand-mark">
       <span class="brand-seal">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16 16.5 20.2 12 22C7.5 20.2 4 16 4 11V6L12 2Z" stroke="#E4C77E" stroke-width="1.4"/><path d="M8.5 12L11 14.5L16 9" stroke="#E4C77E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16 16.5 20.2 12 22C7.5 20.2 4 16 4 11V6L12 2Z" stroke="#FDBA74" stroke-width="1.4"/><path d="M8.5 12L11 14.5L16 9" stroke="#FDBA74" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <span class="brand-wordmark">
         <span class="line1">Barangay Resident</span>

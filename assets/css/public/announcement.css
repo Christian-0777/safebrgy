@@ -17,6 +17,19 @@
     padding-top: 80px;
 }
 
+.main-content > .container-fluid > .d-flex.mb-4 {
+  margin-bottom: 1rem !important;
+}
+
+.main-content > .container-fluid > .d-flex.mb-4 h2 {
+  border-bottom: 1px solid rgba(244, 105, 31, 0.5);
+  padding-bottom: .5rem;
+}
+
+.main-content > .container-fluid > .card.mb-4 {
+  margin-bottom: 1rem !important;
+}
+
 /* Announcement Cards */
 .announcement-card {
   transition: all 0.3s ease;

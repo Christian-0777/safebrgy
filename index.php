@@ -1,6 +1,16 @@
 <?php
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/includes/shared/remember_me.php';
 session_start();
+$rememberedRole = restoreRememberedLogin(safeBrgy_db_connect());
+if ($rememberedRole === 'resident') {
+  header('Location: /safebrgy/dashboard');
+  exit;
+}
+if ($rememberedRole === 'admin') {
+  header('Location: /safebrgy/admin/dashboard');
+  exit;
+}
 // index.php - Landing page for SafeBrgy (simple PHP template)
 ?>
 
@@ -13,7 +23,10 @@ session_start();
   <link rel="icon" type="image/png" href="assets/img/seal.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/shared/colors.css">
   <link rel="stylesheet" href="assets/css/shared/layout.css">
+  <link rel="stylesheet" href="assets/css/public/modals/login.css">
+  <link rel="stylesheet" href="assets/css/shared/cookie-consent.css?v=2">
   <link rel="stylesheet" href="assets/style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -25,15 +38,15 @@ session_start();
         <span>Barangay San Jose</span>
       </a>
       <nav class="main-nav">
-        <a href="#home" class="active">Home</a>
+        <a href="#home">Home</a>
         <a href="#about">About</a>
         <a href="#services">Services</a>
         <a href="#officials">Officials</a>
-        <a href="/safebrgy/public/register.php">Register</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="header-actions">
-        <a href="public/login.php" class="btn-primary">Login</a>
+        <a href="register/" class="btn-outline">Register</a>
+        <a href="login" class="btn-primary">Login</a>
       </div>
       <button class="nav-toggle" data-nav-toggle aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
     </div>
@@ -43,8 +56,7 @@ session_start();
       <a href="#services">Services</a>
       <a href="#officials">Officials</a>
       <a href="#contact">Contact</a>
-      <a href="/safebrgy/public/register.php">Register</a>
-      <a href="public/login.php">Login</a>
+      <a href="login">Login</a>
     </nav>
   </header>
 
@@ -94,15 +106,15 @@ session_start();
             ['title'=>'Barangay Residency','desc'=>'Confirms that a person is a resident of the barangay.','icon'=>'home'],
             ['title'=>'Barangay Indigency','desc'=>'Issued to low-income individuals for aid, scholarships, or medical.','icon'=>'help_outline'],
             ['title'=>'Business Clearance','desc'=>'Permission for a business to operate within the barangay.','icon'=>'business'],
-            ['title'=>'Incident Report','desc'=>'Record of complaints or incidents filed at the barangay.','icon'=>'report'],
-            ['title'=>'Lost Property','desc'=>'Assistance for residents who have misplaced or lost belongings.','icon'=>'search'],
+            ['title'=>'Incident Report','desc'=>'Record of complaints or incidents filed at the barangay.','icon'=>'report','action'=>'Report'],
+            ['title'=>'Lost Property','desc'=>'Assistance for residents who have misplaced or lost belongings.','icon'=>'search','action'=>'Report'],
           ];
           foreach($services as $s): ?>
             <article class="service-card">
               <i class="material-icons service-icon"><?php echo $s['icon']; ?></i>
               <h4><?php echo $s['title']; ?></h4>
               <p><?php echo $s['desc']; ?></p>
-              <button class="btn-request" data-service="<?php echo htmlspecialchars($s['title']); ?>">Request now</button>
+              <button class="btn-request" type="button" data-service="<?php echo htmlspecialchars($s['title']); ?>"><?php echo $s['action'] ?? 'Request now'; ?></button>
             </article>
           <?php endforeach; ?>
         </div>
@@ -148,8 +160,13 @@ session_start();
       </div>
     </section>
 
-    <section id="register" class="section register" style="display:none">
-      <div class="container">
+    <section id="register" class="section register">
+      <div class="container register-notice">
+        <h3>Resident account registration has moved</h3>
+        <p>The resident account creation process is now available on our dedicated registration page.</p>
+        <a class="btn-primary register-notice-button" href="register/">Create account now</a>
+      </div>
+      <div class="container legacy-register-form" aria-hidden="true">
         <h3>Create Resident Account</h3>
         <p><strong>Note:</strong> Your account will require admin approval before you can log in.</p>
 
@@ -407,9 +424,37 @@ session_start();
   <div id="loginModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2>Log in first to access this feature</h2>
-      <p>You need to be logged in to request services.</p>
-      <a href="public/login.php" class="btn-primary">Log In</a>
+      <div class="modal-kicker">SafeBrgy Services</div>
+      <h2>You must log in to access our services</h2>
+      <p>Please log in to continue with your request.</p>
+      <div class="modal-actions">
+        <a href="login" class="btn-primary">Log In</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report access modal -->
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <span class="close" aria-label="Close">&times;</span>
+      <div class="modal-kicker">SafeBrgy Reports</div>
+      <h2>Submit a Report</h2>
+      <p id="reportModalMessage">You can click Report Now to submit your immediate report.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="submitReportNow">Submit Report Now</button>
+        <a href="login" class="btn-secondary">Log In</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="cookieConsentModal" class="cookie-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="cookieConsentTitle" hidden>
+    <div class="cookie-consent-modal">
+      <h2 id="cookieConsentTitle">Do you want to allow cookies?</h2>
+      <p>Cookies help SafeBrgy remember your preferences and keep your signed-in session available.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="cookie-consent-deny" id="cookieConsentDeny">Deny</button>
+        <button type="button" class="cookie-consent-allow" id="cookieConsentAllow">Allow</button>
+      </div>
     </div>
   </div>
 
@@ -417,5 +462,6 @@ session_start();
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/shared/logo_functions.js"></script>
   <script src="assets/js/shared/layout_functions.js"></script>
+  <script src="assets/js/shared/cookie-consent.js?v=2"></script>
 </body>
 </html>

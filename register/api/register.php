@@ -123,8 +123,20 @@ if (!preg_match('/^\d{6}$/', $otp)) {
  * Uploaded photos — presence check (content is validated when stored)
  * ------------------------------------------------------------- */
 foreach (['valid_id_front', 'valid_id_back', 'profile_photo'] as $field) {
-    if (!isset($_FILES[$field]) || $_FILES[$field]['error'] !== UPLOAD_ERR_OK) {
+    if (!isset($_FILES[$field])) {
         $errors[$field] = 'This photo is required.';
+        continue;
+    }
+
+    if ($_FILES[$field]['error'] !== UPLOAD_ERR_OK) {
+        $uploadErrorMessages = [
+            UPLOAD_ERR_INI_SIZE => 'This photo exceeds the server upload limit.',
+            UPLOAD_ERR_FORM_SIZE => 'This photo exceeds the form upload limit.',
+            UPLOAD_ERR_PARTIAL => 'This photo upload was incomplete. Please try again.',
+            UPLOAD_ERR_NO_FILE => 'This photo is required.',
+        ];
+        $errors[$field] = $uploadErrorMessages[$_FILES[$field]['error']]
+            ?? 'This photo could not be uploaded. Please try again.';
     }
 }
 
@@ -146,7 +158,7 @@ try {
 
     $stmt = $pdo->prepare(
         'SELECT id, otp_hash FROM registration_otps
-         WHERE email = :email AND consumed_at IS NULL AND expires_at >= NOW()
+         WHERE email = :email AND consumed_at IS NULL AND expires_at >= UTC_TIMESTAMP()
          ORDER BY id DESC LIMIT 1'
     );
     $stmt->execute(['email' => $email]);
@@ -245,7 +257,7 @@ try {
         'cover_photo_path' => $coverPath,
     ]);
 
-    $update = $pdo->prepare('UPDATE registration_otps SET consumed_at = NOW() WHERE id = :id');
+    $update = $pdo->prepare('UPDATE registration_otps SET consumed_at = UTC_TIMESTAMP() WHERE id = :id');
     $update->execute(['id' => $otpRow['id']]);
 
     $pdo->commit();

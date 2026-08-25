@@ -27,7 +27,9 @@ if ($email === '' || !is_valid_email($email)) {
 
 $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 $otpHash = hash_hmac('sha256', $otp, $email);
-$expiresAt = (new DateTime('+5 minutes'))->format('Y-m-d H:i:s');
+$expiresAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))
+    ->modify('+5 minutes')
+    ->format('Y-m-d H:i:s');
 
 try {
     $pdo = safeBrgy_db_connect();

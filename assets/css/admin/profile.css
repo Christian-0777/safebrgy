@@ -219,12 +219,12 @@ p, span, a, button, .btn, label {
 }
 
 .stat-card-documents {
-  border-left-color: #28a745;
+  border-left-color: var(--color-primary);
 }
 
 .stat-card-documents .stat-icon,
 .stat-card-documents .stat-value {
-  color: #28a745;
+  color: var(--color-primary);
 }
 
 .stat-card-announcements {

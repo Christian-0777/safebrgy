@@ -57,7 +57,7 @@ p, span, a, button, .btn, label {
 }
 
 .stat-card-resolved {
-  border-left-color: #198754;
+  border-left-color: var(--color-primary);
 }
 
 .stat-card-dismissed {
@@ -80,7 +80,7 @@ p, span, a, button, .btn, label {
 }
 
 .stat-card-resolved .stat-value {
-  color: #198754;
+  color: var(--color-primary);
 }
 
 .stat-card-dismissed .stat-value {
@@ -148,6 +148,22 @@ body .modal-dialog {
 
 .modal-body {
   padding: 20px;
+}
+
+.report-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.report-attachment-image {
+  display: block;
+  width: 180px;
+  height: 140px;
+  object-fit: cover;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
 }
 
 .form-label {

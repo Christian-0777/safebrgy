@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const reportDetailsModal = document.getElementById('reportDetailsModal');
   const modalBody = document.getElementById('modalBody');
   const applyStatusBtn = document.getElementById('applyStatusBtn');
-  const reportsEndpoint = '/safebrgy/admin/reports';
+  const reportsEndpoint = window.location.pathname;
   let currentReportId = null;
+  let currentReportSource = 'resident';
 
   // Load report details when View button is clicked
   viewButtons.forEach(btn => {
@@ -13,12 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const reportId = btn.dataset.id;
       currentReportId = reportId;
+      currentReportSource = btn.dataset.source || 'resident';
 
       try {
         const response = await fetch(reportsEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ action: 'get_report', id: reportId })
+          body: new URLSearchParams({ action: 'get_report', id: reportId, source: currentReportSource })
         });
 
         if (!response.ok) {
@@ -42,10 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateModal(report) {
     const reporterName = report.first_name && report.last_name 
       ? `${report.first_name} ${report.last_name}` 
-      : (report.username || 'Anonymous');
+      : (report.reporter_name || report.username || 'Anonymous');
 
-    const attachmentsHtml = report.attachments 
-      ? `<div class="mb-3"><strong>Attachments:</strong> <br>${report.attachments}</div>`
+    const attachments = Array.isArray(report.attachments) ? report.attachments : [];
+    const attachmentsHtml = attachments.length
+      ? `<div class="mb-3"><strong>Attachments:</strong><div class="report-attachments">${attachments.map((attachment) => {
+          const attachmentPath = String(attachment).replace(/^\/+/, '');
+          const attachmentUrl = attachmentPath.indexOf('uploads/guest_reports/') === 0
+            ? `/safebrgy/guest_module/${attachmentPath}`
+            : `/safebrgy/${attachmentPath}`;
+          return `<a href="${escapeHtml(attachmentUrl)}" target="_blank" rel="noopener"><img src="${escapeHtml(attachmentUrl)}" alt="Report attachment" class="report-attachment-image"></a>`;
+        }).join('')}</div></div>`
       : '';
 
     const statusBadgeClass = {
@@ -68,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="row mb-3">
           <div class="col-md-6">
-            <strong>Resident ID:</strong> <p>${escapeHtml(report.resident_id || 'N/A')}</p>
+            <strong>Resident ID:</strong> <p>${escapeHtml(report.resident_id || (report.source === 'guest' ? 'Guest' : 'N/A'))}</p>
           </div>
           <div class="col-md-6">
             <strong>Reporter:</strong> <p>${escapeHtml(reporterName)}</p>
@@ -95,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="row mb-3">
           <div class="col-md-6">
-            <strong>Reporter Email:</strong> <p>${escapeHtml(report.email || 'N/A')}</p>
+            <strong>Reporter Email:</strong> <p>${escapeHtml(report.email || report.guest_email || 'N/A')}</p>
           </div>
           <div class="col-md-6"></div>
         </div>
@@ -118,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     modalBody.innerHTML = html;
+    applyStatusBtn.disabled = false;
   }
 
   // Apply status update
@@ -136,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: new URLSearchParams({
           action: 'update_status',
           id: currentReportId,
+          source: currentReportSource,
           status: newStatus
         })
       });
@@ -162,6 +173,42 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('An error occurred while updating the status.');
     }
   });
+
+  const caseSearchForm = document.getElementById('caseSearchForm');
+  if (caseSearchForm) {
+    caseSearchForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const input = document.getElementById('caseSearchInput');
+      const alertBox = document.getElementById('caseSearchAlert');
+      const searchBtn = document.getElementById('caseSearchBtn');
+      const caseNumber = input.value.trim();
+      alertBox.classList.add('d-none');
+      if (!caseNumber) {
+        alertBox.textContent = 'Enter a case number.';
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      searchBtn.disabled = true;
+      try {
+        const response = await fetch(reportsEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ action: 'search_case', case_number: caseNumber })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Report not found.');
+        currentReportId = data.report.id;
+        currentReportSource = data.report.source || 'resident';
+        populateModal(data.report);
+        bootstrap.Modal.getOrCreateInstance(reportDetailsModal).show();
+      } catch (error) {
+        alertBox.textContent = error.message;
+        alertBox.classList.remove('d-none');
+      } finally {
+        searchBtn.disabled = false;
+      }
+    });
+  }
 
   // Escape HTML to prevent XSS
   function escapeHtml(text) {

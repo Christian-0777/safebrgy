@@ -193,7 +193,7 @@ php -S localhost:8000
 ### Root Level Files
 ```
 ├── index.php                          # Main public landing page
-├── admin_index.php                    # Admin landing page
+├── admin/index.php                    # Admin landing page
 ├── register.php                       # Public registration page
 ├── login.php                          # Public login (redirects to public/login.php)
 ├── README.md                          # Project documentation

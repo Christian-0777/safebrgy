@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /admin-role-access-features/
+Disallow: /safebrgy_admin

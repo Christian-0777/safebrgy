@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/db.php';
 // announcement.php - SafeBrgy Announcements (Resident)
 session_start();
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 
 // Check if user is logged in and verified
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
@@ -17,7 +18,10 @@ $pdo = safeBrgy_db_connect();
 
 // Get search and sort parameters
 $search = $_GET['search'] ?? '';
-$sort = $_GET['sort'] ?? 'newest';
+$requestedSort = $_GET['sort'] ?? 'newest';
+$sort = in_array($requestedSort, ['newest', 'oldest', 'priority_high', 'priority_low'], true)
+  ? $requestedSort
+  : 'newest';
 
 // Build query for active announcements only
 $query = '
@@ -39,6 +43,10 @@ if ($search) {
 // Add sort
 if ($sort === 'oldest') {
     $query .= ' ORDER BY a.published_at ASC';
+} elseif ($sort === 'priority_high') {
+  $query .= ' ORDER BY CASE a.priority WHEN "urgent" THEN 1 WHEN "important" THEN 2 WHEN "normal" THEN 3 ELSE 4 END, a.published_at DESC';
+} elseif ($sort === 'priority_low') {
+  $query .= ' ORDER BY CASE a.priority WHEN "normal" THEN 1 WHEN "important" THEN 2 WHEN "urgent" THEN 3 ELSE 4 END, a.published_at DESC';
 } else {
     $query .= ' ORDER BY a.pinned DESC, a.published_at DESC';
 }
@@ -52,7 +60,7 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/public/public-pages/">
+  <base href="/public/public-pages/">
   <title>SafeBrgy - Announcements</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->
@@ -65,7 +73,7 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <link rel="stylesheet" href="../../assets/css/public/announcement.css">
   <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -81,13 +89,13 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($name, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
         </div>
         <div class="profile-dropdown">
-          <a href="Profile.php"><i class="fas fa-user"></i> Profile</a>
+          <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
           <a href="account.php"><i class="fas fa-cog"></i> Settings</a>
           <button class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
@@ -98,10 +106,10 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -130,9 +138,11 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="col-md-3">
               <label class="form-label">Sort By</label>
-              <select name="sort" class="form-select">
+              <select name="sort" class="form-select" onchange="this.form.submit()">
                 <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest</option>
                 <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest</option>
+                <option value="priority_high" <?php echo $sort === 'priority_high' ? 'selected' : ''; ?>>Priority: High to Low</option>
+                <option value="priority_low" <?php echo $sort === 'priority_low' ? 'selected' : ''; ?>>Priority: Low to High</option>
               </select>
             </div>
 

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 require_once __DIR__ . '/../../config/mailer.php';
 // admin_reports.php - SafeBrgy Admin Reports
 
@@ -10,7 +11,7 @@ if ($adminId) {
     $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
-    $user = $admin['username'] ?? 'Admin';
+    $user = adminDisplayName($admin['username'] ?? 'Admin');
 } else {
     $user = 'Admin';
 }
@@ -24,37 +25,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     if ($action === 'get_report') {
         $reportId = $_POST['id'] ?? 0;
+      $source = $_POST['source'] ?? 'resident';
         
+      if ($source === 'guest') {
         $stmt = $pdo->prepare('
-            SELECT r.*, u.username, u.email, res.resident_id, res.first_name, res.last_name
+          SELECT g.*, "guest" AS source, NULL AS username, NULL AS email, NULL AS resident_id,
+               g.guest_aka AS reporter_name, g.contact_email AS guest_email,
+               g.contact_mobile AS guest_mobile
+          FROM guest_reports g
+          WHERE g.id = ?
+        ');
+      } else {
+        $stmt = $pdo->prepare('
+        SELECT r.*, "resident" AS source, u.username, u.email, res.resident_id, res.first_name, res.last_name
             FROM reports r
             LEFT JOIN users u ON r.user_id = u.id
             LEFT JOIN residents res ON u.id = res.user_id
             WHERE r.id = ?
         ');
+      }
         $stmt->execute([$reportId]);
         $report = $stmt->fetch();
+
+        if ($report) {
+          $report['attachments'] = !empty($report['attachments'])
+            ? (json_decode($report['attachments'], true) ?: [])
+            : [];
+        }
         
         echo json_encode(['success' => true, 'report' => $report]);
+        exit;
+      } elseif ($action === 'search_case') {
+        $caseNumber = trim($_POST['case_number'] ?? '');
+        $stmt = $pdo->prepare('
+          SELECT * FROM (
+            SELECT r.id, "resident" AS source, r.case_number, r.title, r.description,
+                 r.report_type, r.location, r.status, r.attachments, r.created_at,
+                 r.updated_at, u.username, u.email, res.resident_id,
+                 res.first_name, res.last_name, NULL AS reporter_name,
+                 NULL AS guest_email, NULL AS guest_mobile
+            FROM reports r
+            LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN residents res ON u.id = res.user_id
+            UNION ALL
+            SELECT g.id, "guest" AS source, g.case_number, g.title, g.description,
+                 g.report_type, g.location, g.status, g.attachments, g.created_at,
+                 g.updated_at, NULL, NULL, NULL, NULL, NULL, g.guest_aka,
+                 g.contact_email, g.contact_mobile
+            FROM guest_reports g
+          ) AS combined
+          WHERE case_number = ?
+          LIMIT 1
+        ');
+        $stmt->execute([$caseNumber]);
+        $report = $stmt->fetch();
+        if ($report) {
+          $report['attachments'] = !empty($report['attachments'])
+            ? (json_decode($report['attachments'], true) ?: [])
+            : [];
+        }
+        echo json_encode($report
+          ? ['success' => true, 'report' => $report]
+          : ['success' => false, 'message' => 'No report found for that case number.']);
         exit;
     } elseif ($action === 'update_status') {
         $reportId = $_POST['id'] ?? 0;
         $newStatus = $_POST['status'] ?? '';
+        $source = $_POST['source'] ?? 'resident';
         
-        $stmt = $pdo->prepare('UPDATE reports SET status = ?, updated_at = NOW() WHERE id = ?');
+        $table = $source === 'guest' ? 'guest_reports' : 'reports';
+        $stmt = $pdo->prepare("UPDATE {$table} SET status = ?, updated_at = NOW() WHERE id = ?");
         $result = $stmt->execute([$newStatus, $reportId]);
 
         if ($result) {
+          if ($source === 'guest') {
+            $reportStmt = $pdo->prepare('SELECT case_number, guest_aka, contact_email AS email, contact_mobile AS mobile_number FROM guest_reports WHERE id = ?');
+          } else {
             $reportStmt = $pdo->prepare('SELECT r.case_number, u.id AS user_id, u.email, res.first_name, res.last_name, res.mobile_number FROM reports r LEFT JOIN users u ON r.user_id = u.id LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
+          }
             $reportStmt->execute([$reportId]);
             $reportDetails = $reportStmt->fetch();
 
-            if ($reportDetails && !empty($reportDetails['email'])) {
+          if ($reportDetails && ($source === 'guest' || !empty($reportDetails['email']))) {
                 $residentName = trim(($reportDetails['first_name'] ?? '') . ' ' . ($reportDetails['last_name'] ?? '')) ?: ($reportDetails['username'] ?? 'Resident');
+            $residentName = $source === 'guest' ? ($reportDetails['guest_aka'] ?: 'Guest') : $residentName;
                 $caseNumber = $reportDetails['case_number'] ?: $reportId;
                 $mobileNumber = $reportDetails['mobile_number'] ?? null;
                 $userId = !empty($reportDetails['user_id']) ? (int) $reportDetails['user_id'] : null;
-                sendReportStatusNotification($reportDetails['email'], $residentName, $mobileNumber, $caseNumber, $newStatus, $userId);
+            if (!empty($reportDetails['email'])) {
+              sendReportStatusNotification($reportDetails['email'], $residentName, $mobileNumber, $caseNumber, $newStatus, $userId);
+            } elseif ($mobileNumber) {
+              sendSms($mobileNumber, "Your report {$caseNumber} status has been updated to {$newStatus}.");
+            }
             }
         }
         
@@ -68,25 +130,35 @@ $search = $_GET['search'] ?? '';
 
 // Build query for reports
 $query = '
-    SELECT r.id, r.case_number, r.title, r.description, r.report_type, r.location, r.status, r.created_at, r.updated_at, u.username, u.email, res.resident_id, res.first_name, res.last_name
+  SELECT * FROM (
+    SELECT r.id, "resident" AS source, r.case_number, r.title, r.description, r.report_type,
+         r.location, r.status, r.created_at, r.updated_at, u.username, u.email,
+         res.resident_id, res.first_name, res.last_name, NULL AS reporter_name
     FROM reports r
     LEFT JOIN users u ON r.user_id = u.id
     LEFT JOIN residents res ON u.id = res.user_id
-    WHERE 1=1
+    UNION ALL
+    SELECT g.id, "guest" AS source, g.case_number, g.title, g.description, g.report_type,
+         g.location, g.status, g.created_at, g.updated_at, NULL, NULL, NULL, NULL, NULL,
+         g.guest_aka
+    FROM guest_reports g
+  ) AS combined
+  WHERE 1=1
 ';
 
 $params = [];
 
 if ($search) {
-    $query .= ' AND (r.case_number LIKE ? OR u.username LIKE ? OR res.first_name LIKE ? OR res.last_name LIKE ?)';
+    $query .= ' AND (case_number LIKE ? OR username LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR reporter_name LIKE ?)';
     $searchTerm = "%$search%";
+    $params[] = $searchTerm;
     $params[] = $searchTerm;
     $params[] = $searchTerm;
     $params[] = $searchTerm;
     $params[] = $searchTerm;
 }
 
-$query .= ' ORDER BY r.created_at DESC';
+$query .= ' ORDER BY created_at DESC';
 
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
@@ -94,13 +166,16 @@ $reports = $stmt->fetchAll();
 
 // Get statistics
 $statsQuery = '
-    SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN status = "Ongoing" THEN 1 ELSE 0 END) as ongoing,
-        SUM(CASE WHEN status = "Resolved" THEN 1 ELSE 0 END) as resolved,
-        SUM(CASE WHEN status = "Dismissed" THEN 1 ELSE 0 END) as dismissed
-    FROM reports
+    SELECT COUNT(*) as total,
+      SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending,
+      SUM(CASE WHEN status = "Ongoing" THEN 1 ELSE 0 END) as ongoing,
+      SUM(CASE WHEN status = "Resolved" THEN 1 ELSE 0 END) as resolved,
+      SUM(CASE WHEN status = "Dismissed" THEN 1 ELSE 0 END) as dismissed
+    FROM (
+      SELECT status FROM reports
+      UNION ALL
+      SELECT status FROM guest_reports
+    ) AS all_reports
 ';
 $statsStmt = $pdo->prepare($statsQuery);
 $statsStmt->execute();
@@ -111,7 +186,7 @@ $stats = $statsStmt->fetch();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - Admin Reports</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
@@ -140,7 +215,7 @@ $stats = $statsStmt->fetch();
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -157,11 +232,11 @@ $stats = $statsStmt->fetch();
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -218,6 +293,17 @@ $stats = $statsStmt->fetch();
       </div>
 
       <!-- Search Bar -->
+      <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#manage-reports-pane" type="button" role="tab">All Reports</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#search-report-pane" type="button" role="tab">Search by Case Number</button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+      <div class="tab-pane fade show active" id="manage-reports-pane" role="tabpanel">
       <div class="card mb-4">
         <div class="card-body">
           <form method="get" class="row g-3">
@@ -268,6 +354,7 @@ $stats = $statsStmt->fetch();
                     </td>
                     <td>
                       <strong><?php echo htmlspecialchars($r['title'] ?? 'Untitled'); ?></strong>
+                      <?php if (($r['source'] ?? '') === 'guest'): ?><span class="badge bg-dark ms-1">Guest</span><?php endif; ?>
                     </td>
                     <td>
                       <small><?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($r['created_at']))); ?></small>
@@ -287,7 +374,7 @@ $stats = $statsStmt->fetch();
                     </td>
                     <td>
                       <?php 
-                        $reporterName = $r['username'] ?? 'Anonymous';
+                        $reporterName = $r['reporter_name'] ?? ($r['username'] ?? 'Anonymous');
                         if ($r['first_name'] && $r['last_name']) {
                           $reporterName = htmlspecialchars($r['first_name'] . ' ' . $r['last_name']);
                         }
@@ -295,7 +382,7 @@ $stats = $statsStmt->fetch();
                       ?>
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-info view-btn" data-id="<?php echo $r['id']; ?>" data-bs-toggle="modal" data-bs-target="#reportDetailsModal">
+                      <button class="btn btn-sm btn-outline-info view-btn" data-id="<?php echo $r['id']; ?>" data-source="<?php echo htmlspecialchars($r['source'] ?? 'resident'); ?>" data-bs-toggle="modal" data-bs-target="#reportDetailsModal">
                         <i class="fas fa-eye"></i> View
                       </button>
                     </td>
@@ -305,6 +392,25 @@ $stats = $statsStmt->fetch();
             </tbody>
           </table>
         </div>
+      </div>
+      </div>
+
+      <div class="tab-pane fade" id="search-report-pane" role="tabpanel">
+        <div class="card mb-4">
+          <div class="card-body">
+            <form id="caseSearchForm" class="row g-3">
+              <div class="col-md-10">
+                <label class="form-label" for="caseSearchInput">Specific Case Number</label>
+                <input type="text" id="caseSearchInput" class="form-control" placeholder="CASE-20260822-0472" required>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100" id="caseSearchBtn"><i class="fas fa-search"></i> Search</button>
+              </div>
+              <div class="col-12"><div id="caseSearchAlert" class="alert alert-danger d-none mb-0"></div></div>
+            </form>
+          </div>
+        </div>
+      </div>
       </div>
 
     </div>
@@ -327,7 +433,7 @@ $stats = $statsStmt->fetch();
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="applyStatusBtn">Apply Changes</button>
+          <button type="button" class="btn btn-primary" id="applyStatusBtn" disabled>Apply Changes</button>
         </div>
       </div>
     </div>

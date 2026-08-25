@@ -1,15 +1,31 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 require_once __DIR__ . '/../../config/mailer.php';
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
 
+function adminValidIdUrl($path): string
+{
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $filename = basename(str_replace('\\', '/', $path));
+  return adminAssetUrl('/uploads/id/' . $filename);
+}
+
 if ($adminId) {
     $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
-    $user = $admin['username'] ?? 'Admin';
+    $user = adminDisplayName($admin['username'] ?? 'Admin');
 } else {
     $user = 'Admin';
 }
@@ -40,11 +56,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($action === 'update_status') {
         $requestId = (int) ($_POST['request_id'] ?? 0);
         $newStatus = trim($_POST['status'] ?? '');
+        $rejectionReason = trim($_POST['rejection_reason'] ?? '');
+        $additionalDetails = trim($_POST['additional_details'] ?? '');
         $allowedStatuses = ['Pending', 'Approved', 'Rejected', 'Processing', 'Ready for Pickup', 'Received'];
 
         if (!in_array($newStatus, $allowedStatuses, true) || $requestId <= 0) {
             echo json_encode(['success' => false]);
             exit;
+        }
+
+        if ($newStatus === 'Rejected' && $rejectionReason === '') {
+          echo json_encode(['success' => false, 'message' => 'A rejection reason is required.']);
+          exit;
+        }
+
+        if ($newStatus === 'Rejected' && $additionalDetails !== '') {
+          $rejectionReason .= "\nAdditional details: {$additionalDetails}";
         }
 
         if ($hasDateReceivedColumn) {
@@ -56,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
 
         if ($result) {
-            $joinCondition = $hasUserIdColumn ? 'r.user_id = u.id' : 'u.email = r.resident_email';
-            $requestStmt = $pdo->prepare('SELECT r.resident_email, r.resident_name, r.document_type, r.reference_no, u.id AS user_id, res.mobile_number FROM requests r LEFT JOIN users u ON ' . $joinCondition . ' LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
+            $joinCondition = $hasUserIdColumn ? '(r.user_id = u.id OR (r.user_id IS NULL AND u.email = r.resident_email))' : 'u.email = r.resident_email';
+            $requestStmt = $pdo->prepare('SELECT u.email AS resident_email, CONCAT_WS(" ", res.first_name, res.middle_name, res.last_name) AS resident_name, r.document_type, r.reference_no, u.id AS user_id, res.mobile_number FROM requests r LEFT JOIN users u ON ' . $joinCondition . ' LEFT JOIN residents res ON u.id = res.user_id WHERE r.id = ?');
             $requestStmt->execute([$requestId]);
             $requestDetails = $requestStmt->fetch();
 
@@ -69,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $mobileNumber = $requestDetails['mobile_number'] ?? null;
                 $userId = !empty($requestDetails['user_id']) ? (int) $requestDetails['user_id'] : null;
 
-                sendRequestStatusNotification($recipientEmail, $residentName, $mobileNumber, $requestNumber, $documentType, $newStatus, $userId);
+                sendRequestStatusNotification($recipientEmail, $residentName, $mobileNumber, $requestNumber, $documentType, $newStatus, $userId, $rejectionReason);
             }
         }
 
@@ -86,6 +113,7 @@ $sort = $_GET['sort'] ?? 'newest';
 
 $selectParts = [
     'r.id',
+    'r.user_id',
     "r.$requestNumberColumn as request_number",
     'r.status',
     $requestTypeColumn ? "r.$requestTypeColumn as request_type" : 'NULL as request_type',
@@ -95,11 +123,12 @@ $selectParts = [
     $purposeSelect,
     $locationColumn ? "r.$locationColumn as location" : 'NULL as location',
     'u.username',
-    'u.email',
+    'u.email as resident_email',
     'u.phone',
     'u.id as user_id',
     'res.resident_id',
     'res.first_name',
+    'res.middle_name',
     'res.last_name',
     'res.birthdate',
     'res.age',
@@ -108,13 +137,14 @@ $selectParts = [
     'res.complete_address',
     'res.purok',
     'res.mobile_number',
-    'res.valid_id_path'
+    'res.valid_id_path',
+    'res.valid_id_back_path'
 ];
 
 // Build query
 $query = 'SELECT ' . implode(', ', $selectParts) . '
     FROM requests r
-    LEFT JOIN users u ON ' . ($hasUserIdColumn ? 'r.user_id = u.id' : 'u.email = r.resident_email') . '
+    LEFT JOIN users u ON ' . ($hasUserIdColumn ? '(r.user_id = u.id OR (r.user_id IS NULL AND u.email = r.resident_email))' : 'u.email = r.resident_email') . '
     LEFT JOIN residents res ON u.id = res.user_id
     LEFT JOIN barangay_clearance bc ON bc.request_id = r.id
     LEFT JOIN barangay_residency br ON br.request_id = r.id
@@ -165,15 +195,11 @@ $statsStmt = $pdo->prepare($statsQuery);
 $statsStmt->execute();
 $stats = $statsStmt->fetch();
 ?>
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - Admin Requests</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
-  <!-- Shared Styles -->
   <link rel="stylesheet" href="../../assets/css/shared/shared-header.css">
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
@@ -200,7 +226,7 @@ $stats = $statsStmt->fetch();
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -217,11 +243,11 @@ $stats = $statsStmt->fetch();
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -273,7 +299,7 @@ $stats = $statsStmt->fetch();
         <div class="card-body">
           <form method="get" class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Search by Name, Email, or Request Number</label>
+              <label class="form-label">Search by Name, Email, or Reference Number</label>
               <input type="text" name="search" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
             </div>
             
@@ -316,7 +342,7 @@ $stats = $statsStmt->fetch();
           <table class="table table-striped table-hover align-middle mb-0">
             <thead class="table-dark">
               <tr>
-                <th>Request #</th>
+                <th>Reference No.</th>
                 <th>Resident Name</th>
                 <th>Request Type</th>
                 <th>Submitted</th>
@@ -341,9 +367,9 @@ $stats = $statsStmt->fetch();
                     </td>
                     <td>
                       <div>
-                        <strong><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></strong>
+                        <strong><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['middle_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></strong>
                         <br>
-                        <small class="text-muted"><?php echo htmlspecialchars($req['email']); ?></small>
+                        <small class="text-muted"><?php echo htmlspecialchars($req['resident_email'] ?? 'N/A'); ?></small>
                       </div>
                     </td>
                     <td>
@@ -395,7 +421,7 @@ $stats = $statsStmt->fetch();
                             </div>
                             <div class="col-md-6">
                               <strong>Full Name:</strong> 
-                              <p><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
+                              <p class="request-resident-name"><?php echo htmlspecialchars(trim(($req['first_name'] ?? '') . ' ' . ($req['middle_name'] ?? '') . ' ' . ($req['last_name'] ?? '')) ?: $req['username']); ?></p>
                             </div>
                           </div>
                           <div class="row mb-4">
@@ -428,26 +454,35 @@ $stats = $statsStmt->fetch();
                           </div>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>House Number/Street/Purok:</strong> 
-                              <p><?php echo htmlspecialchars($req['complete_address'] ?? '') . ($req['purok'] ? ', ' . htmlspecialchars($req['purok']) : ''); ?></p>
+                              <strong>Address:</strong>
+                              <p><?php echo htmlspecialchars($req['purok'] ?? 'N/A') . ' | ' . htmlspecialchars($req['complete_address'] ?? 'N/A'); ?></p>
                             </div>
                             <div class="col-md-6">
                               <strong>Email:</strong> 
-                              <p><?php echo htmlspecialchars($req['email']); ?></p>
+                              <p><?php echo htmlspecialchars($req['resident_email'] ?? 'N/A'); ?></p>
                             </div>
                           </div>
                           <div class="row mb-4">
                             <div class="col-md-6">
                               <strong>Valid ID:</strong>
-                              <p>
+                              <div class="valid-id-previews">
                                 <?php if ($req['valid_id_path']): ?>
-                                  <a href="../../<?php echo htmlspecialchars($req['valid_id_path']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-image"></i> View ID
-                                  </a>
+                                  <div class="valid-id-preview">
+                                    <span>Front of Valid ID</span>
+                                    <img src="<?php echo htmlspecialchars(adminValidIdUrl($req['valid_id_path'])); ?>" alt="Front of Valid ID" class="valid-id-image">
+                                  </div>
                                 <?php else: ?>
-                                  <span class="text-muted">Not uploaded</span>
+                                  <span class="text-muted">Front not uploaded</span>
                                 <?php endif; ?>
-                              </p>
+                                <?php if ($req['valid_id_back_path']): ?>
+                                  <div class="valid-id-preview">
+                                    <span>Back of Valid ID</span>
+                                    <img src="<?php echo htmlspecialchars(adminValidIdUrl($req['valid_id_back_path'])); ?>" alt="Back of Valid ID" class="valid-id-image">
+                                  </div>
+                                <?php else: ?>
+                                  <span class="text-muted">Back not uploaded</span>
+                                <?php endif; ?>
+                              </div>
                             </div>
                           </div>
 
@@ -457,12 +492,12 @@ $stats = $statsStmt->fetch();
                           <h6 class="mb-3 text-primary"><i class="fas fa-clipboard-list"></i> Request Details</h6>
                           <div class="row mb-4">
                             <div class="col-md-6">
-                              <strong>Request Number:</strong> 
-                              <p><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></p>
+                              <strong>Reference Number:</strong> 
+                              <p class="request-reference-number"><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></p>
                             </div>
                             <div class="col-md-6">
                               <strong>Request Type:</strong> 
-                              <p><span class="badge bg-info"><?php echo htmlspecialchars($req['request_type']); ?></span></p>
+                              <p class="request-document-type"><span class="badge bg-info"><?php echo htmlspecialchars($req['request_type']); ?></span></p>
                             </div>
                           </div>
                           <div class="row mb-4">
@@ -533,6 +568,62 @@ $stats = $statsStmt->fetch();
       </div>
     </div>
   </main>
+
+  <!-- REJECT REQUEST MODAL -->
+  <div class="modal fade" id="rejectRequestModal" tabindex="-1" aria-labelledby="rejectRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectRequestModalLabel">Reject Request</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <dl class="row mb-4">
+            <dt class="col-5">Resident</dt>
+            <dd class="col-7" id="rejectResident">N/A</dd>
+            <dt class="col-5">Document Type</dt>
+            <dd class="col-7" id="rejectDocumentType">N/A</dd>
+            <dt class="col-5">Reference No.</dt>
+            <dd class="col-7" id="rejectReferenceNumber">N/A</dd>
+          </dl>
+          <input type="hidden" id="rejectRequestId">
+          <div class="mb-3">
+            <label class="form-label" for="rejectReason">Reason for Rejection <span class="text-danger">*</span></label>
+            <select class="form-select" id="rejectReason" required>
+              <option value="">Select a reason</option>
+              <option>Incomplete requirements</option>
+              <option>Invalid or incorrect information</option>
+              <option>Invalid or expired identification</option>
+              <option>Information does not match barangay records</option>
+              <option>Duplicate request</option>
+              <option>Applicant is not eligible</option>
+              <option>Document requirements not met</option>
+              <option>Request submitted under the wrong document type</option>
+              <option>Supporting document is unclear or unreadable</option>
+              <option>Request cannot be verified</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="mb-3" id="otherReasonGroup" hidden>
+            <label class="form-label" for="otherReason">Other Reason <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="otherReason" placeholder="Enter the reason">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="additionalDetails">Additional Details</label>
+            <textarea class="form-control" id="additionalDetails" rows="4" placeholder="Provide additional information or instructions for the resident..."></textarea>
+          </div>
+          <div class="alert alert-warning mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            The resident will be notified by email and/or SMS about this rejection.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

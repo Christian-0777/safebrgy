@@ -242,12 +242,13 @@ body {
   margin: 0 0 1rem;
   font-size: clamp(2rem, 3.8vw, 3.2rem);
   letter-spacing: 0.02em;
+  color: #ffffff;
 }
 
 .lead {
   max-width: 640px;
 
-  color: rgba(255, 255, 255, 0.92);
+  color: #ffffff;
   font-size: 1.05rem;
   line-height: 1.7;
 }
@@ -308,6 +309,54 @@ body {
 .register-card {
   padding: 1.4rem;
   border-radius: 1.25rem;
+}
+
+.register-notice {
+  padding: 2rem;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.register-notice p {
+  margin: 0 auto 1.25rem;
+  color: var(--muted);
+}
+
+.register-notice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  padding: 0.8rem 1.35rem;
+  border: 1px solid var(--primary-dark);
+  border-radius: 0.65rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 8px 18px rgba(8, 61, 150, 0.2);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.register-notice-button:hover,
+.register-notice-button:focus-visible {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-dark), #062c70);
+  box-shadow: 0 11px 24px rgba(8, 61, 150, 0.28);
+  transform: translateY(-2px);
+}
+
+.register-notice-button:focus-visible {
+  outline: 3px solid rgba(244, 105, 31, 0.45);
+  outline-offset: 3px;
+}
+
+.legacy-register-form {
+  display: none;
 }
 
 /* ==========================================================
@@ -501,15 +550,38 @@ body {
 @media (max-width: 600px) {
 
   .header-inner {
+    gap: 0.5rem;
     min-height: 68px;
-  }
-
-  .main-nav {
-    display: none;
   }
 
   .nav-toggle {
     display: inline-flex;
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .header-logo {
+    order: 2;
+    margin-right: auto;
+  }
+
+  .header-logo span {
+    display: none;
+  }
+
+  .header-actions {
+    order: 3;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+  }
+
+  .header-actions a {
+    padding: 0.55rem 0.65rem;
+    white-space: nowrap;
+  }
+
+  .main-nav {
+    display: none;
   }
 
   .hero {

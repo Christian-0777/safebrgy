@@ -1,45 +1,79 @@
+Options -Indexes
 RewriteEngine On
 
-RewriteRule ^$ index.php [R=301,L]
+# Account photos may be up to 20 MB; request headroom covers multipart form data.
+<IfModule mod_php.c>
+	php_value upload_max_filesize 20M
+	php_value post_max_size 25M
+	php_value max_file_uploads 10
+</IfModule>
 
-# Redirect physical page paths to their clean public URLs.
-RewriteCond %{THE_REQUEST} \s/+safebrgy/public/public-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
-RewriteRule ^public/public-pages/([a-z0-9_-]+)\.php$ /safebrgy/$1 [R=301,L,NE]
+# Never expose deployment secrets or server-side source directories.
+<FilesMatch "^\.(env|git)|^(composer\.(json|lock)|.*\.sql)$">
+	Require all denied
+</FilesMatch>
+RewriteRule ^(?:config|includes|vendor|sql|other[[:space:]]notes|\.git)(?:/|$) - [F,L]
 
-RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/main-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
-RewriteRule ^admin/main-pages/([a-z0-9_-]+)\.php$ /safebrgy/admin/$1 [R=301,L,NE]
+# Keep admin responses out of search indexes, including clean admin URLs.
+<IfModule mod_setenvif.c>
+	SetEnvIf Request_URI "^/.*(admin|admin-role-access-features|safebrgy_admin)(/|$)" NOINDEX
+	SetEnvIfNoCase Host "^admin\.safebrgy\.com(?::\d+)?$" NOINDEX
+</IfModule>
+<IfModule mod_headers.c>
+	Header always set X-Robots-Tag "noindex, nofollow, noarchive" env=NOINDEX
+</IfModule>
 
-RewriteCond %{THE_REQUEST} \s/+safebrgy/public/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
-RewriteRule ^public/(login|logout|otp-view|reset-password)\.php$ /safebrgy/$1 [R=301,L,NE]
+# Landing pages use the hostname to select the experience.
+RewriteCond %{HTTP_HOST} ^admin\.safebrgy\.com(?::\d+)?$ [NC]
+RewriteRule ^robots\.txt$ admin-robots.txt [L]
+RewriteCond %{HTTP_HOST} ^admin\.safebrgy\.com(?::\d+)?$ [NC]
+RewriteRule ^landing/?$ admin/index.php [L]
+RewriteCond %{HTTP_HOST} !^admin\.safebrgy\.com(?::\d+)?$ [NC]
+RewriteRule ^landing/?$ index.php [L]
 
-RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
-RewriteRule ^admin/(login|logout|otp-view|reset-password)\.php$ /safebrgy/admin/$1 [R=301,L,NE]
+# Redirect old local-development links when this folder is deployed at the domain root.
+RewriteRule ^safebrgy(?:/(.*))?$ /$1 [R=301,L,NE]
 
-RewriteCond %{THE_REQUEST} \s/+safebrgy/admin/logs/logs\.php(?:[?\s]) [NC]
-RewriteRule ^admin/logs/logs\.php$ /safebrgy/admin/logs [R=301,L]
+# Canonicalize direct PHP paths before internal routing so the browser only shows clean URLs.
+RewriteRule ^public/public-pages/[Pp]rofile\.php$ /profile [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+index\.php(?:[?\s]) [NC]
+RewriteRule ^index\.php$ / [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+public/public-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
+RewriteRule ^public/public-pages/([a-z0-9_-]+)\.php$ /$1 [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+admin/main-pages/([a-z0-9_-]+)\.php(?:[?\s]) [NC]
+RewriteRule ^admin/main-pages/([a-z0-9_-]+)\.php$ /admin/$1 [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+public/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
+RewriteRule ^public/(login|logout|otp-view|reset-password)\.php$ /$1 [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+admin/(login|logout|otp-view|reset-password)\.php(?:[?\s]) [NC]
+RewriteRule ^admin/(login|logout|otp-view|reset-password)\.php$ /admin/$1 [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+register(?:\.php|/index\.php)(?:[?\s]) [NC]
+RewriteRule ^(?:register\.php|register/index\.php)$ /register [R=301,L,NE]
+RewriteCond %{THE_REQUEST} \s/+public/register\.php(?:[?\s]) [NC]
+RewriteRule ^public/register\.php$ /register [R=301,L,NE]
 
-RewriteCond %{THE_REQUEST} \s/+safebrgy/register\.php(?:[?\s]) [NC]
-RewriteRule ^register\.php$ /safebrgy/register [R=301,L]
-
-RewriteCond %{THE_REQUEST} \s/+safebrgy/public/register\.php(?:[?\s]) [NC]
-RewriteRule ^public/register\.php$ /safebrgy/register [R=301,L]
-
-RewriteCond %{THE_REQUEST} \s/+safebrgy/register/index\.php(?:[?\s]) [NC]
-RewriteRule ^register/index\.php$ /safebrgy/register [R=301,L]
+# Guest portal.
+RewriteCond %{THE_REQUEST} \s/+guest_user(?:/index\.php)?(?:[/?\s]) [NC]
+RewriteRule ^guest_user(?:/index\.php)?/?$ /guest/ [R=301,L,NE]
+RewriteRule ^guest/?$ guest_user/index.php [L]
+RewriteRule ^guest/requests/?$ guest_user/request-documents.php [L]
+RewriteRule ^guest/(assets|api)/(.*)$ guest_user/$1/$2 [L]
+RewriteRule ^guest/uploads/(.*)$ uploads/$1 [L]
+RewriteRule ^upload/(.*)$ guest_user/upload/$1 [L]
 
 # Resident pages.
-RewriteRule ^(dashboard|announcement|reports|requests|profile|account)$ public/public-pages/$1.php [L]
-RewriteRule ^(login|logout|otp-view|reset-password)$ public/$1.php [L]
-RewriteRule ^reset-password/send-code$ public/send-reset.php [L]
-RewriteRule ^reset-password/verify-code$ public/verify-reset-code.php [L]
-RewriteRule ^reset-password/confirm$ public/confirm-password-reset.php [L]
+RewriteRule ^$ index.php [L]
+RewriteRule ^(dashboard|announcement|reports|requests|profile|account)/?$ public/public-pages/$1.php [L]
+RewriteRule ^(login|logout|otp-view|reset-password)/?$ public/$1.php [L]
+RewriteRule ^reset-password/send-code/?$ public/send-reset.php [L]
+RewriteRule ^reset-password/verify-code/?$ public/verify-reset-code.php [L]
+RewriteRule ^reset-password/confirm/?$ public/confirm-password-reset.php [L]
 RewriteRule ^register/?$ register/index.php [L]
 
-# Admin pages. The admin landing page remains outside clean URL routing.
-RewriteRule ^admin/(dashboard|announcement|reports|requests|profile|account_settings|notifications|user_verification)$ admin/main-pages/$1.php [L]
-RewriteRule ^admin/(view_user|verify_user)$ admin/main-pages/$1.php [L]
-RewriteRule ^admin/logs$ admin/logs/logs.php [L]
-RewriteRule ^admin/(login|logout|otp-view|reset-password)$ admin/$1.php [L]
-RewriteRule ^admin/register$ admin/register.php [L]
-
-RewriteRule ^safebrgy_admin$ admin_index.php [R=301,L]
+# Admin pages.
+RewriteRule ^admin/?$ admin/index.php [L]
+RewriteRule ^admin/(dashboard|announcement|reports|requests|profile|account_settings|notifications|user_verification)/?$ admin/main-pages/$1.php [L]
+RewriteRule ^admin/(view_user|verify_user)/?$ admin/main-pages/$1.php [L]
+RewriteRule ^admin/logs/?$ admin/logs/logs.php [L]
+RewriteRule ^admin/(login|logout|otp-view|reset-password)/?$ admin/$1.php [L]
+RewriteRule ^admin/register/?$ admin/register.php [L]
+RewriteRule ^safebrgy_admin/?$ /admin [R=301,L,NE]

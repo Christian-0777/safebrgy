@@ -14,53 +14,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdo = safeBrgy_db_connect();
 
     try {
-        // Check if file is uploaded
-        if (!isset($_FILES['validIdFile']) || $_FILES['validIdFile']['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception('No file uploaded or upload error');
-        }
-
-        $file = $_FILES['validIdFile'];
-        
-        // Validate file size (max 10MB)
+        $files = [
+            'front' => $_FILES['validIdFrontFile'] ?? null,
+            'back' => $_FILES['validIdBackFile'] ?? null,
+        ];
         $maxSize = 10 * 1024 * 1024;
-        if ($file['size'] > $maxSize) {
-            throw new Exception('File size exceeds 10MB limit');
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+        $storedPaths = [];
+
+        foreach ($files as $side => $file) {
+            if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Both the front and back of the ID are required');
+            }
+            if ($file['size'] > $maxSize) {
+                throw new Exception('The ' . $side . ' ID file exceeds the 10MB limit');
+            }
+
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (!in_array($mimeType, $allowedMimes, true)) {
+                throw new Exception('The ' . $side . ' ID must be a JPG, PNG, or WebP image');
+            }
+
+            $uploadDir = __DIR__ . '/../../uploads/id/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $filename = 'id_' . $user_id . '_' . $side . '_' . time() . '.' . $ext;
+            $filepath = $uploadDir . $filename;
+            $relativePath = '/uploads/id/' . $filename;
+
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                throw new Exception('Failed to save the ' . $side . ' ID file');
+            }
+            $storedPaths[$side] = $relativePath;
         }
 
-        // Validate file type
-        $allowedMimes = ['image/jpeg', 'image/png', 'application/pdf'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
-
-        if (!in_array($mimeType, $allowedMimes)) {
-            throw new Exception('Invalid file type. Only JPG, PNG, and PDF are allowed');
-        }
-
-        // Create upload directory if it doesn't exist
-        $uploadDir = __DIR__ . '/../../uploads/valid_ids/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Generate unique filename
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = 'id_' . $user_id . '_' . time() . '.' . $ext;
-        $filepath = $uploadDir . $filename;
-        $relativePath = '/uploads/valid_ids/' . $filename;
-
-        // Move uploaded file
-        if (!move_uploaded_file($file['tmp_name'], $filepath)) {
-            throw new Exception('Failed to save file');
-        }
-
-        // Update database
         $stmt = $pdo->prepare('
             UPDATE residents 
-            SET valid_id_path = ?, updated_at = NOW()
+            SET valid_id_path = ?, valid_id_back_path = ?, updated_at = NOW()
             WHERE user_id = ?
         ');
-        $stmt->execute([$relativePath, $user_id]);
+        $stmt->execute([$storedPaths['front'], $storedPaths['back'], $user_id]);
 
         $_SESSION['account_success'] = 'Valid ID uploaded successfully';
         

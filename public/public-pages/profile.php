@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/db.php';
 // profile.php - SafeBrgy Resident Profile
 session_start();
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 
 // Check if user is logged in and verified
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'resident') {
@@ -38,11 +39,44 @@ function residentAssetUrl($path) {
   return $applicationRoot . $path;
 }
 
+function residentValidIdUrl($path) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  return residentAssetUrl('/uploads/id/' . basename(str_replace('\\', '/', $path)));
+}
+
+function residentProfileAssetUrl($path, $folder) {
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $normalizedPath = ltrim(str_replace('\\', '/', $path), '/');
+  $filename = basename($normalizedPath);
+  if (strpos($normalizedPath, 'uploads/' . $folder . '/') === 0) {
+    return residentAssetUrl('/register/uploads/' . $folder . '/' . rawurlencode($filename));
+  }
+
+  return residentAssetUrl('/' . $normalizedPath);
+}
+
 // Get resident detailed information
 $residentData = null;
 $profileImage = null;
 $coverPhoto = null;
 $validIdPath = null;
+$validIdBackPath = null;
 $isVerified = false;
 
 if ($userId) {
@@ -56,10 +90,12 @@ if ($userId) {
     $residentData = $stmt->fetch();
     
     if ($residentData) {
-      $profileImagePath = $residentData['profile_image_path'] ?: ($residentData['profile_image'] ?? '');
-      $profileImage = residentAssetUrl($profileImagePath);
-      $coverPhoto = residentAssetUrl($residentData['cover_photo'] ?? '');
-      $validIdPath = residentAssetUrl($residentData['valid_id_path'] ?? '');
+      $profileImagePath = $residentData['profile_image'] ?: ($residentData['profile_image_path'] ?? '');
+      $coverPhotoPath = $residentData['cover_photo'] ?: ($residentData['cover_photo_path'] ?? '');
+      $profileImage = residentProfileAssetUrl($profileImagePath, 'profile');
+      $coverPhoto = residentProfileAssetUrl($coverPhotoPath, 'cover');
+      $validIdPath = residentValidIdUrl($residentData['valid_id_path'] ?? '');
+      $validIdBackPath = residentValidIdUrl($residentData['valid_id_back_path'] ?? '');
         $isVerified = (bool) $residentData['is_verified'];
     }
 }
@@ -123,7 +159,7 @@ function getStatusBadgeClass($status) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/public/public-pages/">
+  <base href="/public/public-pages/">
   <title>SafeBrgy - Profile</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->
@@ -152,7 +188,7 @@ function getStatusBadgeClass($status) {
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($name, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($name, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($name); ?></div>
           <div class="profile-role">Resident</div>
@@ -169,10 +205,10 @@ function getStatusBadgeClass($status) {
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -330,17 +366,30 @@ function getStatusBadgeClass($status) {
           <h3 class="section-title"><i class="fas fa-passport"></i> Identification</h3>
         </div>
         <div class="section-content">
-          <div class="row align-items-center">
+          <div class="row">
             <div class="col-md-6 mb-4">
               <div class="info-item">
-                <label class="info-label">Valid ID</label>
+                <label class="info-label">Front of Valid ID</label>
                 <?php if ($validIdPath): ?>
                   <div class="id-preview-wrapper">
-                    <img src="<?php echo htmlspecialchars($validIdPath); ?>" alt="Valid ID" class="id-preview" onclick="openImageModal(this)">
+                    <img src="<?php echo htmlspecialchars($validIdPath, ENT_QUOTES, 'UTF-8'); ?>" alt="Front of Valid ID" class="id-preview" onclick="openImageModal(this)">
                     <p class="text-muted mt-2"><small><i class="fas fa-image"></i> Click to view full image</small></p>
                   </div>
                 <?php else: ?>
                   <p class="info-value text-muted">No ID uploaded</p>
+                <?php endif; ?>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="info-item">
+                <label class="info-label">Back of Valid ID</label>
+                <?php if ($validIdBackPath): ?>
+                  <div class="id-preview-wrapper">
+                    <img src="<?php echo htmlspecialchars($validIdBackPath, ENT_QUOTES, 'UTF-8'); ?>" alt="Back of Valid ID" class="id-preview" onclick="openImageModal(this)">
+                    <p class="text-muted mt-2"><small><i class="fas fa-image"></i> Click to view full image</small></p>
+                  </div>
+                <?php else: ?>
+                  <p class="info-value text-muted">No back ID uploaded</p>
                 <?php endif; ?>
               </div>
             </div>
@@ -428,7 +477,7 @@ function getStatusBadgeClass($status) {
 
       <!-- ===== LOGOUT BUTTON ===== -->
       <div class="profile-footer">
-        <a href="../../public/logout.php" class="btn btn-danger">
+        <a href="../logout.php" class="btn btn-danger">
           <i class="fas fa-sign-out-alt"></i> Logout
         </a>
       </div>

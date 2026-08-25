@@ -53,7 +53,7 @@ if (!$agreeTerms) {
     redirectWithError('You must agree to the Terms of Use and Privacy Policy.');
 }
 
-$username = preg_replace('/[^A-Za-z0-9_.-]/', '', $fullName);
+$username = preg_replace('/\s+/', ' ', $fullName);
 $pdo = safeBrgy_db_connect();
 $check = $pdo->prepare('SELECT id FROM users WHERE email = :email');
 $check->execute(['email' => $email]);

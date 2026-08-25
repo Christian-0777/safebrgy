@@ -13,6 +13,7 @@
  */
 
 header('Content-Type: application/json');
+session_start();
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/mailer.php';
@@ -36,9 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(false, 'Invalid request method.');
 }
 
+if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'resident') {
+    respond(false, 'Please sign in as a resident to submit a request.');
+}
+
 $documentType  = trim($_POST['document_type'] ?? '');
-$residentName  = trim($_POST['resident_name'] ?? '');
-$residentEmail = trim($_POST['resident_email'] ?? '');
+$loggedInUserId = (int) ($_SESSION['user']['id'] ?? 0);
 
 $validTypes = [
     'Barangay Clearance',
@@ -51,13 +55,25 @@ if (!in_array($documentType, $validTypes, true)) {
     respond(false, 'Unknown document type.');
 }
 
-if ($residentName === '' || $residentEmail === '') {
-    respond(false, 'Full name and email are required.');
+$residentStmt = $conn->prepare(
+    'SELECT u.id, u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
+            r.years_of_residency
+       FROM users u
+       INNER JOIN residents r ON r.user_id = u.id
+      WHERE u.id = ? AND u.role = "resident"'
+);
+$residentStmt->bind_param('i', $loggedInUserId);
+$residentStmt->execute();
+$resident = $residentStmt->get_result()->fetch_assoc();
+$residentStmt->close();
+
+if (!$resident || !filter_var($resident['email'], FILTER_VALIDATE_EMAIL)) {
+    respond(false, 'Resident information could not be found.');
 }
 
-if (!filter_var($residentEmail, FILTER_VALIDATE_EMAIL)) {
-    respond(false, 'Please provide a valid email address.');
-}
+$residentName = trim($resident['resident_name']) ?: 'Resident';
+$residentEmail = $resident['email'];
+$yearsOfResidency = max(0, (int) ($resident['years_of_residency'] ?? 0));
 
 try {
     // ---- Shared supporting document / image upload ----
@@ -69,10 +85,10 @@ try {
 
     // ---- 1. Insert into master `requests` table ----
     $stmt = $conn->prepare(
-        'INSERT INTO requests (reference_no, document_type, resident_name, resident_email, supporting_file, status)
-         VALUES (?, ?, ?, ?, ?, "Pending")'
+        'INSERT INTO requests (user_id, reference_no, document_type, resident_name, resident_email, supporting_file, status)
+         VALUES (?, ?, ?, ?, ?, ?, "Pending")'
     );
-    $stmt->bind_param('sssss', $referenceNo, $documentType, $residentName, $residentEmail, $supportingFile);
+    $stmt->bind_param('isssss', $loggedInUserId, $referenceNo, $documentType, $residentName, $residentEmail, $supportingFile);
     $stmt->execute();
     $requestId = $conn->insert_id;
     $stmt->close();
@@ -92,12 +108,12 @@ try {
             break;
 
         case 'Barangay Residency':
-            $years       = (int) ($_POST['years_of_residency'] ?? 0);
-            $dateStarted = trim($_POST['date_started'] ?? '');
+            $years       = $yearsOfResidency;
+            $dateStarted = date('Y-m-d', strtotime('-' . $years . ' years'));
             $purpose     = trim($_POST['purpose'] ?? '');
 
-            if ($dateStarted === '' || $purpose === '') {
-                throw new RuntimeException('All required residency fields must be filled out.');
+            if ($purpose === '') {
+                throw new RuntimeException('Purpose of request is required.');
             }
 
             $stmt = $conn->prepare(

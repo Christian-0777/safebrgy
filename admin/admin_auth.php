@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/shared/remember_me.php';
 session_start();
 
 function redirectWithError(string $message)
@@ -42,6 +43,12 @@ $_SESSION['admin_user'] = [
     'email' => $user['email'],
     'username' => $user['username'] ?: strtok($user['email'], '@'),
 ];
+
+if (isset($_POST['rememberMe'])) {
+    issueRememberMeToken($pdo, (int) $user['id']);
+} else {
+    clearRememberMeCookie();
+}
 
 header('Location: /safebrgy/admin/main-pages/dashboard.php');
 exit;

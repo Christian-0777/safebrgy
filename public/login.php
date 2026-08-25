@@ -1,18 +1,28 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/mailer.php';
+require_once __DIR__ . '/../includes/shared/remember_me.php';
 // SafeBrgy Login Page
 session_start();
+
+$pdo = safeBrgy_db_connect();
+$rememberedRole = restoreRememberedLogin($pdo);
+if ($rememberedRole === 'resident') {
+    header('Location: /safebrgy/dashboard');
+    exit;
+}
+if ($rememberedRole === 'admin') {
+    header('Location: /safebrgy/admin/dashboard');
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $pdo = safeBrgy_db_connect();
-
     // Check if email exists
-    $stmt = $pdo->prepare('SELECT id, password_hash, is_verified, role FROM users WHERE email = ?');
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare('SELECT id, username, password_hash, is_verified FROM users WHERE email = ? AND role = ?');
+    $stmt->execute([$email, 'resident']);
     $user = $stmt->fetch();
 
     if (!$user) {
@@ -23,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Your account was pending for approval, I will notify you using your email for account approval';
     } else {
         // Login successful
+        session_regenerate_id(true);
         // Fetch resident details
         $stmt = $pdo->prepare('SELECT r.first_name, r.last_name, r.mobile_number FROM residents r WHERE r.user_id = ?');
         $stmt->execute([$user['id']]);
@@ -33,16 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user'] = [
             'id' => $user['id'],
             'email' => $email,
-            'role' => $user['role'],
+            'role' => 'resident',
             'name' => $full_name,
             'phone' => $resident['mobile_number'] ?? ''
         ];
 
-        if ($user['role'] === 'admin') {
-            header('Location: /safebrgy/admin/dashboard');
+        if (isset($_POST['remember'])) {
+            issueRememberMeToken($pdo, (int) $user['id']);
         } else {
-            header('Location: /safebrgy/dashboard');
+            clearRememberMeCookie();
         }
+
+        header('Location: /safebrgy/dashboard');
         exit;
     }
 }
@@ -53,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/safebrgy/public/">
+    <base href="/">
     <title>SafeBrgy - Login</title>
     <link rel="icon" type="image/png" href="../assets/img/seal.png">
     <link rel="stylesheet" href="../assets/css/shared/colors.css">
@@ -75,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="error-banner"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form id="loginForm" method="POST" action="/safebrgy/login">
+            <form id="loginForm" method="POST" action="/login">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="you@example.com" required>

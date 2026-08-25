@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const otherAudienceWrapper = document.getElementById('otherAudienceWrapper');
   const announcementAttachments = document.getElementById('announcementAttachments');
   const filePreview = document.getElementById('filePreview');
-  const announcementEndpoint = new URL('/safebrgy/admin/announcement', window.location.origin).href;
+  const announcementEndpoint = new URL('/admin/announcement', window.location.origin).href;
 
   // File preview for multiple uploads
   if (announcementAttachments) {

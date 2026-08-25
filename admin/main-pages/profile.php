@@ -1,35 +1,16 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 // profile.php - SafeBrgy Admin Profile
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
 
-function adminAssetUrl($path) {
-  $path = trim((string) $path);
-  if ($path === '') {
-    return '';
-  }
-
-  if (filter_var($path, FILTER_VALIDATE_URL)) {
-    return $path;
-  }
-
-  $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
-  $applicationRoot = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
-
-  if (strpos($path, $applicationRoot . '/') === 0) {
-    return $path;
-  }
-
-  return $applicationRoot . $path;
-}
-
 if ($adminId) {
   $stmt = $pdo->prepare('SELECT username, email, phone, profile_image, cover_photo, created_at, updated_at FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
-    $user = $admin['username'] ?? 'Admin';
+    $user = adminDisplayName($admin['username'] ?? 'Admin');
     $email = $admin['email'] ?? '';
     $phone = $admin['phone'] ?? '';
     $profileImage = adminAssetUrl($admin['profile_image'] ?? '');
@@ -94,7 +75,7 @@ $activityLogs = $stmtActivityLogs->fetchAll();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - Admin Profile</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
@@ -123,7 +104,7 @@ $activityLogs = $stmtActivityLogs->fetchAll();
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -140,11 +121,11 @@ $activityLogs = $stmtActivityLogs->fetchAll();
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">

@@ -218,14 +218,36 @@ function sendAdminOtpEmail(string $recipient, string $otpCode): bool
     return sendMail($recipient, $subject, $htmlBody, $plainBody);
 }
 
-function sendRequestStatusEmail(string $recipient, string $residentName, string $requestNumber, string $documentType, string $newStatus): bool
+function sendRequestStatusEmail(string $recipient, string $residentName, string $requestNumber, string $documentType, string $newStatus, string $rejectionReason = ''): bool
 {
-    $subject = 'SafeBrgy Request Status Updated';
-    $htmlBody = "<p>Hello {$residentName},</p>"
-        . "<p>Your request <strong>{$requestNumber}</strong> for <strong>{$documentType}</strong> has been updated to <strong>{$newStatus}</strong>.</p>"
-        . "<p>Please log in to your SafeBrgy account to view the latest update.</p>"
-        . "<p>Thank you,<br>SafeBrgy Team</p>";
-    $plainBody = "Hello {$residentName},\n\nYour request {$requestNumber} for {$documentType} has been updated to {$newStatus}.\n\nPlease log in to your SafeBrgy account to view the latest update.\n\nThank you,\nSafeBrgy Team";
+    $name = htmlspecialchars($residentName, ENT_QUOTES, 'UTF-8');
+    $referenceNumber = htmlspecialchars($requestNumber, ENT_QUOTES, 'UTF-8');
+    $document = htmlspecialchars($documentType, ENT_QUOTES, 'UTF-8');
+    $reason = htmlspecialchars($rejectionReason ?: 'Please contact the Barangay San Jose Office for more information.', ENT_QUOTES, 'UTF-8');
+    $officeHours = getenv('OFFICE_HOURS') ?: 'Monday to Friday, 8:00 AM to 5:00 PM';
+    $safeOfficeHours = htmlspecialchars($officeHours, ENT_QUOTES, 'UTF-8');
+    $dateReceived = date('F d, Y');
+
+    $subjects = [
+        'Approved' => 'Your Request Has Been Approved – SafeBRGY',
+        'Processing' => 'Your Request is Being Processed – SafeBRGY',
+        'Ready for Pickup' => 'Your Document is Ready for Pickup – SafeBRGY',
+        'Received' => 'Document Successfully Received – SafeBRGY',
+        'Rejected' => 'Request Update – Action Required – SafeBRGY',
+    ];
+    $subject = $subjects[$newStatus] ?? 'Request Update – SafeBRGY';
+
+    $content = match ($newStatus) {
+        'Approved' => "<h2>Request Approved</h2><p>Dear <strong>{$name}</strong>,</p><p>We are pleased to inform you that your request for <strong>{$document}</strong> has been <strong>approved</strong>.</p><p>You will receive a follow-up email and/or SMS notification once your document is ready for release or when further action is required.</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p>Please keep this reference number safe. You will be required to present or provide it when claiming or receiving your requested document.</p>",
+        'Processing' => "<h2>Request Processing</h2><p>Dear <strong>{$name}</strong>,</p><p>Your request for <strong>{$document}</strong> is currently <strong>being processed</strong> by Barangay San Jose.</p><p>We will notify you through email and/or SMS once there is an update regarding your request.</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p>Please keep this reference number for tracking and future transactions.</p>",
+        'Ready for Pickup' => "<h2>Document Ready for Pickup</h2><p>Dear <strong>{$name}</strong>,</p><p>Your requested <strong>{$document}</strong> is now <strong>ready for pickup</strong> at Barangay San Jose.</p><p>Please bring a valid government-issued ID and provide the following reference number when claiming your document:</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p><strong>Pickup Location:</strong> Barangay San Jose<br><strong>Office Hours:</strong> {$safeOfficeHours}</p><p>Please ensure that you claim your document within the designated release period.</p>",
+        'Received' => "<h2>Request Completed</h2><p>Dear <strong>{$name}</strong>,</p><p>Your <strong>{$document}</strong> has been successfully <strong>released and received</strong>.</p><p>Your request has now been marked as <strong>Completed</strong> in the SafeBRGY system.</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p><strong>Date Received:</strong> {$dateReceived}<br><strong>Received By:</strong> {$name}</p><p>We appreciate your use of SafeBRGY and hope our digital services have made your transaction more convenient.</p>",
+        'Rejected' => "<h2>Request Rejected</h2><p>Dear <strong>{$name}</strong>,</p><p>We regret to inform you that your request for <strong>{$document}</strong> has been <strong>rejected</strong>.</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p><strong>Reason for Rejection:</strong><br>{$reason}</p><p>Please review the reason provided above. If applicable, you may correct the required information or submit a new request through SafeBRGY.</p><p>If you need further assistance or clarification, please contact the Barangay San Jose Office.</p>",
+        default => "<h2>Request Update</h2><p>Dear <strong>{$name}</strong>,</p><p>Your request for <strong>{$document}</strong> is currently <strong>{$newStatus}</strong>.</p><p><strong>Reference Number:</strong><br>{$referenceNumber}</p><p>Please keep this reference number for tracking and future transactions.</p>",
+    };
+
+    $htmlBody = $content . '<p>Thank you for using <strong>SafeBRGY</strong>, the digital service platform of Barangay San Jose.</p><p>Sincerely,<br><strong>SafeBRGY Team</strong><br><em>Barangay San Jose</em></p>';
+    $plainBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlBody));
 
     return sendMail($recipient, $subject, $htmlBody, $plainBody);
 }
@@ -330,13 +352,22 @@ function sendReportSubmissionNotification(string $recipientEmail, string $recipi
     return ['email_sent' => $emailSent, 'sms_sent' => $smsSent];
 }
 
-function sendRequestStatusNotification(string $recipientEmail, string $residentName, ?string $mobileNumber, string $requestNumber, string $documentType, string $newStatus, ?int $userId = null): array
+function sendRequestStatusNotification(string $recipientEmail, string $residentName, ?string $mobileNumber, string $requestNumber, string $documentType, string $newStatus, ?int $userId = null, string $rejectionReason = ''): array
 {
-    $emailSent = sendRequestStatusEmail($recipientEmail, $residentName, $requestNumber, $documentType, $newStatus);
+    $emailSent = sendRequestStatusEmail($recipientEmail, $residentName, $requestNumber, $documentType, $newStatus, $rejectionReason);
     $smsSent = false;
 
     if ($mobileNumber) {
-        $smsSent = sendSms($mobileNumber, "Your {$documentType} request ({$requestNumber}) status has been updated to {$newStatus}.");
+        $officeHours = getenv('OFFICE_HOURS') ?: 'Monday to Friday, 8:00 AM to 5:00 PM';
+        $smsMessages = [
+            'Approved' => "SafeBRGY: Request Approved\nHi {$residentName}, your request for {$documentType} has been approved.\nReference No.: {$requestNumber}\nPlease keep this reference number. You will need it when claiming/receiving your document. You will receive another notification once your document is ready.\nThank you for using SafeBRGY – Barangay San Jose.",
+            'Processing' => "SafeBRGY: Request Processing\nHi {$residentName}, your {$documentType} request is now being processed.\nReference No.: {$requestNumber}\nPlease keep this reference number for tracking your request. You will receive another notification once there is an update.\nThank you for using SafeBRGY – Barangay San Jose.",
+            'Ready for Pickup' => "SafeBRGY: Document Ready for Pickup\nHi {$residentName}, your {$documentType} is now ready for pickup at Barangay San Jose.\nReference No.: {$requestNumber}\nPlease bring a valid ID and present your reference number when claiming your document.\nOffice Hours: {$officeHours}\nThank you for using SafeBRGY.",
+            'Received' => "SafeBRGY: Request Completed\nHi {$residentName}, your {$documentType} has been successfully released and received.\nReference No.: {$requestNumber}\nYour request is now marked as Completed.\nThank you for using SafeBRGY – Barangay San Jose.",
+            'Rejected' => "SafeBRGY: Request Rejected\nHi {$residentName}, your {$documentType} request has been rejected.\nReference No.: {$requestNumber}\nReason: " . ($rejectionReason ?: 'Please contact the Barangay San Jose Office for assistance.') . "\nPlease review the reason and contact the Barangay San Jose Office if you need assistance.\nThank you for using SafeBRGY.",
+        ];
+        $smsMessage = $smsMessages[$newStatus] ?? "SafeBRGY: Request Update\nHi {$residentName}, your {$documentType} request is currently {$newStatus}.\nReference No.: {$requestNumber}\nThank you for using SafeBRGY – Barangay San Jose.";
+        $smsSent = sendSms($mobileNumber, $smsMessage);
     }
 
     logNotificationEvent([
@@ -344,7 +375,7 @@ function sendRequestStatusNotification(string $recipientEmail, string $residentN
         'user_id' => $userId,
         'email' => $recipientEmail,
         'mobile_number' => $mobileNumber,
-        'event_meta' => ['request_number' => $requestNumber, 'document_type' => $documentType, 'new_status' => $newStatus],
+        'event_meta' => ['request_number' => $requestNumber, 'document_type' => $documentType, 'new_status' => $newStatus, 'rejection_reason' => $rejectionReason],
         'email_sent' => $emailSent,
         'sms_sent' => $smsSent,
         'status' => $emailSent && ($mobileNumber ? $smsSent : true) ? 'sent' : 'partial',

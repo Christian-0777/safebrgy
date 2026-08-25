@@ -79,7 +79,7 @@
 /* ============== STATUS TRACKER SECTION ============== */
 
 .status-tracker-section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .section-title {
@@ -112,7 +112,7 @@
 }
 
 .tracker-card.approved {
-  border-left-color: #28a745;
+  border-left-color: var(--color-primary);
 }
 
 .tracker-card.reports {
@@ -134,7 +134,7 @@
 }
 
 .tracker-card.approved .tracker-icon {
-  color: #28a745;
+  color: var(--color-primary);
 }
 
 .tracker-card.reports .tracker-icon {
@@ -233,7 +233,7 @@
 /* ============== SERVICES SECTION ============== */
 
 .services-section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .service-card {

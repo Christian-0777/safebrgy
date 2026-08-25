@@ -41,19 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Valid ID file preview
-  const validIdFile = document.getElementById('validIdFile');
-  if (validIdFile) {
-    validIdFile.addEventListener('change', handleIdFileChange);
-  }
-
-  // Drag and drop for ID upload
-  const idUploadArea = document.getElementById('idUploadArea');
-  if (idUploadArea) {
-    idUploadArea.addEventListener('dragover', handleDragOver);
-    idUploadArea.addEventListener('dragleave', handleDragLeave);
-    idUploadArea.addEventListener('drop', handleDrop);
-    idUploadArea.addEventListener('click', () => validIdFile.click());
-  }
+  [['validIdFrontFile', 'front'], ['validIdBackFile', 'back']].forEach(([inputId, side]) => {
+    const input = document.getElementById(inputId);
+    const uploadArea = document.getElementById(side === 'front' ? 'idFrontUploadArea' : 'idBackUploadArea');
+    if (!input || !uploadArea) return;
+    input.addEventListener('change', (event) => handleIdFileChange(event, side));
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', (event) => handleDrop(event, input, side));
+  });
 
   // Form validations
   const personalInfoForm = document.getElementById('personalInfoForm');
@@ -135,19 +131,23 @@ function handleCoverPhotoChange(e) {
 
     const reader = new FileReader();
     reader.onload = function(event) {
+      const coverPreview = document.querySelector('.cover-preview');
       const placeholder = document.querySelector('.cover-preview .cover-placeholder');
+      if (coverPreview) {
+        coverPreview.style.backgroundImage = `url('${event.target.result}')`;
+        coverPreview.style.backgroundSize = 'cover';
+        coverPreview.style.backgroundPosition = 'center';
+      }
       if (placeholder) {
-        placeholder.style.backgroundImage = `url('${event.target.result}')`;
-        placeholder.style.backgroundSize = 'cover';
-        placeholder.style.backgroundPosition = 'center';
         placeholder.querySelectorAll('i, p').forEach(element => element.remove());
+        placeholder.style.background = 'transparent';
       }
     };
     reader.readAsDataURL(file);
   }
 }
 
-function handleIdFileChange(e) {
+function handleIdFileChange(e, side) {
   const file = e.target.files[0];
   if (file) {
     // Check file size (max 10MB)
@@ -157,7 +157,7 @@ function handleIdFileChange(e) {
     }
     
     // Check file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       alert('Please select a valid image or PDF file');
       return;
@@ -168,20 +168,15 @@ function handleIdFileChange(e) {
       const reader = new FileReader();
       reader.onload = function(event) {
         const previewNew = document.getElementById('idPreviewNew');
-        const newIdPreview = document.getElementById('newIdPreview');
-        if (previewNew && newIdPreview) {
-          newIdPreview.src = event.target.result;
-          previewNew.style.display = 'block';
+        const sidePreview = document.getElementById(side === 'front' ? 'idFrontPreviewNew' : 'idBackPreviewNew');
+        const imagePreview = document.getElementById(side === 'front' ? 'newIdFrontPreview' : 'newIdBackPreview');
+        if (previewNew && sidePreview && imagePreview) {
+          imagePreview.src = event.target.result;
+          sidePreview.style.display = 'block';
+          previewNew.style.display = 'flex';
         }
       };
       reader.readAsDataURL(file);
-    } else {
-      // For PDFs, show a generic message
-      const previewNew = document.getElementById('idPreviewNew');
-      if (previewNew) {
-        previewNew.innerHTML = '<h6 class="mb-2">PDF Selected</h6><p class="text-muted">PDF file selected for upload</p>';
-        previewNew.style.display = 'block';
-      }
     }
   }
 }
@@ -191,27 +186,27 @@ function handleIdFileChange(e) {
 function handleDragOver(e) {
   e.preventDefault();
   e.stopPropagation();
-  document.getElementById('idUploadArea').style.background = '#f0f7ff';
-  document.getElementById('idUploadArea').style.borderColor = '#0b63d6';
+  e.currentTarget.style.background = '#f0f7ff';
+  e.currentTarget.style.borderColor = '#0b63d6';
 }
 
 function handleDragLeave(e) {
   e.preventDefault();
   e.stopPropagation();
-  document.getElementById('idUploadArea').style.background = '#fafafa';
-  document.getElementById('idUploadArea').style.borderColor = '#d0d0d0';
+  e.currentTarget.style.background = '#fafafa';
+  e.currentTarget.style.borderColor = '#d0d0d0';
 }
 
-function handleDrop(e) {
+function handleDrop(e, input, side) {
   e.preventDefault();
   e.stopPropagation();
-  document.getElementById('idUploadArea').style.background = '#fafafa';
-  document.getElementById('idUploadArea').style.borderColor = '#d0d0d0';
+  e.currentTarget.style.background = '#fafafa';
+  e.currentTarget.style.borderColor = '#d0d0d0';
   
   const files = e.dataTransfer.files;
   if (files.length > 0) {
-    document.getElementById('validIdFile').files = files;
-    handleIdFileChange({ target: { files: files } });
+    input.files = files;
+    handleIdFileChange({ target: { files: files } }, side);
   }
 }
 
@@ -494,7 +489,7 @@ function updatePasswordStrengthIndicator(strength) {
   }
   
   const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-  const strengthColors = ['#f32b36', '#ff9800', '#ffc107', '#8bc34a', '#4caf50', '#2e7d32'];
+  const strengthColors = ['#f32b36', '#ff9800', '#ffc107', '#60a5fa', '#2563eb', '#083d96'];
   
   const label = strengthLabels[strength] || 'Very Weak';
   const color = strengthColors[strength] || '#f32b36';

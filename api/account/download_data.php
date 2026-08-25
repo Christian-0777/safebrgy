@@ -28,8 +28,8 @@ try {
     }
 
     // Get user's requests
-    $stmt = $pdo->prepare('SELECT * FROM requests WHERE user_id = ? ORDER BY created_at DESC');
-    $stmt->execute([$user_id]);
+    $stmt = $pdo->prepare('SELECT * FROM requests WHERE resident_email = ? ORDER BY submitted_at DESC');
+    $stmt->execute([$userData['email']]);
     $requests = $stmt->fetchAll();
 
     // Get user's reports

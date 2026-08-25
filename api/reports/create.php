@@ -29,41 +29,50 @@ if (!in_array($report_type, ['Incident', 'Lost Property', 'Blotter'])) {
     exit;
 }
 
-// Handle file upload
 $attachments = null;
-if (isset($_FILES['picture']) && $_FILES['picture']['error'] === UPLOAD_ERR_OK) {
+if (isset($_FILES['picture']) && !empty($_FILES['picture']['name'][0])) {
     $uploads_dir = __DIR__ . '/../../uploads/reports/';
-    
-    // Create directory if it doesn't exist
+
     if (!is_dir($uploads_dir)) {
         mkdir($uploads_dir, 0755, true);
     }
 
-    $file_tmp = $_FILES['picture']['tmp_name'];
-    $file_name = $_FILES['picture']['name'];
-    $file_size = $_FILES['picture']['size'];
-    
-    // Validate file
-    if ($file_size > 5 * 1024 * 1024) { // 5MB limit
-        echo json_encode(['success' => false, 'message' => 'File size exceeds 5MB limit']);
+    $fileCount = count($_FILES['picture']['name']);
+    if ($fileCount > 10) {
+        echo json_encode(['success' => false, 'message' => 'You can upload up to 10 pictures.']);
         exit;
     }
 
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $file_type = mime_content_type($file_tmp);
-    
-    if (!in_array($file_type, $allowed_types)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid file type']);
-        exit;
+    $attachmentPaths = [];
+
+    for ($index = 0; $index < $fileCount; $index++) {
+        if ($_FILES['picture']['error'][$index] !== UPLOAD_ERR_OK) {
+            echo json_encode(['success' => false, 'message' => 'One or more pictures could not be uploaded.']);
+            exit;
+        }
+
+        $file_tmp = $_FILES['picture']['tmp_name'][$index];
+        $file_type = mime_content_type($file_tmp);
+        if (!in_array($file_type, $allowed_types, true)) {
+            echo json_encode(['success' => false, 'message' => 'Only JPG, PNG, GIF, and WEBP pictures are allowed.']);
+            exit;
+        }
+
+        $ext = strtolower(pathinfo($_FILES['picture']['name'][$index], PATHINFO_EXTENSION));
+        $unique_name = uniqid('report_', true) . '.' . $ext;
+        $file_path = $uploads_dir . $unique_name;
+
+        if (!move_uploaded_file($file_tmp, $file_path)) {
+            echo json_encode(['success' => false, 'message' => 'One or more pictures could not be saved.']);
+            exit;
+        }
+
+        $attachmentPaths[] = 'uploads/reports/' . $unique_name;
     }
 
-    // Generate unique filename
-    $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-    $unique_name = uniqid('report_') . '_' . time() . '.' . $ext;
-    $file_path = $uploads_dir . $unique_name;
-
-    if (move_uploaded_file($file_tmp, $file_path)) {
-        $attachments = json_encode(['uploads/reports/' . $unique_name]);
+    if ($attachmentPaths) {
+        $attachments = json_encode($attachmentPaths);
     }
 }
 

@@ -37,7 +37,27 @@ p, span, a, button, .btn, label {
   color: #333;
   border-bottom: 3px solid #0b63d6;
   padding-bottom: 10px;
-  display: inline-block;
+  display: block;
+  width: 100%;
+  margin: 18px 0 12px;
+}
+
+.main-content > .container-fluid.p-4 {
+  padding: 0 !important;
+}
+
+.main-content > .container-fluid > .mb-4,
+.main-content > .container-fluid > .row.mb-5 {
+  margin-bottom: 1rem !important;
+}
+
+.main-content > .container-fluid > .mt-5 {
+  margin-top: 1rem !important;
+}
+
+.main-content .section-title[style*="ffc107"] {
+  border-bottom-color: #ffc107 !important;
+  color: #ffc107 !important;
 }
 
 /* ===== STATISTICS CARDS ===== */
@@ -95,12 +115,12 @@ p, span, a, button, .btn, label {
 }
 
 .stat-card-success {
-  border-left-color: #28a745;
+  border-left-color: var(--color-primary);
 }
 
 .stat-card-success .stat-icon,
 .stat-card-success .stat-value {
-  color: #28a745;
+  color: var(--color-primary);
 }
 
 .stat-card-warning {
@@ -195,7 +215,7 @@ p, span, a, button, .btn, label {
 
 /* Modal Enhancements */
 .modal-header.bg-success {
-  border-bottom: 3px solid #28a745;
+  border-bottom: 3px solid var(--color-primary);
 }
 
 /* Image Preview Styles */

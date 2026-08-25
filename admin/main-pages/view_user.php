@@ -2,6 +2,42 @@
 require_once __DIR__ . '/../admin_protect.php';
 require_once __DIR__ . '/../../config/db.php';
 
+function adminUserAssetUrl($path): string
+{
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $filename = basename(str_replace('\\', '/', $path));
+  return '/safebrgy/uploads/id/' . rawurlencode($filename);
+}
+
+function adminUserMediaUrl($path, string $folder): string
+{
+  $path = trim((string) $path);
+  if ($path === '') {
+    return '';
+  }
+
+  if (filter_var($path, FILTER_VALIDATE_URL)) {
+    return $path;
+  }
+
+  $normalizedPath = str_replace('\\', '/', $path);
+  $filename = basename($normalizedPath);
+
+  if (strpos($normalizedPath, 'uploads/' . $folder . '/') === 0) {
+    return '/safebrgy/register/uploads/' . $folder . '/' . rawurlencode($filename);
+  }
+
+  return '/safebrgy/' . ltrim($normalizedPath, '/');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     $userId = $data['user_id'] ?? null;
@@ -25,6 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'message' => 'User not found']);
         exit;
     }
+
+    $profileImagePath = $user['profile_image_path'] ?: ($user['profile_image'] ?? '');
+    $coverPhotoPath = $user['cover_photo_path'] ?: ($user['cover_photo'] ?? '');
+    $profileImageUrl = adminUserMediaUrl($profileImagePath, 'profile');
+    $coverPhotoUrl = adminUserMediaUrl($coverPhotoPath, 'cover');
+    $validIdPath = adminUserAssetUrl($user['valid_id_path'] ?? '');
+    $validIdBackPath = adminUserAssetUrl($user['valid_id_back_path'] ?? '');
 
     $html = '
     <div class="row">
@@ -57,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h6>Family & Health</h6>
         <p><strong>Household Head:</strong> ' . htmlspecialchars($user['household_head'] ?? 'N/A') . '</p>
         <p><strong>Emergency Contact:</strong> ' . htmlspecialchars($user['emergency_contact_name'] ?? 'N/A') . '</p>
+        <p><strong>Emergency Contact Number:</strong> ' . htmlspecialchars($user['emergency_contact_number'] ?? 'N/A') . '</p>
         <p><strong>Family Members:</strong> ' . htmlspecialchars($user['number_of_family_member'] ?? 'N/A') . '</p>
         <p><strong>Educational Attainment:</strong> ' . htmlspecialchars($user['educational_attainment'] ?? 'N/A') . '</p>
         <p><strong>Blood Type:</strong> ' . htmlspecialchars($user['blood_type'] ?? 'N/A') . '</p>
@@ -64,10 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <div class="col-md-6">
         <h6>Documents</h6>
-        <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Valid ID</strong></p>
-        ' . ($user['valid_id_path'] ? '<div class="image-preview-container"><a href="../../' . htmlspecialchars($user['valid_id_path']) . '" target="_blank" title="Click to view full size"><img src="../../' . htmlspecialchars($user['valid_id_path']) . '" alt="Valid ID" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
-        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Profile Image</strong></p>
-        ' . ($user['profile_image_path'] ? '<div class="image-preview-container"><a href="../../' . htmlspecialchars($user['profile_image_path']) . '" target="_blank" title="Click to view full size"><img src="../../' . htmlspecialchars($user['profile_image_path']) . '" alt="Profile Image" class="image-preview" style="border-radius: 50%;"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
+        <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Front of Valid ID</strong></p>
+        ' . ($validIdPath ? '<div class="image-preview-container"><a href="' . htmlspecialchars($validIdPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdPath) . '" alt="Valid ID" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
+        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Back of Valid ID</strong></p>
+        ' . ($validIdBackPath ? '<div class="image-preview-container"><a href="' . htmlspecialchars($validIdBackPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdBackPath) . '" alt="Back of Valid ID" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
+        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Profile Picture</strong></p>
+        ' . ($profileImageUrl ? '<div class="image-preview-container"><a href="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" alt="Profile Picture" class="image-preview" style="border-radius: 50%;"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
+        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Cover Photo</strong></p>
+        ' . ($coverPhotoUrl ? '<div class="image-preview-container"><a href="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" alt="Cover Photo" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
         <p class="mt-4 pt-2 border-top"><small><strong>Registered:</strong></small><br>' . htmlspecialchars(date('M d, Y \\a\\t H:i', strtotime($user['created_at']))) . '</p>
       </div>
     </div>';

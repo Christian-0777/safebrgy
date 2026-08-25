@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 // admin_verification.php - SafeBrgy Admin User Verification
 
 $pdo = safeBrgy_db_connect();
@@ -9,7 +10,7 @@ if ($adminId) {
     $stmt = $pdo->prepare('SELECT username, email FROM users WHERE id = :id');
     $stmt->execute(['id' => $adminId]);
     $admin = $stmt->fetch();
-    $user = $admin['username'] ?? 'Admin';
+    $user = adminDisplayName($admin['username'] ?? 'Admin');
     $email = $admin['email'] ?? '';
 } else {
     $user = 'Admin';
@@ -48,7 +49,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - User Verification</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Bootstrap CSS -->
@@ -78,7 +79,7 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -95,11 +96,11 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -147,11 +148,6 @@ $totalRejected = $pdo->query('SELECT COUNT(*) FROM admin_logs WHERE action = "re
           </div>
         </div>
       </div>
-
-      <!-- ===== USER VERIFICATION TABLES ===== -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="section-title mb-0">User Accounts</h4>
-    </div>
 
     <!-- UNVERIFIED USERS SECTION -->
     <div class="mb-5">

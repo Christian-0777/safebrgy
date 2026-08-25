@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update step connectors
     document.querySelectorAll('.step-connector').forEach((el, index) => {
       if (index + 1 < stepNumber) {
-        el.style.backgroundColor = '#28a745';
+        el.style.backgroundColor = 'var(--color-primary)';
       } else {
         el.style.backgroundColor = '#dee2e6';
       }

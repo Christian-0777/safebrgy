@@ -1,8 +1,8 @@
 <?php
 /**
  * Database bootstrap for SafeBrgy.
- * Connects to MySQL, creates the safebrgy database if needed,
- * and initializes the schema from sql/safebrgy_schema.sql.
+ * Connects to the configured MySQL database and optionally initializes
+ * the schema from sql/safebrgy_schema.sql when explicitly enabled.
  */
 require_once __DIR__ . '/env.php';
 
@@ -17,12 +17,22 @@ function safeBrgy_db_connect(): PDO
         return $pdo;
     }
 
-    $dsn = sprintf('mysql:host=%s;port=%s;charset=%s', DB_HOST, DB_PORT, DB_CHARSET);
+    $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', DB_HOST, DB_PORT, DB_NAME, DB_CHARSET);
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
+
+    if (DB_SSL_CA !== '') {
+        $sslCaPath = realpath(DB_SSL_CA);
+        if ($sslCaPath === false || !is_readable($sslCaPath)) {
+            throw new RuntimeException('DB_SSL_CA must point to a readable CA certificate file.');
+        }
+
+        $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCaPath;
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = DB_SSL_VERIFY;
+    }
 
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
@@ -46,8 +56,6 @@ function safeBrgy_db_connect(): PDO
             }
         }
 
-        $pdo->exec(sprintf('USE `%s`', DB_NAME));
-
         // Ensure requests.status enum supports the full workflow statuses.
         $statusColumn = $pdo->query("SHOW COLUMNS FROM requests WHERE Field = 'status'")->fetch(PDO::FETCH_ASSOC);
         if ($statusColumn && preg_match('/^enum\((.*)\)$/', $statusColumn['Type'], $matches)) {
@@ -67,8 +75,21 @@ function safeBrgy_db_connect(): PDO
 
         // Ensure requests.date_received exists for received-status timestamps.
         $columns = $pdo->query('SHOW COLUMNS FROM requests')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('user_id', $columns, true)) {
+            $pdo->exec('ALTER TABLE requests ADD COLUMN user_id INT(11) NULL AFTER id');
+            $pdo->exec('ALTER TABLE requests ADD INDEX user_id (user_id)');
+            $pdo->exec('ALTER TABLE requests ADD CONSTRAINT requests_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL');
+            $columns[] = 'user_id';
+        }
+        $pdo->exec('UPDATE requests r INNER JOIN users u ON u.email = r.resident_email SET r.user_id = u.id WHERE r.user_id IS NULL');
         if (!in_array('date_received', $columns, true)) {
             $pdo->exec('ALTER TABLE requests ADD COLUMN date_received DATETIME NULL AFTER updated_at');
+        }
+
+        // Ensure generated report case numbers are stored without truncation.
+        $reportCaseNumber = $pdo->query("SHOW COLUMNS FROM reports WHERE Field = 'case_number'")->fetch(PDO::FETCH_ASSOC);
+        if ($reportCaseNumber && preg_match('/^varchar\\((\\d+)\\)/i', $reportCaseNumber['Type'], $matches) && (int) $matches[1] < 30) {
+            $pdo->exec('ALTER TABLE reports MODIFY case_number VARCHAR(30) NULL');
         }
 
         // Ensure existing installations have a shared cover photo field for all user roles.
@@ -113,6 +134,20 @@ function safeBrgy_db_connect(): PDO
             PRIMARY KEY (id),
             KEY idx_password_reset_user (user_id),
             CONSTRAINT password_reset_otps_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS remember_tokens (
+            id INT(11) NOT NULL AUTO_INCREMENT,
+            user_id INT(11) NOT NULL,
+            selector CHAR(32) NOT NULL,
+            token_hash CHAR(64) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY selector (selector),
+            KEY idx_remember_user (user_id),
+            KEY idx_remember_expiry (expires_at),
+            CONSTRAINT remember_tokens_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         $pdo->exec("CREATE TABLE IF NOT EXISTS barangay_settings (

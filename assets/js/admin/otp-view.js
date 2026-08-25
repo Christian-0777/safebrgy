@@ -241,7 +241,7 @@ function initializeResendButton() {
     e.preventDefault();
     
     // Make AJAX request to resend OTP
-    fetch('/safebrgy/admin/resend_otp.php', {
+    fetch('/admin/resend_otp.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

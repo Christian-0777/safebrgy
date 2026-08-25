@@ -21,6 +21,13 @@ document.getElementById('profileImage')?.addEventListener('change', (event) => {
   if (preview) preview.src = URL.createObjectURL(file);
 });
 
+document.getElementById('coverPhoto')?.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('coverPreview');
+  if (preview) preview.src = URL.createObjectURL(file);
+});
+
 document.querySelectorAll('.coming-soon').forEach((button) => {
   button.addEventListener('click', () => document.getElementById('maintenanceModal').classList.add('open'));
 });

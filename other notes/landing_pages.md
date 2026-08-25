@@ -5,7 +5,7 @@
 SafeBrgy provides two separate landing experiences for Barangay San Jose, San Luis, Pampanga:
 
 1. The **resident landing page**, served by `index.php`, introduces the barangay, explains the available services, presents the barangay officials, and gives residents a direct way to register or log in.
-2. The **admin landing page**, served by `admin_index.php`, acts as a public-facing entrance to the barangay management system and directs authorized personnel to the administrator login page.
+2. The **admin landing page**, served by `admin/index.php`, acts as a public-facing entrance to the barangay management system and directs authorized personnel to the administrator login page.
 
 The two pages share the SafeBrgy identity, the Barangay San Jose seal, a blue-based color scheme, responsive navigation, and the same general goal of making barangay services easier to access. Their content and calls to action are intentionally different. The resident page is informational and service-oriented, while the admin page is concise and access-oriented.
 

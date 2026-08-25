@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="SafeBrgy Privacy Policy">
+	<title>Privacy Policy | SafeBrgy</title>
+	<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a class="brand" href="../index.php"><img src="../assets/img/seal.png" alt="SafeBrgy seal">SafeBrgy</a>
+			<button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">Menu</button>
+			<nav class="site-nav" aria-label="Legal navigation">
+				<a href="../index.php">Home</a>
+				<a href="privacy-policy.html" aria-current="page">Privacy Policy</a>
+				<a href="terms-of-service.html">Terms of Service</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section class="page-hero">
+			<div class="container">
+				<p class="eyebrow">SafeBrgy legal information</p>
+				<h1>Privacy Policy</h1>
+				<p class="hero-summary">This policy explains how SafeBrgy collects, uses, protects, and manages information submitted through the barangay services portal.</p>
+				<p class="updated">Effective date: June 1, 2024 · Last reviewed: <span data-current-year></span></p>
+			</div>
+		</section>
+
+		<div class="page-grid">
+			<aside class="toc" aria-label="On this page">
+				<strong>On this page</strong>
+				<a href="#scope">Scope and application</a>
+				<a href="#collection">Information collected</a>
+				<a href="#use">Use and sharing</a>
+				<a href="#security">Security and retention</a>
+				<a href="#rights">Your rights</a>
+				<a href="#contact">Contact</a>
+			</aside>
+
+			<article class="policy">
+				<section id="scope">
+					<h2>1. Scope and application</h2>
+					<p>This Privacy Policy applies to registered residents, barangay officials, administrators, and other authorized users of the SafeBrgy PHP/MySQL portal. By creating an account or using a service, you acknowledge that your information will be handled as described here.</p>
+					<div class="notice"><strong>Data controller:</strong> the responsible Barangay Office administers resident records and service transactions through SafeBrgy.</div>
+				</section>
+
+				<section id="collection">
+					<h2>2. Information we collect</h2>
+					<p>We collect only information reasonably needed to verify identity, deliver barangay services, communicate with users, and protect the portal.</p>
+					<h3>Account and demographic information</h3>
+					<p>Name, address, civil status, gender, nationality, voter status, PWD or senior status, phone number, email address, profile photo, and cover photo.</p>
+					<h3>Verification media</h3>
+					<p>Government ID type and number, together with uploaded front and back ID images used for resident verification.</p>
+					<h3>Service and report information</h3>
+					<p>Requests for Barangay Clearances, Certificates of Residency, Certificates of Indigency, Business Clearances, incident or blotter reports, and attached supporting evidence.</p>
+					<h3>Technical and system records</h3>
+					<p>OTP HMAC records, two-factor authentication status, announcement read receipts, email and SMS delivery logs including <code>sms_logs</code>, and administrator action records including <code>admin_logs</code>.</p>
+				</section>
+
+				<section id="use">
+					<h2>3. How information is used</h2>
+					<ul>
+						<li>To create and verify accounts and determine resident eligibility.</li>
+						<li>To process documents, requests, reports, and follow-up validation.</li>
+						<li>To support public governance mandates and respond to safety or emergency needs.</li>
+						<li>To send account, request, announcement, email, and SMS notifications through configured SMTP and Textbee services.</li>
+						<li>To audit administrative activity, prevent abuse, and maintain portal reliability.</li>
+					</ul>
+					<p>We do not sell personal information. Information may be disclosed to authorized barangay personnel, service providers operating communications or hosting functions, or government authorities when required by law or necessary for a legitimate public function.</p>
+				</section>
+
+				<section id="security">
+					<h2>4. Security, storage, and retention</h2>
+					<p>SafeBrgy uses password hashing with <code>password_hash()</code>, prepared statements through PDO or MySQLi, role-based access controls, HMAC-hashed temporary OTPs with five-minute expiration, and web-server directory protection for uploaded sensitive media.</p>
+					<p>We retain information for as long as needed to provide services, satisfy legal and public-record obligations, resolve disputes, enforce agreements, and maintain security. Retention periods may differ by record type. When information is no longer required, it should be securely deleted, anonymized, or disposed of according to applicable records policies.</p>
+					<p>No internet transmission or storage system can be guaranteed completely secure. Users should protect their passwords and report suspected unauthorized access promptly.</p>
+				</section>
+
+				<section id="rights">
+					<h2>5. Your data privacy rights</h2>
+					<p>Subject to applicable Philippine data protection law and lawful exceptions, data subjects may exercise the right to:</p>
+					<ul>
+						<li>Receive clear information about processing and give or withdraw consent where consent is the legal basis.</li>
+						<li>Access personal information held about them.</li>
+						<li>Request correction of inaccurate or incomplete information.</li>
+						<li>Request deletion or blocking when legally appropriate.</li>
+						<li>Receive a portable copy of eligible personal data, including the portal's JSON export feature.</li>
+					</ul>
+					<p>Requests may require identity verification and may be limited where fulfillment would conflict with legal duties, public safety, another person's rights, or the integrity of an investigation.</p>
+				</section>
+
+				<section id="contact">
+					<h2>6. Questions and requests</h2>
+					<p>For privacy questions, correction or access requests, or concerns about how information is handled, contact the responsible Barangay Office through the contact details published in the SafeBrgy portal. We may update this policy when services, security practices, or legal requirements change. The latest version will be posted on this page.</p>
+				</section>
+			</article>
+		</div>
+	</main>
+
+	<footer class="footer"><div class="footer-inner"><p>&copy; <span data-current-year></span> SafeBrgy. Barangay services, connected.</p><p><a href="terms-of-service.html">Terms of Service</a></p></div></footer>
+	<script src="shared.js"></script>
+</body>
+</html>

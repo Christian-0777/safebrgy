@@ -205,7 +205,13 @@ function store_uploaded_image(array $file, string $subfolder, string $prefix, in
     ensure_upload_dirs();
 
     $filename = $prefix . '_' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
-    $destination = __DIR__ . '/../uploads/' . $subfolder . '/' . $filename;
+    $uploadBase = $subfolder === 'id' ? dirname(__DIR__) . '/../uploads' : __DIR__ . '/../uploads';
+    $destination = $uploadBase . '/' . $subfolder . '/' . $filename;
+
+    $destinationDirectory = dirname($destination);
+    if (!is_dir($destinationDirectory)) {
+        mkdir($destinationDirectory, 0755, true);
+    }
 
     if (!move_uploaded_file($file['tmp_name'], $destination)) {
         return null;

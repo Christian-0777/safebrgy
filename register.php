@@ -86,10 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $profile_image_path = '';
 
     if (isset($_FILES['valid_id']) && $_FILES['valid_id']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = __DIR__ . '/uploads/valid_ids/';
+        $upload_dir = __DIR__ . '/uploads/id/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
         $filename = uniqid() . '_' . basename($_FILES['valid_id']['name']);
-        $valid_id_path = 'uploads/valid_ids/' . $filename;
+        $valid_id_path = 'uploads/id/' . $filename;
         move_uploaded_file($_FILES['valid_id']['tmp_name'], __DIR__ . '/' . $valid_id_path);
     }
 

@@ -30,12 +30,13 @@ try {
     $pdo = safeBrgy_db_connect();
     $stmt = $pdo->prepare(
         'SELECT otp_hash FROM registration_otps
-         WHERE email = :email AND consumed_at IS NULL AND expires_at >= NOW()
+         WHERE email = :email AND consumed_at IS NULL AND expires_at >= UTC_TIMESTAMP()
          ORDER BY id DESC LIMIT 1'
     );
     $stmt->execute(['email' => $email]);
     $row = $stmt->fetch();
-} catch (PDOException $e) {
+} catch (Throwable $e) {
+    error_log('Resident OTP verification lookup failed: ' . $e->getMessage());
     json_response(false, 'Could not verify the code right now. Please try again.', [], 500);
 }
 

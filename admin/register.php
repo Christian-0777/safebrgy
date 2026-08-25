@@ -10,7 +10,7 @@ unset($_SESSION['flash_error']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/safebrgy/admin/">
+    <base href="/admin/">
     <title>SafeBrgy - Admin Registration</title>
     <link rel="stylesheet" href="../assets/css/shared/colors.css">
     <link rel="stylesheet" href="../assets/css/shared/auth.css">
@@ -31,7 +31,7 @@ unset($_SESSION['flash_error']);
               <div class="error-banner"><?php echo htmlspecialchars($flashError); ?></div>
             <?php endif; ?>
 
-            <form id="adminRegisterForm" method="POST" action="/safebrgy/admin/admin_register_process.php">
+            <form id="adminRegisterForm" method="POST" action="/admin/admin_register_process.php">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="admin@barangay.com" required>

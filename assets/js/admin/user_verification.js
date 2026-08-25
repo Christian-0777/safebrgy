@@ -48,6 +48,9 @@ function verifyUser(userId) {
     }
 
     if (data.success) {
+      const emailStatus = data.notifications?.email_sent ? 'Email sent' : 'Email failed';
+      const smsStatus = data.notifications?.sms_sent ? 'SMS sent' : 'SMS failed';
+      document.getElementById('approvalMessage').textContent = `Resident approved. ${emailStatus}; ${smsStatus}.`;
       new bootstrap.Modal(document.getElementById('approveModal')).show();
       setTimeout(() => location.reload(), 2000);
     } else {
@@ -97,6 +100,9 @@ function confirmReject() {
 
     if (data.success) {
       bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+      const emailStatus = data.notifications?.email_sent ? 'Email sent' : 'Email failed';
+      const smsStatus = data.notifications?.sms_sent ? 'SMS sent' : 'SMS failed';
+      alert(`User rejected. ${emailStatus}; ${smsStatus}.`);
       location.reload();
     } else {
       alert('Error: ' + data.message);

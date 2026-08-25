@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const forms = document.querySelectorAll('.request-form');
   const confirmOkButton = document.getElementById('confirm-ok');
   const requestsTableBody = document.getElementById('requests-table-body');
+  const copyReferenceButton = document.getElementById('copy-reference-btn');
 
   function openModal(modal) {
     if (!modal) return;
@@ -63,13 +64,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const modal = document.getElementById('modal-request-details');
       const title = document.getElementById('requestDetailsTitle');
+      const referenceNo = document.getElementById('detail-reference-no');
+      const documentType = document.getElementById('detail-document-type');
       const submittedAt = document.getElementById('detail-submitted-at');
       const purpose = document.getElementById('detail-purpose');
       const status = document.getElementById('detail-status');
 
-      if (title) {
-        title.textContent = button.dataset.documentType + ' — ' + button.dataset.referenceNo;
-      }
+      if (title) title.textContent = 'Request Details';
+      if (referenceNo) referenceNo.textContent = button.dataset.referenceNo || 'N/A';
+      if (documentType) documentType.textContent = button.dataset.documentType || 'N/A';
       if (submittedAt) {
         submittedAt.textContent = button.dataset.submittedAt || 'N/A';
       }
@@ -81,6 +84,37 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       openModal(modal);
+    });
+  }
+
+  if (copyReferenceButton) {
+    copyReferenceButton.addEventListener('click', function () {
+      const referenceElement = document.getElementById('detail-reference-no');
+      const referenceNo = referenceElement ? referenceElement.textContent.trim() : '';
+      if (!referenceNo || referenceNo === 'N/A') return;
+
+      const showCopiedState = function () {
+        copyReferenceButton.innerHTML = '<i class="fas fa-check"></i>';
+        copyReferenceButton.title = 'Copied';
+        window.setTimeout(function () {
+          copyReferenceButton.innerHTML = '<i class="fas fa-copy"></i>';
+          copyReferenceButton.title = 'Copy reference number';
+        }, 1500);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(referenceNo).then(showCopiedState);
+        return;
+      }
+
+      const temporaryInput = document.createElement('textarea');
+      temporaryInput.value = referenceNo;
+      temporaryInput.style.position = 'fixed';
+      temporaryInput.style.opacity = '0';
+      document.body.appendChild(temporaryInput);
+      temporaryInput.select();
+      if (document.execCommand('copy')) showCopiedState();
+      temporaryInput.remove();
     });
   }
 

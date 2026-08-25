@@ -118,6 +118,31 @@ body .modal-dialog {
   padding: 20px;
 }
 
+.valid-id-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.valid-id-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.valid-id-image {
+  width: 220px;
+  height: 140px;
+  object-fit: contain;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
 .form-label {
   font-weight: 600;
   margin-bottom: 8px;

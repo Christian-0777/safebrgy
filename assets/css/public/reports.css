@@ -44,7 +44,7 @@
 /* ============== STATUS TRACKER SECTION ============== */
 
 .status-tracker-section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .section-title {
@@ -81,7 +81,7 @@
 }
 
 .tracker-card.resolved {
-  border-left-color: #28a745;
+  border-left-color: var(--color-primary);
 }
 
 .tracker-card.dismissed {
@@ -103,7 +103,7 @@
 }
 
 .tracker-card.resolved .tracker-icon {
-  color: #28a745;
+  color: var(--color-primary);
 }
 
 .tracker-card.dismissed .tracker-icon {
@@ -379,6 +379,24 @@
 .detail-value {
   color: #333;
   font-size: 14px;
+}
+
+.case-number-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-case-number-btn {
+  border: 0;
+  padding: 2px 4px;
+  color: #007bff;
+  background: transparent;
+  cursor: pointer;
+}
+
+.copy-case-number-btn:hover {
+  color: #0056b3;
 }
 
 .report-detail-image {

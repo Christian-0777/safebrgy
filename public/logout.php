@@ -1,5 +1,9 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/shared/remember_me.php';
 session_start();
+
+revokeRememberMeToken(safeBrgy_db_connect());
 
 $_SESSION = [];
 
@@ -20,5 +24,5 @@ if (session_status() === PHP_SESSION_ACTIVE) {
     session_destroy();
 }
 
-header('Location: ../index.php');
+header('Location: /safebrgy/index.php');
 exit;

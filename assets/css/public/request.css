@@ -6,7 +6,7 @@
   --request-muted: var(--color-neutral-medium-gray, #6c6c6c);
   --request-accent: var(--color-primary-deep, #0b63d6);
   --request-accent-hover: var(--color-secondary-orange, #f4691f);
-  --request-success: var(--color-secondary-green, #19a964);
+  --request-success: var(--color-primary);
   --request-warning: var(--color-secondary-orange, #f4691f);
 }
 
@@ -28,7 +28,7 @@ body {
 
 .page-header {
   padding: 24px 28px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -47,7 +47,7 @@ body {
 
 .hero-card {
   padding: 24px 28px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .hero-card p {
@@ -60,7 +60,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .service-card {
@@ -261,6 +261,35 @@ body {
 
 .details-item span {
   color: var(--request-muted);
+}
+
+.reference-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-reference-btn {
+  border: 0;
+  padding: 2px 4px;
+  color: var(--request-accent);
+  background: transparent;
+  cursor: pointer;
+}
+
+.copy-reference-btn:hover {
+  color: var(--request-accent-hover);
+}
+
+.details-item-inline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.details-item-inline > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .btn-outline {

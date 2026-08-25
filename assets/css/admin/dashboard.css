@@ -49,8 +49,13 @@ p, span, a, button, .btn, label {
   font-weight: 600;
   color: #333;
   border-bottom: 3px solid #007bff;
-  padding-bottom: 10px;
-  display: inline-block;
+  padding-bottom: 6px;
+  margin: 18px 0 12px;
+  display: block;
+}
+
+.section-block {
+  margin-bottom: 18px;
 }
 
 /* ===== STATISTICS CARDS ===== */
@@ -108,12 +113,12 @@ p, span, a, button, .btn, label {
 }
 
 .stat-card-success {
-  border-left-color: #28a745;
+  border-left-color: var(--color-primary);
 }
 
 .stat-card-success .stat-icon,
 .stat-card-success .stat-value {
-  color: #28a745;
+  color: var(--color-primary);
 }
 
 .stat-card-warning {
@@ -703,7 +708,7 @@ footer a:hover {
 }
 
 .bg-success {
-  background-color: #28a745;
+  background-color: var(--color-primary);
 }
 
 .bg-danger {
@@ -723,6 +728,6 @@ footer a:hover {
 }
 
 .text-success {
-  color: #28a745;
+  color: var(--color-primary);
 }
 

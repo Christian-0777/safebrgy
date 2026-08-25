@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../admin_protect.php';
+require_once __DIR__ . '/../../includes/shared/profile_avatar.php';
 // admin_settings.php - SafeBrgy Admin Account Settings
 
 $pdo = safeBrgy_db_connect();
@@ -9,7 +10,7 @@ $barangay = [];
 $logs = [];
 
 if ($adminId) {
-  $stmt = $pdo->prepare('SELECT username, email, phone, profile_image, two_factor_enabled FROM users WHERE id = :id');
+  $stmt = $pdo->prepare('SELECT username, email, phone, profile_image, cover_photo, two_factor_enabled FROM users WHERE id = :id');
   $stmt->execute(['id' => $adminId]);
   $admin = $stmt->fetch() ?: [];
 
@@ -35,11 +36,13 @@ SQL;
   $logs = $pdo->query($logsSql)->fetchAll(PDO::FETCH_ASSOC);
 }
 
-$user = $admin['username'] ?? 'Admin';
+$user = adminDisplayName($admin['username'] ?? 'Admin');
 $email = $admin['email'] ?? '';
 $phone = $admin['phone'] ?? '';
 $profileImage = $admin['profile_image'] ?? '';
-$profileImageUrl = $profileImage ? '/' . ltrim(str_replace('\\', '/', $profileImage), '/') : '';
+$coverPhoto = $admin['cover_photo'] ?? '';
+$profileImageUrl = adminAssetUrl($profileImage);
+$coverPhotoUrl = adminAssetUrl($coverPhoto);
 $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
@@ -47,7 +50,7 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/safebrgy/admin/main-pages/">
+  <base href="/admin/main-pages/">
   <title>SafeBrgy - Admin Account Settings</title>
   <link rel="icon" type="image/png" href="../../assets/img/seal.png">
   <!-- Shared Styles -->
@@ -74,7 +77,7 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
 
     <div class="header-right">
       <div class="user-profile">
-        <div class="profile-avatar"><?php echo substr($user, 0, 1); ?></div>
+        <div class="profile-avatar"><?php echo renderProfileAvatar($user, $pdo); ?></div>
         <div class="profile-info">
           <div class="profile-name"><?php echo htmlspecialchars($user); ?></div>
           <div class="profile-role">Admin</div>
@@ -91,11 +94,11 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
+      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
+      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
+      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
+      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -128,7 +131,8 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
         <div class="panel-intro"><div class="panel-icon green"><i class="fas fa-user-cog"></i></div><div><h2>Personal account</h2><p>Keep your administrator profile and contact details current.</p></div></div>
         <form class="settings-form" method="POST" action="../update_settings.php" enctype="multipart/form-data">
           <input type="hidden" name="section" value="account">
-          <div class="profile-upload"><div class="settings-avatar large"><?php if ($profileImageUrl): ?><img id="profilePreview" src="<?php echo $e($profileImageUrl); ?>" alt="Profile photo preview"><?php else: ?><span id="profileInitial"><?php echo $e(strtoupper(substr($user, 0, 1))); ?></span><?php endif; ?></div><div><h3>Profile photo</h3><p>JPG, PNG, or WEBP. Maximum 2 MB.</p><label class="button button-secondary" for="profileImage"><i class="fas fa-camera"></i> Choose photo</label><input class="visually-hidden" type="file" id="profileImage" name="profileImage" accept="image/jpeg,image/png,image/webp"></div></div>
+          <div class="profile-upload"><div class="settings-avatar large"><?php if ($profileImageUrl): ?><img id="profilePreview" src="<?php echo $e($profileImageUrl); ?>" alt="Profile photo preview"><?php else: ?><span id="profileInitial"><?php echo $e(strtoupper(substr($user, 0, 1))); ?></span><?php endif; ?></div><div><h3>Profile photo</h3><p>JPG, PNG, or WEBP. Maximum 20 MB.</p><label class="button button-secondary" for="profileImage"><i class="fas fa-camera"></i> Choose photo</label><input class="visually-hidden" type="file" id="profileImage" name="profileImage" accept="image/jpeg,image/png,image/webp"></div></div>
+          <div class="profile-upload"><div class="settings-avatar large cover-preview"><?php if ($coverPhotoUrl): ?><img id="coverPreview" src="<?php echo $e($coverPhotoUrl); ?>" alt="Cover photo preview"><?php else: ?><span id="coverInitial"><i class="fas fa-image"></i></span><?php endif; ?></div><div><h3>Cover photo</h3><p>JPG, PNG, or WEBP. Maximum 20 MB.</p><label class="button button-secondary" for="coverPhoto"><i class="fas fa-image"></i> Choose cover</label><input class="visually-hidden" type="file" id="coverPhoto" name="coverPhoto" accept="image/jpeg,image/png,image/webp"></div></div>
           <div class="form-grid"><div class="field"><label for="fullName">Full name</label><input id="fullName" name="fullName" value="<?php echo $e($user); ?>" required></div><div class="field"><label for="email">Email address</label><input type="email" id="email" name="email" value="<?php echo $e($email); ?>" required></div><div class="field"><label for="phone">Phone number</label><input id="phone" name="phone" value="<?php echo $e($phone); ?>" required></div><div class="field"><label for="position">Position</label><input id="position" value="System Administrator" readonly></div></div>
           <div class="form-actions"><span class="form-note"><i class="fas fa-lock"></i> Your administrator details are private.</span><button class="button button-primary" type="submit"><i class="fas fa-save"></i> Save account</button></div>
         </form>
@@ -136,7 +140,7 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
 
       <section class="settings-panel" data-panel="barangay">
         <div class="panel-intro"><div class="panel-icon amber"><i class="fas fa-landmark"></i></div><div><h2>Barangay identity</h2><p>This information appears across public pages and official communications.</p></div></div>
-        <form class="settings-form" method="POST" action="../update_settings.php" enctype="multipart/form-data"><input type="hidden" name="section" value="barangay"><div class="form-grid"><div class="field"><label for="barangayName">Barangay name</label><input id="barangayName" name="barangayName" value="<?php echo $e($barangay['name'] ?? 'Barangay San Jose'); ?>" required></div><div class="field"><label for="barangayContact">Contact number</label><input id="barangayContact" name="barangayContact" value="<?php echo $e($barangay['contact_number'] ?? ''); ?>"></div><div class="field full"><label for="barangayAddress">Address</label><input id="barangayAddress" name="barangayAddress" value="<?php echo $e($barangay['address'] ?? ''); ?>"></div><div class="field"><label for="officialEmail">Official email</label><input type="email" id="officialEmail" name="officialEmail" value="<?php echo $e($barangay['official_email'] ?? ''); ?>"></div><div class="field"><label for="websiteUrl">Website URL</label><input type="url" id="websiteUrl" name="websiteUrl" value="<?php echo $e($barangay['website_url'] ?? ''); ?>" placeholder="https://"></div><div class="field full"><label for="systemDescription">System description</label><textarea id="systemDescription" name="systemDescription" rows="5"><?php echo $e($barangay['description'] ?? ''); ?></textarea></div></div><div class="form-actions"><label class="button button-secondary" for="barangayLogo"><i class="fas fa-image"></i> Upload barangay logo</label><input class="visually-hidden" type="file" id="barangayLogo" name="barangayLogo" accept="image/jpeg,image/png,image/webp"><button class="button button-primary" type="submit"><i class="fas fa-save"></i> Save barangay information</button></div></form>
+        <form class="settings-form" method="POST" action="../update_settings.php" enctype="multipart/form-data"><input type="hidden" name="section" value="barangay"><div class="form-grid"><div class="field"><label for="barangayName">Barangay name</label><input id="barangayName" name="barangayName" value="<?php echo $e($barangay['name'] ?? 'Barangay San Jose'); ?>" required></div><div class="field"><label for="barangayContact">Contact number</label><input id="barangayContact" name="barangayContact" value="<?php echo $e($barangay['contact_number'] ?? ''); ?>"></div><div class="field full"><label for="barangayAddress">Address</label><input id="barangayAddress" name="barangayAddress" value="<?php echo $e($barangay['address'] ?? ''); ?>"></div><div class="field"><label for="officialEmail">Official email</label><input type="email" id="officialEmail" name="officialEmail" value="<?php echo $e($barangay['official_email'] ?? ''); ?>"></div><div class="field"><label for="websiteUrl">Website URL</label><input type="text" inputmode="url" id="websiteUrl" name="websiteUrl" value="<?php echo $e($barangay['website_url'] ?? ''); ?>" placeholder="https://example.com"></div><div class="field full"><label for="systemDescription">System description</label><textarea id="systemDescription" name="systemDescription" rows="5"><?php echo $e($barangay['description'] ?? ''); ?></textarea></div></div><div class="form-actions"><label class="button button-secondary" for="barangayLogo"><i class="fas fa-image"></i> Upload barangay logo</label><input class="visually-hidden" type="file" id="barangayLogo" name="barangayLogo" accept="image/jpeg,image/png,image/webp"><button class="button button-primary" type="submit"><i class="fas fa-save"></i> Save barangay information</button></div></form>
       </section>
 
       <section class="settings-panel" data-panel="security">

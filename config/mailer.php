@@ -14,11 +14,11 @@ if (!defined('SAFE_BRGY_MAILER_LOADED')) {
 function getMailerConfig(): array
 {
     return [
-        'smtp_host' => getenv('SMTP_HOST') ?: '',
-        'smtp_port' => getenv('SMTP_PORT') ?: '587',
-        'smtp_username' => getenv('SMTP_USERNAME') ?: '',
-        'smtp_password' => getenv('SMTP_PASSWORD') ?: '',
-        'smtp_encryption' => getenv('SMTP_ENCRYPTION') ?: 'tls',
+        'smtp_host' => getenv('MAIL_HOST') ?: getenv('SMTP_HOST') ?: '',
+        'smtp_port' => getenv('MAIL_PORT') ?: getenv('SMTP_PORT') ?: '587',
+        'smtp_username' => getenv('MAIL_USERNAME') ?: getenv('SMTP_USERNAME') ?: '',
+        'smtp_password' => getenv('MAIL_PASSWORD') ?: getenv('SMTP_PASSWORD') ?: '',
+        'smtp_encryption' => strtolower(getenv('MAIL_ENCRYPTION') ?: getenv('SMTP_ENCRYPTION') ?: 'tls'),
         'mail_from_address' => getenv('MAIL_FROM_ADDRESS') ?: 'no-reply@safebrgy.local',
         'mail_from_name' => getenv('MAIL_FROM_NAME') ?: 'SafeBRGY',
         'sendgrid_api_key' => getenv('SENDGRID_API_KEY') ?: '',
@@ -98,7 +98,9 @@ function sendMail(string $recipient, string $subject, string $htmlBody, string $
             $mail->SMTPAuth = true;
             $mail->Username = $config['smtp_username'];
             $mail->Password = $config['smtp_password'];
-            $mail->SMTPSecure = $config['smtp_encryption'] ?: PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPSecure = $config['smtp_encryption'] === 'ssl'
+                ? PHPMailer::ENCRYPTION_SMTPS
+                : PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = (int) $config['smtp_port'];
             $mail->CharSet = 'UTF-8';
             $mail->setFrom($config['mail_from_address'], $config['mail_from_name']);

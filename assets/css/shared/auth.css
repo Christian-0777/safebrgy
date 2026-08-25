@@ -274,6 +274,7 @@ button {
     display: flex;
     gap: 8px;
     justify-content: center;
+    margin: 24px 0;
 }
 
 .otp-input {
@@ -283,5 +284,39 @@ button {
     border: 2px solid var(--form-border);
     text-align: center;
     font-size: 20px;
+}
+
+.otp-input.error {
+    border-color: var(--color-danger);
+}
+
+.secondary-button {
+    width: auto;
+    padding: 10px 18px;
+    margin: 0 auto 14px;
+    background: transparent;
+    color: var(--button-primary);
+    border: 2px solid var(--form-border);
+    font-size: 14px;
+}
+
+.secondary-button:hover {
+    border-color: var(--button-primary);
+    background: var(--highlight-background);
+}
+
+.signup-link p {
+    margin-bottom: 10px;
+}
+
+.loading-state {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 14px;
+    font-size: 14px;
+}
+
+.hide {
+    display: none !important;
 }
 

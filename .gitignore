@@ -42,3 +42,5 @@ yarn-error.log*
 # PHPUnit / Testing
 .phpunit.result.cache
 coverage/
+
+*.zip

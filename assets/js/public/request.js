@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmOkButton = document.getElementById('confirm-ok');
   const requestsTableBody = document.getElementById('requests-table-body');
   const copyReferenceButton = document.getElementById('copy-reference-btn');
+  const residencyDate = document.getElementById('residency-date');
+  const residencyYears = document.getElementById('residency-years');
 
   function openModal(modal) {
     if (!modal) return;
@@ -133,6 +135,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  function updateResidencyYears() {
+    if (!residencyDate || !residencyYears || !residencyDate.value) return;
+
+    const parts = residencyDate.value.split('-').map(Number);
+    const started = new Date(parts[0], parts[1] - 1, 1);
+    const today = new Date();
+    let years = today.getFullYear() - started.getFullYear();
+    if (today.getMonth() < started.getMonth()) years -= 1;
+    residencyYears.value = Math.max(0, years);
+  }
+
+  if (residencyDate) {
+    residencyDate.addEventListener('change', updateResidencyYears);
+    updateResidencyYears();
+  }
+
   forms.forEach(function (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -157,8 +175,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Submitting...';
+      submitButton.dataset.keepLoading = 'true';
+      if (window.setButtonLoading) {
+        window.setButtonLoading(submitButton);
+      }
     }
 
     formData.append('document_type', docType);
@@ -176,8 +196,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = 'Submit Request';
+          if (window.clearButtonLoading) {
+            window.clearButtonLoading(submitButton);
+          }
         }
 
         if (data.success) {
@@ -201,8 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = 'Submit Request';
+          if (window.clearButtonLoading) {
+            window.clearButtonLoading(submitButton);
+          }
         }
         if (alertBox) {
           alertBox.textContent = 'Could not reach the server. Please try again.';

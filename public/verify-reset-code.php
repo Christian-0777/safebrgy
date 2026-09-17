@@ -15,7 +15,7 @@ if (!preg_match('/^\d{6}$/', $code)) {
 }
 
 $pdo = safeBrgy_db_connect();
-$stmt = $pdo->prepare('SELECT id, otp_hash FROM password_reset_otps WHERE id = (SELECT MAX(id) FROM password_reset_otps WHERE user_id = :user_id AND consumed_at IS NULL AND expires_at >= NOW()) AND user_id = :same_user');
+$stmt = $pdo->prepare('SELECT id, otp_hash FROM password_reset_otps WHERE id = (SELECT MAX(id) FROM password_reset_otps WHERE user_id = :user_id AND consumed_at IS NULL AND expires_at >= UTC_TIMESTAMP()) AND user_id = :same_user');
 $stmt->execute(['user_id' => $_SESSION['password_reset_user_id'], 'same_user' => $_SESSION['password_reset_user_id']]);
 $reset = $stmt->fetch();
 

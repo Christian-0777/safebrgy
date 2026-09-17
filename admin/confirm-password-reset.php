@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/mailer.php';
 session_start();
 header('Content-Type: application/json');
 
@@ -49,6 +50,10 @@ try {
         : 'Unable to reset your password right now.';
     echo json_encode(['success' => false, 'message' => $message]);
     exit;
+}
+
+if (!sendPasswordResetSuccessEmail($admin['email'])) {
+    error_log('Unable to send password reset success email to ' . $admin['email']);
 }
 
 session_regenerate_id(true);

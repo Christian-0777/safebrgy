@@ -458,10 +458,10 @@ if ($rememberedRole === 'admin') {
     </div>
   </div>
 
-  <script src="assets/js/public/modals/login.js"></script>
+  <script src="assets/js/public/modals/login.js?v=20260912"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/js/shared/logo_functions.js"></script>
-  <script src="assets/js/shared/layout_functions.js"></script>
-  <script src="assets/js/shared/cookie-consent.js?v=2"></script>
+  <script src="assets/js/shared/logo_functions.js?v=20260912"></script>
+  <script src="assets/js/shared/layout_functions.js?v=20260912"></script>
+  <script src="assets/js/shared/cookie-consent.js?v=20260912"></script>
 </body>
 </html>

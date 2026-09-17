@@ -96,6 +96,6 @@ if (!empty($_SESSION['user'])) {
             </section>
         </div>
     </div>
-    <script src="../assets/js/public/reset-password.js"></script>
+    <script src="../assets/js/public/reset-password.js?v=20260912"></script>
 </body>
 </html>

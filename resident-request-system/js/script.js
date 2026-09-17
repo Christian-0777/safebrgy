@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const indigencyPurpose  = document.getElementById('indigency-purpose');
   const indigencyOtherWrap = document.getElementById('indigency-other-wrap');
   const indigencyOtherInput = document.getElementById('indigency-other');
+  const residencyDate = document.getElementById('residency-date');
+  const residencyYears = document.getElementById('residency-years');
 
   if (indigencyPurpose) {
     indigencyPurpose.addEventListener('change', function () {
@@ -61,6 +63,22 @@ document.addEventListener('DOMContentLoaded', function () {
         indigencyOtherInput.value = '';
       }
     });
+  }
+
+  function updateResidencyYears() {
+    if (!residencyDate || !residencyYears || !residencyDate.value) return;
+
+    const parts = residencyDate.value.split('-').map(Number);
+    const started = new Date(parts[0], parts[1] - 1, 1);
+    const today = new Date();
+    let years = today.getFullYear() - started.getFullYear();
+    if (today.getMonth() < started.getMonth()) years -= 1;
+    residencyYears.value = Math.max(0, years);
+  }
+
+  if (residencyDate) {
+    residencyDate.addEventListener('change', updateResidencyYears);
+    updateResidencyYears();
   }
 
   /* ---------------------------------------------------------

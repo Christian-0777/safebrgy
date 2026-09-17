@@ -55,6 +55,99 @@ a { color: inherit; }
 .btn-primary:hover, .service-card button:hover { background: var(--color-primary-dark) !important; }
 .btn-outline-primary { border-color: var(--color-primary) !important; color: var(--color-primary) !important; }
 .btn-outline-primary:hover { background: var(--color-primary) !important; color: #fff !important; }
+.btn,
+button,
+input[type="submit"],
+input[type="button"],
+a.btn {
+  position: relative;
+  overflow: hidden;
+  transition: opacity .2s ease, transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.btn.is-loading,
+button.is-loading,
+input[type="submit"].is-loading,
+input[type="button"].is-loading,
+a.btn.is-loading {
+  pointer-events: none;
+  opacity: .96;
+  min-width: 62px;
+}
+.btn-loader-label,
+button .btn-loader-label,
+input[type="submit"] .btn-loader-label,
+input[type="button"] .btn-loader-label,
+a.btn .btn-loader-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s ease;
+}
+.btn.is-loading .btn-loader-label,
+button.is-loading .btn-loader-label,
+input[type="submit"].is-loading .btn-loader-label,
+input[type="button"].is-loading .btn-loader-label,
+a.btn.is-loading .btn-loader-label {
+  opacity: 0;
+  visibility: hidden;
+}
+.btn-loader-dots,
+button .btn-loader-dots,
+input[type="submit"] .btn-loader-dots,
+input[type="button"] .btn-loader-dots,
+a.btn .btn-loader-dots {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity .15s ease .08s;
+}
+.btn.is-loading .btn-loader-dots,
+button.is-loading .btn-loader-dots,
+input[type="submit"].is-loading .btn-loader-dots,
+input[type="button"].is-loading .btn-loader-dots,
+a.btn.is-loading .btn-loader-dots {
+  opacity: 1;
+}
+.btn-loader-dots span,
+button .btn-loader-dots span,
+input[type="submit"] .btn-loader-dots span,
+input[type="button"] .btn-loader-dots span,
+a.btn .btn-loader-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  animation: safeBtnBounce 1s infinite ease-in-out;
+}
+.btn-loader-dots span:nth-child(2),
+button .btn-loader-dots span:nth-child(2),
+input[type="submit"] .btn-loader-dots span:nth-child(2),
+input[type="button"] .btn-loader-dots span:nth-child(2),
+a.btn .btn-loader-dots span:nth-child(2) {
+  animation-delay: .15s;
+}
+.btn-loader-dots span:nth-child(3),
+button .btn-loader-dots span:nth-child(3),
+input[type="submit"] .btn-loader-dots span:nth-child(3),
+input[type="button"] .btn-loader-dots span:nth-child(3),
+a.btn .btn-loader-dots span:nth-child(3) {
+  animation-delay: .3s;
+}
+@keyframes safeBtnBounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
 .form-label, label { color: var(--color-text); font-weight: 700; }
 .form-control, .form-select, textarea, input { border: 1px solid var(--color-border) !important; border-radius: 8px !important; color: var(--color-text); }
 .form-control:focus, .form-select:focus, textarea:focus, input:focus { border-color: var(--color-primary) !important; box-shadow: 0 0 0 3px rgba(11,99,214,.14) !important; }

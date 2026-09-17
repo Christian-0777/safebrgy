@@ -96,26 +96,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
     <div class="row mt-3">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <h6>Family & Health</h6>
-        <p><strong>Household Head:</strong> ' . htmlspecialchars($user['household_head'] ?? 'N/A') . '</p>
-        <p><strong>Emergency Contact:</strong> ' . htmlspecialchars($user['emergency_contact_name'] ?? 'N/A') . '</p>
-        <p><strong>Emergency Contact Number:</strong> ' . htmlspecialchars($user['emergency_contact_number'] ?? 'N/A') . '</p>
-        <p><strong>Family Members:</strong> ' . htmlspecialchars($user['number_of_family_member'] ?? 'N/A') . '</p>
-        <p><strong>Educational Attainment:</strong> ' . htmlspecialchars($user['educational_attainment'] ?? 'N/A') . '</p>
-        <p><strong>Blood Type:</strong> ' . htmlspecialchars($user['blood_type'] ?? 'N/A') . '</p>
-        <p><strong>Disabilities:</strong> ' . htmlspecialchars($user['disabilities'] ?? 'None') . '</p>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Household Head:</strong> ' . htmlspecialchars($user['household_head'] ?? 'N/A') . '</p>
+            <p><strong>Emergency Contact:</strong> ' . htmlspecialchars($user['emergency_contact_name'] ?? 'N/A') . '</p>
+            <p><strong>Emergency Contact Number:</strong> ' . htmlspecialchars($user['emergency_contact_number'] ?? 'N/A') . '</p>
+            <p><strong>Family Members:</strong> ' . htmlspecialchars($user['number_of_family_member'] ?? 'N/A') . '</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Educational Attainment:</strong> ' . htmlspecialchars($user['educational_attainment'] ?? 'N/A') . '</p>
+            <p><strong>Blood Type:</strong> ' . htmlspecialchars($user['blood_type'] ?? 'N/A') . '</p>
+            <p><strong>Disabilities:</strong> ' . htmlspecialchars($user['disabilities'] ?? 'None') . '</p>
+          </div>
+        </div>
       </div>
-      <div class="col-md-6">
+    </div>
+    <div class="row mt-4">
+      <div class="col-md-12">
         <h6>Documents</h6>
-        <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Front of Valid ID</strong></p>
-        ' . ($validIdPath ? '<div class="image-preview-container"><a href="' . htmlspecialchars($validIdPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdPath) . '" alt="Valid ID" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
-        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Back of Valid ID</strong></p>
-        ' . ($validIdBackPath ? '<div class="image-preview-container"><a href="' . htmlspecialchars($validIdBackPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdBackPath) . '" alt="Back of Valid ID" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
-        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Profile Picture</strong></p>
-        ' . ($profileImageUrl ? '<div class="image-preview-container"><a href="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" alt="Profile Picture" class="image-preview" style="border-radius: 50%;"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
-        <p class="mb-2 mt-4"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Cover Photo</strong></p>
-        ' . ($coverPhotoUrl ? '<div class="image-preview-container"><a href="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" alt="Cover Photo" class="image-preview"></a></div>' : '<p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p>') . '
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Front of Valid ID</strong></p>
+            ' . ($validIdPath ? '<div class="document-preview-container"><a href="' . htmlspecialchars($validIdPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdPath) . '" alt="Valid ID" class="document-preview"></a></div>' : '<div class="document-preview-container bg-light d-flex align-items-center justify-content-center"><p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p></div>') . '
+          </div>
+          <div class="col-md-6">
+            <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Back of Valid ID</strong></p>
+            ' . ($validIdBackPath ? '<div class="document-preview-container"><a href="' . htmlspecialchars($validIdBackPath) . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($validIdBackPath) . '" alt="Back of Valid ID" class="document-preview"></a></div>' : '<div class="document-preview-container bg-light d-flex align-items-center justify-content-center"><p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p></div>') . '
+          </div>
+          <div class="col-md-6">
+            <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Profile Picture</strong></p>
+            ' . ($profileImageUrl ? '<div class="document-preview-container"><a href="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($profileImageUrl, ENT_QUOTES, 'UTF-8') . '" alt="Profile Picture" class="document-preview"></a></div>' : '<div class="document-preview-container bg-light d-flex align-items-center justify-content-center"><p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p></div>') . '
+          </div>
+          <div class="col-md-6">
+            <p class="mb-2"><strong style="text-transform: uppercase; font-size: 11px; color: #666; letter-spacing: 0.5px;">Cover Photo</strong></p>
+            ' . ($coverPhotoUrl ? '<div class="document-preview-container"><a href="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" title="Click to view full size"><img src="' . htmlspecialchars($coverPhotoUrl, ENT_QUOTES, 'UTF-8') . '" alt="Cover Photo" class="document-preview"></a></div>' : '<div class="document-preview-container bg-light d-flex align-items-center justify-content-center"><p class="text-muted fst-italic" style="font-size: 12px;">Not uploaded</p></div>') . '
+          </div>
+        </div>
         <p class="mt-4 pt-2 border-top"><small><strong>Registered:</strong></small><br>' . htmlspecialchars(date('M d, Y \\a\\t H:i', strtotime($user['created_at']))) . '</p>
       </div>
     </div>';

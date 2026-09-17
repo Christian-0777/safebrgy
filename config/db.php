@@ -4,6 +4,7 @@
  * Connects to the configured MySQL database and optionally initializes
  * the schema from sql/safebrgy_schema.sql when explicitly enabled.
  */
+date_default_timezone_set('UTC');
 require_once __DIR__ . '/env.php';
 
 if (!defined('SAFE_BRGY_DB_LOADED')) {
@@ -36,6 +37,7 @@ function safeBrgy_db_connect(): PDO
 
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        $pdo->exec("SET SESSION time_zone = '+00:00'");
         $schemaFile = __DIR__ . '/../sql/safebrgy_schema.sql';
         if (DB_INIT_SCHEMA && file_exists($schemaFile)) {
             $sql = file_get_contents($schemaFile);

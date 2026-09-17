@@ -205,12 +205,13 @@ $requests = getAllRequests($conn);
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="residency-years">Years of Residency *</label>
-            <input type="number" id="residency-years" name="years_of_residency" min="0" required>
+            <label for="residency-date">Month/Year Started Living in Barangay *</label>
+            <input type="month" id="residency-date" name="date_started" required>
           </div>
           <div class="form-group">
-            <label for="residency-date">Date Started Living in Barangay *</label>
-            <input type="date" id="residency-date" name="date_started" required>
+            <label for="residency-years">Years of Residency</label>
+            <input type="number" id="residency-years" name="years_of_residency" min="0" readonly>
+            <span class="hint">Calculated from the selected month and year.</span>
           </div>
         </div>
         <div class="form-group">
@@ -384,6 +385,6 @@ $requests = getAllRequests($conn);
   </div>
 </div>
 
-<script src="js/script.js"></script>
+<script src="js/script.js?v=20260912"></script>
 </body>
 </html>

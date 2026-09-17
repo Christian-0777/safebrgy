@@ -74,7 +74,7 @@ $masked_target = $_SESSION['masked_target'] ?? 'your registered account';
       </div>
     </div>
   </div>
-<script src="../assets/js/admin/otp-view.js"></script>
+<script src="../assets/js/admin/otp-view.js?v=20260912"></script>
 
 </body>
 </html>

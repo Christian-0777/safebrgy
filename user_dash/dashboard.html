@@ -15,6 +15,7 @@
 <body>
 
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<div class="sidebar-backdrop" id="rightSidebarBackdrop"></div>
 
 <aside class="sidebar" id="sidebar">
   <div class="brand">
@@ -86,6 +87,9 @@
       <button class="icon-btn position-relative">
         <i class="bi bi-bell-fill"></i>
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background:var(--danger);width:9px;height:9px;padding:0;"></span>
+      </button>
+      <button class="icon-btn" id="rightSidebarToggle" aria-label="Toggle team panel">
+        <i class="bi bi-layout-sidebar-inset-reverse fs-6"></i>
       </button>
       <div class="dropdown">
         <button class="sidebar-avatar avatar-btn d-flex" style="background:var(--accent);" type="button" data-bs-toggle="dropdown" aria-expanded="false">JD</button>
@@ -160,7 +164,7 @@
     </div>
 
     <div class="row g-3 mb-4">
-      <div class="col-lg-8">
+      <div class="col-12">
         <div class="card-clean p-3 p-md-4 h-100">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
@@ -173,42 +177,7 @@
               <option>This year</option>
             </select>
           </div>
-          <canvas id="revenueChart" height="130"></canvas>
-        </div>
-      </div>
-
-      <div class="col-lg-4">
-        <div class="card-clean p-3 p-md-4 h-100">
-          <h2 class="h6 mb-3">Recent activity</h2>
-
-          <div class="activity-item">
-            <span class="activity-dot" style="background:var(--success);"></span>
-            <div>
-              <div class="small fw-semibold">New order #4021 placed</div>
-              <div class="text-muted-custom" style="font-size:.75rem;">2 minutes ago</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <span class="activity-dot" style="background:var(--accent-2);"></span>
-            <div>
-              <div class="small fw-semibold">Payment pending for #4018</div>
-              <div class="text-muted-custom" style="font-size:.75rem;">18 minutes ago</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <span class="activity-dot" style="background:#2E5AAC;"></span>
-            <div>
-              <div class="small fw-semibold">New customer signed up</div>
-              <div class="text-muted-custom" style="font-size:.75rem;">1 hour ago</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <span class="activity-dot" style="background:var(--danger);"></span>
-            <div>
-              <div class="small fw-semibold">Order #4009 refunded</div>
-              <div class="text-muted-custom" style="font-size:.75rem;">3 hours ago</div>
-            </div>
-          </div>
+          <canvas id="revenueChart" height="90"></canvas>
         </div>
       </div>
     </div>
@@ -274,9 +243,119 @@
   </main>
 </div>
 
+<aside class="right-sidebar" id="rightSidebar">
+  <div class="rs-inner">
+
+    <div class="rs-section">
+      <div class="rs-section-head">
+        <span class="rs-section-label">Online now</span>
+        <span class="rs-count-chip">4</span>
+      </div>
+
+      <div class="rs-team-list">
+        <a href="#" class="rs-team-item">
+          <span class="rs-avatar-wrap">
+            <span class="rs-avatar" style="background:var(--accent);">SC</span>
+            <span class="rs-status-dot rs-online" title="Online"></span>
+          </span>
+          <span class="rs-team-info">
+            <span class="rs-team-name">Sarah Chen</span>
+            <span class="rs-team-role">Product Design</span>
+          </span>
+        </a>
+        <a href="#" class="rs-team-item">
+          <span class="rs-avatar-wrap">
+            <span class="rs-avatar" style="background:#2E5AAC;">MB</span>
+            <span class="rs-status-dot rs-online" title="Online"></span>
+          </span>
+          <span class="rs-team-info">
+            <span class="rs-team-name">Marcus Bell</span>
+            <span class="rs-team-role">Engineering</span>
+          </span>
+        </a>
+        <a href="#" class="rs-team-item">
+          <span class="rs-avatar-wrap">
+            <span class="rs-avatar" style="background:var(--accent-2);">PP</span>
+            <span class="rs-status-dot rs-away" title="Away"></span>
+          </span>
+          <span class="rs-team-info">
+            <span class="rs-team-name">Priya Patel</span>
+            <span class="rs-team-role">Support Lead</span>
+          </span>
+        </a>
+        <a href="#" class="rs-team-item">
+          <span class="rs-avatar-wrap">
+            <span class="rs-avatar" style="background:#2F9E5B;">LK</span>
+            <span class="rs-status-dot rs-online" title="Online"></span>
+          </span>
+          <span class="rs-team-info">
+            <span class="rs-team-name">Lena Kowalski</span>
+            <span class="rs-team-role">Marketing</span>
+          </span>
+        </a>
+        <a href="#" class="rs-team-item">
+          <span class="rs-avatar-wrap">
+            <span class="rs-avatar" style="background:#64748B;">DF</span>
+            <span class="rs-status-dot rs-offline" title="Offline"></span>
+          </span>
+          <span class="rs-team-info">
+            <span class="rs-team-name">Diego Fernandez</span>
+            <span class="rs-team-role">Operations</span>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="rs-section">
+      <div class="rs-section-head">
+        <span class="rs-section-label">Recent activity</span>
+      </div>
+
+      <div class="rs-activity-list">
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--success);"></span>
+          <div class="activity-text">
+            <div class="small fw-semibold">New order #4021 placed</div>
+            <div class="text-muted-custom" style="font-size:.75rem;">2 minutes ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--accent-2);"></span>
+          <div class="activity-text">
+            <div class="small fw-semibold">Payment pending for #4018</div>
+            <div class="text-muted-custom" style="font-size:.75rem;">18 minutes ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:#2E5AAC;"></span>
+          <div class="activity-text">
+            <div class="small fw-semibold">New customer signed up</div>
+            <div class="text-muted-custom" style="font-size:.75rem;">1 hour ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--danger);"></span>
+          <div class="activity-text">
+            <div class="small fw-semibold">Order #4009 refunded</div>
+            <div class="text-muted-custom" style="font-size:.75rem;">3 hours ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:#2F9E5B;"></span>
+          <div class="activity-text">
+            <div class="small fw-semibold">Product "Aria Lamp" restocked</div>
+            <div class="text-muted-custom" style="font-size:.75rem;">5 hours ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
-<script src="script.js"></script>
+<script src="script.js?v=20260912"></script>
 
 </body>
 </html>

@@ -31,7 +31,7 @@ try {
     
     // Validate required fields
     $errors = [];
-    if (empty($reportType) || !in_array($reportType, ['Incident', 'Lost Property', 'Blotter'])) {
+    if (empty($reportType) || !in_array($reportType, ['Incident', 'Lost Property', 'Public Concerns', 'Blotter'], true)) {
         $errors[] = 'Invalid report type';
     }
     if (empty($title)) {

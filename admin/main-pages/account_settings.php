@@ -179,11 +179,11 @@ $e = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8')
   </div>
 
 <!-- Shared JS -->
-<script src="../../assets/js/shared/logo_functions.js"></script>
-<script src="../../assets/js/shared/shared-header.js"></script>
-<script src="../../assets/js/shared/shared-sidebar.js"></script>
-<script src="../../assets/js/shared/layout_functions.js"></script>
+<script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
+<script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
+<script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
+<script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
 <!-- Page-specific JS -->
-<script src="../../assets/js/admin/account_settings.js"></script>
+<script src="../../assets/js/admin/account_settings.js?v=20260912"></script>
 </body>
 </html>

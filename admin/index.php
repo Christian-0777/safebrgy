@@ -91,8 +91,8 @@ if ($rememberedRole === 'resident') {
     </div>
   </div>
 
-  <script src="../assets/js/shared/logo_functions.js"></script>
-  <script src="../assets/admin_landing.js"></script>
-  <script src="../assets/js/shared/cookie-consent.js?v=2"></script>
+  <script src="../assets/js/shared/logo_functions.js?v=20260912"></script>
+  <script src="../assets/admin_landing.js?v=20260912"></script>
+  <script src="../assets/js/shared/cookie-consent.js?v=20260912"></script>
 </body>
 </html>

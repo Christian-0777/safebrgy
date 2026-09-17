@@ -220,6 +220,16 @@ function sendAdminOtpEmail(string $recipient, string $otpCode): bool
     return sendMail($recipient, $subject, $htmlBody, $plainBody);
 }
 
+function sendPasswordResetSuccessEmail(string $recipient): bool
+{
+    $subject = 'SafeBRGY password reset successful';
+    $message = 'Your SafeBRGY account password is succesfully reseted.';
+    $htmlBody = '<p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>';
+    $plainBody = $message;
+
+    return sendMail($recipient, $subject, $htmlBody, $plainBody);
+}
+
 function sendRequestStatusEmail(string $recipient, string $residentName, string $requestNumber, string $documentType, string $newStatus, string $rejectionReason = ''): bool
 {
     $name = htmlspecialchars($residentName, ENT_QUOTES, 'UTF-8');

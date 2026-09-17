@@ -15,7 +15,7 @@ $user = $_SESSION['user'];
 $userId = $user['id'] ?? null;
 $name = $user['name'] ?? 'Resident';
 $requestedReportType = $_GET['report_type'] ?? '';
-$requestedReportType = in_array($requestedReportType, ['Incident', 'Lost Property'], true)
+$requestedReportType = in_array($requestedReportType, ['Incident', 'Lost Property', 'Public Concerns'], true)
   ? $requestedReportType
   : '';
 
@@ -297,6 +297,7 @@ if ($userId) {
                 <option value="">Select a report type</option>
                 <option value="Incident"<?php echo $requestedReportType === 'Incident' ? ' selected' : ''; ?>>Incident</option>
                 <option value="Lost Property"<?php echo $requestedReportType === 'Lost Property' ? ' selected' : ''; ?>>Lost Property</option>
+                <option value="Public Concerns"<?php echo $requestedReportType === 'Public Concerns' ? ' selected' : ''; ?>>Public Concerns</option>
                 <option value="Blotter">Blotter</option>
               </select>
             </div>
@@ -370,10 +371,10 @@ if ($userId) {
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Shared JS -->
-<script src="../../assets/js/shared/logo_functions.js"></script>
-<script src="../../assets/js/shared/shared-header.js"></script>
-<script src="../../assets/js/shared/shared-sidebar.js"></script><script src="../../assets/js/shared/layout_functions.js"></script><!-- Page-specific JS -->
-<script src="../../assets/js/shared/loading-overlay.js"></script>
-<script src="../../assets/js/public/reports.js"></script>
+<script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
+<script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
+<script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script><script src="../../assets/js/shared/layout_functions.js?v=20260912"></script><!-- Page-specific JS -->
+<script src="../../assets/js/shared/loading-overlay.js?v=20260912"></script>
+<script src="../../assets/js/public/reports.js?v=20260912"></script>
 </body>
 </html>

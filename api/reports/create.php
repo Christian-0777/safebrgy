@@ -24,7 +24,7 @@ if (!$report_type || !$title || !$description) {
 }
 
 // Validate report type
-if (!in_array($report_type, ['Incident', 'Lost Property', 'Blotter'])) {
+if (!in_array($report_type, ['Incident', 'Lost Property', 'Public Concerns', 'Blotter'], true)) {
     echo json_encode(['success' => false, 'message' => 'Invalid report type']);
     exit;
 }

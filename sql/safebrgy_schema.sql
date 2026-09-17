@@ -161,7 +161,7 @@ CREATE TABLE `reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `case_number` varchar(30) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `report_type` enum('Incident','Lost Property','Blotter') NOT NULL,
+  `report_type` enum('Incident','Lost Property','Blotter', 'Public Concerns') NOT NULL,
   `title` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,

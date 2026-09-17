@@ -4,6 +4,10 @@
   var backdrop = document.getElementById('sidebarBackdrop');
   var toggleBtn = document.getElementById('sidebarToggle');
 
+  var rightSidebar = document.getElementById('rightSidebar');
+  var rightBackdrop = document.getElementById('rightSidebarBackdrop');
+  var rightToggleBtn = document.getElementById('rightSidebarToggle');
+
   function isMobile(){
     return window.innerWidth < 992;
   }
@@ -23,15 +27,34 @@
     backdrop.classList.remove('show');
   }
 
+  function toggleRightSidebar(){
+    if(isMobile()){
+      rightSidebar.classList.toggle('show');
+      rightBackdrop.classList.toggle('show');
+    } else {
+      rightSidebar.classList.toggle('collapsed');
+      mainWrapper.classList.toggle('rs-collapsed');
+    }
+  }
+
+  function closeMobileRightSidebar(){
+    rightSidebar.classList.remove('show');
+    rightBackdrop.classList.remove('show');
+  }
+
   function applyDefaultState(){
     if(isMobile()){
-      // Mobile default: sidebar stays hidden until the user opens it.
+      // Mobile default: both sidebars stay hidden until the user opens them.
       sidebar.classList.remove('collapsed');
       mainWrapper.classList.remove('collapsed');
+      rightSidebar.classList.remove('collapsed');
+      mainWrapper.classList.remove('rs-collapsed');
     } else {
-      // Desktop default: sidebar stays visible, off-canvas classes cleared.
+      // Desktop default: sidebars stay visible, off-canvas classes cleared.
       sidebar.classList.remove('show');
       backdrop.classList.remove('show');
+      rightSidebar.classList.remove('show');
+      rightBackdrop.classList.remove('show');
     }
   }
 
@@ -39,6 +62,9 @@
 
   toggleBtn.addEventListener('click', toggleSidebar);
   backdrop.addEventListener('click', closeMobileSidebar);
+
+  rightToggleBtn.addEventListener('click', toggleRightSidebar);
+  rightBackdrop.addEventListener('click', closeMobileRightSidebar);
 
   document.querySelectorAll('.nav-item-custom').forEach(function(item){
     item.addEventListener('click', function(e){

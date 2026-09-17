@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const reportButtons = document.querySelectorAll('.btn-view-report');
 
   const requestedReportType = new URLSearchParams(window.location.search).get('report_type');
-  if (requestedReportType === 'Incident' || requestedReportType === 'Lost Property') {
+  if (['Incident', 'Lost Property', 'Public Concerns'].includes(requestedReportType)) {
     if (reportType) {
       reportType.value = requestedReportType;
     }
@@ -143,6 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
     createReportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const submitButton = createReportForm.querySelector('button[type="submit"]');
+      if (submitButton && window.setButtonLoading) {
+        submitButton.dataset.keepLoading = 'true';
+        window.setButtonLoading(submitButton);
+      }
+
       if (window.showLoadingOverlay) {
         window.showLoadingOverlay();
       }
@@ -171,11 +177,20 @@ document.addEventListener('DOMContentLoaded', function() {
             location.reload();
           }, 1000);
         } else {
+          if (window.hideLoadingOverlay) {
+            window.hideLoadingOverlay();
+          }
+          if (submitButton && window.clearButtonLoading) {
+            window.clearButtonLoading(submitButton);
+          }
           alert('Error: ' + (data.message || 'Failed to create report'));
         }
       } catch (error) {
         if (window.hideLoadingOverlay) {
           window.hideLoadingOverlay();
+        }
+        if (submitButton && window.clearButtonLoading) {
+          window.clearButtonLoading(submitButton);
         }
         console.error('Error:', error);
         alert('An error occurred while creating the report');

@@ -3,7 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Existing code can stay
 });
 
-const verificationEndpoint = '/safebrgy/admin';
+const verificationScript = Array.from(document.scripts).find(script =>
+  script.src.includes('/assets/js/admin/user_verification.js')
+);
+const applicationRoot = verificationScript
+  ? new URL(verificationScript.src).pathname.split('/assets/')[0]
+  : '';
+const verificationEndpoint = `${window.location.origin}${applicationRoot}/admin`;
 
 function viewUser(userId) {
   fetch(`${verificationEndpoint}/view_user`, {

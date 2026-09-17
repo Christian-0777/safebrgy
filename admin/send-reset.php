@@ -27,7 +27,7 @@ if (!$admin) {
 
 $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 $otpHash = hash_hmac('sha256', $otp, $email);
-$expiresAt = date('Y-m-d H:i:s', time() + 300);
+$expiresAt = gmdate('Y-m-d H:i:s', time() + 300);
 
 try {
     $pdo->beginTransaction();

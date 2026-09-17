@@ -31,13 +31,13 @@ $hasUserIdColumn = in_array('user_id', $requestsColumns, true);
 $totalResidents = $pdo->query('SELECT COUNT(*) FROM residents r JOIN users u ON r.user_id = u.id WHERE u.is_verified = 1')->fetchColumn();
 
 // Total Registered Voters
-$totalVoters = $pdo->query("SELECT COUNT(*) FROM residents WHERE voter_status = 'Yes'")->fetchColumn();
+$totalVoters = $pdo->query("SELECT COUNT(*) FROM residents WHERE LOWER(TRIM(voter_status)) = 'registered voter'")->fetchColumn();
 
 // Senior Citizens (60+)
 $seniorCitizens = $pdo->query('SELECT COUNT(*) FROM residents WHERE age >= 60')->fetchColumn();
 
 // Persons with Disabilities
-$personsWithDisabilities = $pdo->query("SELECT COUNT(*) FROM residents WHERE disabilities IS NOT NULL AND disabilities != '' AND disabilities != '[]'")->fetchColumn();
+$personsWithDisabilities = $pdo->query("SELECT COUNT(*) FROM residents WHERE disabilities IS NOT NULL AND TRIM(disabilities) <> '' AND TRIM(disabilities) <> '[]' AND LOWER(TRIM(disabilities)) NOT IN ('n/a', 'n/a (none)', 'none')")->fetchColumn();
 
 // Pending Document Requests
 $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pending'")->fetchColumn();
@@ -409,13 +409,13 @@ $scheduledEvents = $pdo->query('
   </main>
 
   <!-- Shared Scripts -->
-  <script src="../../assets/js/shared/logo_functions.js"></script>
-  <script src="../../assets/js/shared/shared-header.js"></script>
-  <script src="../../assets/js/shared/shared-sidebar.js"></script>
+  <script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
+  <script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Page-specific scripts -->
-  <script src="../../assets/js/admin/dashboard.js"></script>
-  <script src="../../assets/js/shared/layout_functions.js"></script>
+  <script src="../../assets/js/admin/dashboard.js?v=20260912"></script>
+  <script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
 </body>
 </html>

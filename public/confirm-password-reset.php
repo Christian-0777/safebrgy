@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/mailer.php';
 session_start();
 header('Content-Type: application/json');
 
@@ -41,6 +42,10 @@ try {
     $pdo->rollBack();
     echo json_encode(['success' => false, 'message' => $exception->getMessage() === 'Account not found.' ? $exception->getMessage() : 'Unable to reset your password right now.']);
     exit;
+}
+
+if (!sendPasswordResetSuccessEmail($user['email'])) {
+    error_log('Unable to send password reset success email to ' . $user['email']);
 }
 
 $_SESSION['user'] = [

@@ -56,8 +56,8 @@ if (!in_array($documentType, $validTypes, true)) {
 }
 
 $residentStmt = $conn->prepare(
-    'SELECT u.id, u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
-            r.years_of_residency
+        'SELECT u.id, u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
+            r.birthdate, r.years_of_residency
        FROM users u
        INNER JOIN residents r ON r.user_id = u.id
       WHERE u.id = ? AND u.role = "resident"'
@@ -108,13 +108,21 @@ try {
             break;
 
         case 'Barangay Residency':
-            $years       = $yearsOfResidency;
-            $dateStarted = date('Y-m-d', strtotime('-' . $years . ' years'));
+            $dateStartedInput = trim($_POST['date_started'] ?? '');
+            $dateStarted = DateTimeImmutable::createFromFormat('!Y-m-d', $dateStartedInput . '-01');
+            $dateErrors = DateTimeImmutable::getLastErrors();
             $purpose     = trim($_POST['purpose'] ?? '');
 
+            if ($dateStarted === false || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0)) || $dateStarted > new DateTimeImmutable('today')) {
+                throw new RuntimeException('Select a valid month and year when you started living in the barangay.');
+            }
             if ($purpose === '') {
                 throw new RuntimeException('Purpose of request is required.');
             }
+
+            $today = new DateTimeImmutable('today');
+            $years = $dateStarted->diff($today)->y;
+            $dateStarted = $dateStarted->format('Y-m-d');
 
             $stmt = $conn->prepare(
                 'INSERT INTO barangay_residency (request_id, years_of_residency, date_started, purpose)

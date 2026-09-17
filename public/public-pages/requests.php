@@ -11,8 +11,8 @@ if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'resident
 $pdo = safeBrgy_db_connect();
 $user = $_SESSION['user'];
 $residentStmt = $pdo->prepare(
-  'SELECT u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
-      r.years_of_residency
+    'SELECT u.email, CONCAT_WS(" ", r.first_name, r.middle_name, r.last_name) AS resident_name,
+      r.birthdate, r.years_of_residency
      FROM users u
      LEFT JOIN residents r ON r.user_id = u.id
     WHERE u.id = ? AND u.role = "resident"'
@@ -22,7 +22,9 @@ $resident = $residentStmt->fetch() ?: [];
 $residentName = trim($resident['resident_name'] ?? '') ?: ($user['name'] ?? $user['username'] ?? 'Resident');
 $residentEmail = $resident['email'] ?? $user['email'] ?? '';
 $yearsOfResidency = max(0, (int) ($resident['years_of_residency'] ?? 0));
-$dateStarted = date('Y-m-d', strtotime('-' . $yearsOfResidency . ' years'));
+$dateStarted = !empty($resident['birthdate'])
+  ? date('Y-m', strtotime($resident['birthdate']))
+  : date('Y-m', strtotime('-' . $yearsOfResidency . ' years'));
 
 $stmt = $pdo->prepare(
     'SELECT r.reference_no, r.document_type, r.status, r.submitted_at,
@@ -215,12 +217,13 @@ $requests = $stmt->fetchAll();
           <div class="form-alert"></div>
           <div class="form-row">
             <div class="form-group">
-              <label for="residency-years">Years of Residency *</label>
-              <input type="number" id="residency-years" name="years_of_residency" value="<?php echo $yearsOfResidency; ?>" readonly>
+              <label for="residency-date">Month/Year Started Living in Barangay *</label>
+              <input type="month" id="residency-date" name="date_started" value="<?php echo htmlspecialchars($dateStarted); ?>" required>
             </div>
             <div class="form-group">
-              <label for="residency-date">Date Started Living in Barangay *</label>
-              <input type="date" id="residency-date" name="date_started" value="<?php echo htmlspecialchars($dateStarted); ?>" readonly>
+              <label for="residency-years">Years of Residency</label>
+              <input type="number" id="residency-years" name="years_of_residency" value="<?php echo $yearsOfResidency; ?>" readonly>
+              <span class="hint">Calculated from the selected month and year.</span>
             </div>
           </div>
           <div class="form-group">
@@ -391,11 +394,11 @@ $requests = $stmt->fetchAll();
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../../assets/js/shared/logo_functions.js"></script>
-  <script src="../../assets/js/shared/shared-header.js"></script>
-  <script src="../../assets/js/shared/shared-sidebar.js"></script>
-  <script src="../../assets/js/shared/layout_functions.js"></script>
-  <script src="../../assets/js/shared/loading-overlay.js"></script>
-  <script src="../../assets/js/public/request.js"></script>
+  <script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
+  <script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
+  <script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
+  <script src="../../assets/js/shared/loading-overlay.js?v=20260912"></script>
+  <script src="../../assets/js/public/request.js?v=20260912"></script>
 </body>
 </html>

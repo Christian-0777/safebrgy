@@ -159,7 +159,7 @@ if ($type === 'registration') {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>const otpType = '<?php echo htmlspecialchars($type); ?>';</script>
 <!-- OTP Script -->
-<script src="../assets/js/public/otp-view.js?v=20260912"></script>
+<script src="../assets/js/public/otp-view.js?v=<?php echo filemtime(__DIR__ . '/../assets/js/public/otp-view.js'); ?>"></script>
 
 </body>
 </html>

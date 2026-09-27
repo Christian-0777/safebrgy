@@ -28,10 +28,6 @@ p, span, a, button, .btn, label {
   border-radius: 4px;
 }
 
-.main-content {
-  padding-top: 80px;
-}
-
 /* Statistics Cards */
 .stat-card {
   background: white;
@@ -122,6 +118,22 @@ p, span, a, button, .btn, label {
 .table td, .table th {
   vertical-align: middle;
   padding: 12px;
+}
+
+.table tbody td,
+.table tbody td span:not(.badge),
+.table tbody td strong,
+.table tbody td small {
+  font-size: 12px;
+}
+
+.table tbody td .badge,
+.table tbody td .report-type-badge {
+  font-size: 11px;
+}
+
+.table tbody td.report-tags-cell {
+  font-size: 8px;
 }
 
 .btn-group-sm .btn {
@@ -242,3 +254,118 @@ body .modal-dialog {
     font-size: 12px;
   }
 }
+
+.report-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.report-type-badge i { font-size: 15px; }
+
+.type-incident { color: #ea580c; background: #ffedd5; }
+.type-public-concerns { color: #2563eb; background: #dbeafe; }
+.type-blotter { color: #1e3aba; background: #e0e7ff; }
+.type-lost-property { color: #7c3aed; background: #ede9fe; }
+
+.report-selection-toolbar {
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.report-selection-toolbar .btn,
+#report-records-pane .btn { white-space: nowrap; }
+
+.selected-report-list {
+  max-height: 42vh;
+  overflow: auto;
+  border: 1px solid #dee2e6;
+}
+
+.selected-report-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 2fr;
+  gap: 14px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.selected-report-row:last-child { border-bottom: 0; }
+.selected-report-row span { overflow-wrap: anywhere; }
+#reportRecordsTable { min-width: 1050px; }
+
+@media print {
+  body > * { display: none !important; }
+}
+
+.main-content {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+.main-content > .container-fluid.p-4 {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .main-content,
+  .main-content.collapsed {
+    padding-left: .9rem !important;
+    padding-right: .9rem !important;
+  }
+}
+
+.main-content,
+.main-content * {
+  font-size: 12px !important;
+}
+
+.main-content .report-tags-cell {
+  font-size: 10px !important;
+}
+
+.main-content > .container-fluid > .d-flex h2 {
+  font-size: 1.4rem !important;
+}
+
+.main-content > .container-fluid > .d-flex p {
+  font-size: .9rem !important;
+}
+
+.main-content .stat-value {
+  font-size: 32px !important;
+}
+
+.main-content .stat-label {
+  font-size: 14px !important;
+}
+
+.report-status-cell {
+  text-align: center;
+}
+
+.main-content .report-status-icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px !important;
+  cursor: help;
+}
+
+.report-status-icon.status-pending { color: #b45309; }
+.report-status-icon.status-in-progress { color: #2563eb; }
+.report-status-icon.status-resolved { color: #15803d; }
+.report-status-icon.status-dismissed,
+.report-status-icon.status-expired { color: #dc2626; }
+.report-status-icon.status-unknown { color: #64748b; }

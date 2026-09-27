@@ -157,6 +157,24 @@ CREATE TABLE `announcement_reads` (
   CONSTRAINT `announcement_reads_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `target` varchar(50) NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `message` text NOT NULL,
+  `target_url` varchar(255) DEFAULT NULL,
+  `entity_type` varchar(32) DEFAULT NULL,
+  `entity_id` int(11) DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_user_read` (`user_id`,`is_read`,`id`),
+  KEY `idx_notifications_target` (`user_id`,`target`,`is_read`),
+  CONSTRAINT `notifications_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `case_number` varchar(30) DEFAULT NULL,
@@ -166,18 +184,20 @@ CREATE TABLE `reports` (
   `description` text DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `attachments` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`attachments`)),
-  `status` enum('Pending','Ongoing','Resolved','Dismissed') DEFAULT 'Pending',
+  `status` enum('Pending','In Progress','Resolved','Dismissed') NOT NULL DEFAULT 'Pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  `expires_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
+  KEY `idx_reports_expires_at` (`expires_at`),
   CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `guest_reports` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `case_number` varchar(30) NOT NULL,
-  `report_type` enum('Incident','Lost Property','Blotter') NOT NULL,
+  `report_type` enum('Incident','Lost Property','Public Concerns','Blotter') NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `location` varchar(255) DEFAULT NULL,
@@ -186,7 +206,7 @@ CREATE TABLE `guest_reports` (
   `contact_method` enum('email','mobile') NOT NULL,
   `contact_email` varchar(255) DEFAULT NULL,
   `contact_mobile` varchar(20) DEFAULT NULL,
-  `status` enum('Pending','Ongoing','Resolved','Dismissed') NOT NULL DEFAULT 'Pending',
+  `status` enum('Pending','In Progress','Resolved','Dismissed') NOT NULL DEFAULT 'Pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `expires_at` datetime NOT NULL,
@@ -196,6 +216,41 @@ CREATE TABLE `guest_reports` (
   KEY `idx_guest_reports_expires` (`expires_at`),
   KEY `idx_guest_reports_type` (`report_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `report_tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `report_type` enum('Incident','Lost Property','Public Concerns','Blotter') NOT NULL,
+  `tag_name` varchar(60) NOT NULL,
+  `is_predefined` tinyint(1) NOT NULL DEFAULT 0,
+  `created_by_user_id` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_report_tags_type_name` (`report_type`,`tag_name`),
+  KEY `idx_report_tags_type` (`report_type`),
+  CONSTRAINT `report_tags_creator_fk` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `report_tag_assignments` (
+  `report_id` int(11) NOT NULL,
+  `tag_id` int(11) NOT NULL,
+  PRIMARY KEY (`report_id`,`tag_id`),
+  KEY `idx_report_tag_assignments_tag` (`tag_id`),
+  CONSTRAINT `report_tag_assignments_report_fk` FOREIGN KEY (`report_id`) REFERENCES `reports` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `report_tag_assignments_tag_fk` FOREIGN KEY (`tag_id`) REFERENCES `report_tags` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `report_tags` (`report_type`, `tag_name`, `is_predefined`) VALUES
+('Incident', 'FIRE', 1), ('Incident', 'THEFT', 1), ('Incident', 'ACCIDENT', 1), ('Incident', 'FIGHT', 1),
+('Incident', 'VANDALISM', 1), ('Incident', 'ASSAULT', 1), ('Incident', 'ROAD ACCIDENT', 1), ('Incident', 'VEHICLE INCIDENT', 1),
+('Incident', 'MEDICAL EMERGENCY', 1), ('Incident', 'DOMESTIC DISPUTE', 1), ('Incident', 'MISSING PERSON', 1), ('Incident', 'DISTURBANCE', 1),
+('Incident', 'ILLEGAL ACTIVITY', 1), ('Incident', 'DAMAGE TO PROPERTY', 1),
+('Public Concerns', 'ROAD', 1), ('Public Concerns', 'STREETLIGHT', 1), ('Public Concerns', 'GARBAGE', 1), ('Public Concerns', 'DRAINAGE', 1),
+('Public Concerns', 'WATER', 1), ('Public Concerns', 'ELECTRICITY', 1), ('Public Concerns', 'NOISE', 1), ('Public Concerns', 'ANIMAL', 1),
+('Public Concerns', 'SANITATION', 1), ('Public Concerns', 'INFRASTRUCTURE', 1),
+('Lost Property', 'ID CARD', 1), ('Lost Property', 'WALLET', 1), ('Lost Property', 'PHONE', 1), ('Lost Property', 'KEYS', 1),
+('Lost Property', 'BAG', 1), ('Lost Property', 'DOCUMENT', 1), ('Lost Property', 'JEWELRY', 1), ('Lost Property', 'ELECTRONICS', 1), ('Lost Property', 'VEHICLE', 1),
+('Blotter', 'THEFT', 1), ('Blotter', 'ASSAULT', 1), ('Blotter', 'THREAT', 1), ('Blotter', 'HARASSMENT', 1),
+('Blotter', 'TRESPASSING', 1), ('Blotter', 'PROPERTY DAMAGE', 1), ('Blotter', 'FAMILY DISPUTE', 1), ('Blotter', 'NEIGHBOR DISPUTE', 1);
 
 CREATE TABLE `residents` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

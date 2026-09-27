@@ -5,6 +5,12 @@ require_once __DIR__ . '/../../config/mailer.php';
 
 $pdo = safeBrgy_db_connect();
 $adminId = $_SESSION['admin_user']['id'] ?? null;
+$unreadRequestIds = [];
+if ($adminId) {
+  $unreadRequestsStmt = $pdo->prepare('SELECT entity_id FROM notifications WHERE user_id = ? AND entity_type = "request" AND is_read = 0 AND entity_id IS NOT NULL');
+  $unreadRequestsStmt->execute([(int) $adminId]);
+  $unreadRequestIds = array_map('intval', $unreadRequestsStmt->fetchAll(PDO::FETCH_COLUMN));
+}
 
 function adminValidIdUrl($path): string
 {
@@ -97,6 +103,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $userId = !empty($requestDetails['user_id']) ? (int) $requestDetails['user_id'] : null;
 
                 sendRequestStatusNotification($recipientEmail, $residentName, $mobileNumber, $requestNumber, $documentType, $newStatus, $userId, $rejectionReason);
+
+                if ($userId > 0) {
+                    safeBrgy_create_notification(
+                        $pdo,
+                        $userId,
+                        'request_status',
+                        'requests',
+                        'Request Updated',
+                        'Your ' . $documentType . ' request is now ' . $newStatus . '.',
+                        '/public/public-pages/requests.php',
+                        'request',
+                        $requestId
+                    );
+                }
             }
         }
 
@@ -204,13 +224,13 @@ $stats = $statsStmt->fetch();
   <link rel="stylesheet" href="../../assets/css/shared/shared_sidebar.css">
   <link rel="stylesheet" href="../../assets/css/shared/colors.css">
   <!-- Page-specific styles -->
-  <link rel="stylesheet" href="../../assets/css/admin/requests.css">
   <link rel="stylesheet" href="../../assets/css/shared/layout.css">
   <link rel="stylesheet" href="../../assets/css/shared/loading-overlay.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../assets/css/admin/requests.css">
 </head>
 <body>
 
@@ -243,11 +263,11 @@ $stats = $statsStmt->fetch();
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php" data-notification-badge="dashboard"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="announcement.php" data-notification-badge="announcement"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="reports.php" data-notification-badge="reports"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="requests.php" data-notification-badge="requests"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="user_verification.php" data-notification-badge="verification"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -351,7 +371,7 @@ $stats = $statsStmt->fetch();
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="adminRequestsTable">
               <?php if (empty($requests)): ?>
                 <tr>
                   <td colspan="7" class="text-center py-4 text-muted">
@@ -364,6 +384,7 @@ $stats = $statsStmt->fetch();
                   <tr>
                     <td>
                       <strong><?php echo htmlspecialchars($req['request_number'] ?? 'N/A'); ?></strong>
+                      <?php if (in_array((int) $req['id'], $unreadRequestIds ?? [], true)): ?><span class="notification-dot" aria-label="Unread request update"></span><?php endif; ?>
                     </td>
                     <td>
                       <div>
@@ -397,7 +418,7 @@ $stats = $statsStmt->fetch();
                       <small><?php echo $req['date_received'] ? date('M d, Y', strtotime($req['date_received'])) : 'N/A'; ?></small>
                     </td>
                     <td>
-                      <button type="button" class="btn btn-sm btn-outline-primary view-btn" data-bs-toggle="modal" data-bs-target="#viewRequestModal<?php echo $req['id']; ?>" title="View Details">
+                      <button type="button" class="btn btn-sm btn-outline-primary view-btn" data-notification-entity="request" data-notification-id="<?php echo (int) $req['id']; ?>" data-bs-toggle="modal" data-bs-target="#viewRequestModal<?php echo $req['id']; ?>" title="View Details">
                         <i class="fas fa-eye"></i> View
                       </button>
                     </td>
@@ -625,15 +646,17 @@ $stats = $statsStmt->fetch();
     </div>
   </div>
 
+  <?php include __DIR__ . '/../../includes/notification/notify.html'; ?>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Shared JS -->
-  <script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
-  <script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
+  <script src="../../assets/js/shared/logo_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/logo_functions.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-header.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-header.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-sidebar.js'); ?>"></script>
+  <script src="../../assets/js/shared/layout_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/layout_functions.js'); ?>"></script>
   <!-- Page-specific JS -->
-  <script src="../../assets/js/shared/loading-overlay.js?v=20260912"></script>
-  <script src="../../assets/js/admin/requests.js?v=20260912"></script>
+  <script src="../../assets/js/shared/loading-overlay.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/loading-overlay.js'); ?>"></script>
+  <script src="../../assets/js/realtime.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/realtime.js'); ?>"></script>
+  <script src="../../assets/js/admin/requests.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/admin/requests.js'); ?>"></script>
 </body>
 </html>

@@ -35,7 +35,7 @@ try {
         FROM reports r
         LEFT JOIN users u ON r.user_id = u.id
         WHERE r.report_type = 'Lost Property'
-        AND r.status IN ('Pending', 'Ongoing', 'Resolved')
+        AND r.status IN ('Pending', 'In Progress', 'Resolved')
         
         UNION ALL
         
@@ -53,8 +53,7 @@ try {
             gr.guest_aka as reporter_name
         FROM guest_reports gr
         WHERE gr.report_type = 'Lost Property'
-        AND gr.status IN ('Pending', 'Ongoing', 'Resolved')
-        AND gr.expires_at > NOW()
+        AND gr.status IN ('Pending', 'In Progress', 'Resolved')
         
         ORDER BY created_at DESC
         LIMIT 20

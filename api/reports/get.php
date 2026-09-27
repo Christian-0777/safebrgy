@@ -20,9 +20,13 @@ $pdo = safeBrgy_db_connect();
 
 try {
     $stmt = $pdo->prepare('
-        SELECT id, case_number, report_type, title, description, location, attachments, status, created_at
-        FROM reports
-        WHERE id = ? AND user_id = ?
+        SELECT r.id, r.case_number, r.report_type, r.title, r.description, r.location,
+               r.attachments, r.status, r.created_at, r.expires_at,
+               (SELECT GROUP_CONCAT(t.tag_name ORDER BY t.tag_name SEPARATOR \', \')
+            FROM report_tag_assignments a JOIN report_tags t ON t.id = a.tag_id
+            WHERE a.report_id = r.id) AS tags
+        FROM reports r
+        WHERE r.id = ? AND r.user_id = ?
     ');
 
     $stmt->execute([$reportId, $userId]);

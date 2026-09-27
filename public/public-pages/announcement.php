@@ -54,6 +54,12 @@ if ($sort === 'oldest') {
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$unreadAnnouncementIds = [];
+if ($userId) {
+  $unreadAnnouncementsStmt = $pdo->prepare('SELECT entity_id FROM notifications WHERE user_id = ? AND entity_type = "announcement" AND is_read = 0 AND entity_id IS NOT NULL');
+  $unreadAnnouncementsStmt->execute([(int) $userId]);
+  $unreadAnnouncementIds = array_map('intval', $unreadAnnouncementsStmt->fetchAll(PDO::FETCH_COLUMN));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -106,10 +112,10 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php" data-notification-badge="dashboard"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="announcement.php" data-notification-badge="announcement"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="reports.php" data-notification-badge="reports"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="requests.php" data-notification-badge="requests"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -162,7 +168,7 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
 
       <!-- Announcement Cards -->
-      <div class="row g-3">
+      <div class="row g-3" id="announcementCards">
         <?php if (empty($announcements)): ?>
           <div class="col-12">
             <div class="alert alert-info text-center py-5">
@@ -176,7 +182,7 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
               <div class="card shadow-sm h-100 announcement-card">
                 <div class="card-body d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="card-title mb-0"><?php echo htmlspecialchars($a['title']); ?></h5>
+                    <h5 class="card-title mb-0"><?php echo htmlspecialchars($a['title']); ?><?php if (in_array((int) $a['id'], $unreadAnnouncementIds, true)): ?><span class="notification-dot" aria-label="New announcement"></span><?php endif; ?></h5>
                     <?php if ($a['priority'] !== 'normal'): ?>
                       <span class="badge bg-<?php 
                         echo match($a['priority']) {
@@ -199,11 +205,8 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                   </p>
                   <div class="d-flex gap-2 mt-auto">
-                    <button type="button" class="btn btn-outline-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#viewAnnouncementModal<?php echo $a['id']; ?>">
+                    <button type="button" class="btn btn-outline-primary flex-grow-1" data-notification-entity="announcement" data-notification-id="<?php echo (int) $a['id']; ?>" data-bs-toggle="modal" data-bs-target="#viewAnnouncementModal<?php echo $a['id']; ?>">
                       Read More
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary noted-btn" data-id="<?php echo $a['id']; ?>" title="Mark as Noted">
-                      <i class="fas fa-check"></i>
                     </button>
                   </div>
                 </div>
@@ -304,9 +307,6 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary noted-btn-modal" data-id="<?php echo $a['id']; ?>">
-                      <i class="fas fa-check"></i> Mark as Noted
-                    </button>
                   </div>
                 </div>
               </div>
@@ -318,14 +318,15 @@ $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </main>
 
+<?php include __DIR__ . '/../../includes/notification/notify.html'; ?>
 <!-- Shared JS -->
-<script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
-<script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
-<script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
+<script src="../../assets/js/shared/logo_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/logo_functions.js'); ?>"></script>
+<script src="../../assets/js/shared/shared-header.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-header.js'); ?>"></script>
+<script src="../../assets/js/shared/shared-sidebar.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-sidebar.js'); ?>"></script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
+<script src="../../assets/js/shared/layout_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/layout_functions.js'); ?>"></script>
+<script src="../../assets/js/realtime.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/realtime.js'); ?>"></script>
 <!-- Page-specific JS -->
-<script src="../../assets/js/public/announcement.js?v=20260912"></script>
 </body>
 </html>

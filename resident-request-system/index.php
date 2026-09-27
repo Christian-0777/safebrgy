@@ -385,6 +385,6 @@ $requests = getAllRequests($conn);
   </div>
 </div>
 
-<script src="js/script.js?v=20260912"></script>
+<script src="js/script.js?v=<?php echo filemtime(__DIR__ . '/js/script.js'); ?>"></script>
 </body>
 </html>

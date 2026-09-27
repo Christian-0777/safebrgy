@@ -99,8 +99,8 @@ try {
         $attempts++;
     }
     
-    // Calculate expiration date (90 days from now)
-    $expiresAt = date('Y-m-d H:i:s', strtotime('+90 days'));
+    // Calculate expiration date (15 days from now)
+    $expiresAt = gmdate('Y-m-d H:i:s', strtotime('+15 days'));
     
     // Insert into guest_reports table
     $stmt = $pdo->prepare("

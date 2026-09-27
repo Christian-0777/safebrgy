@@ -14,6 +14,43 @@
 .sidebar.collapsed::after { content: 'S'; position: absolute; top: 1.27rem; left: 1.35rem; color: var(--color-accent); font: 800 1.05rem 'Plus Jakarta Sans', sans-serif; }
 .sidebar.collapsed .menu-label { display: none; }
 .sidebar.collapsed .sidebar-menu a, .sidebar.collapsed .sidebar-footer a { justify-content: center; padding-inline: .6rem; }
+
+[data-notification-badge] {
+  position: relative;
+}
+
+[data-notification-badge] .notification-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+[data-notification-badge] .notification-count.d-none {
+  display: none;
+}
+
+.notification-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: #dc2626;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.14);
+}
+
 @media (max-width: 768px) {
   .sidebar { display: none; }
 }

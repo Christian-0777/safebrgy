@@ -16,9 +16,10 @@ $pdo = safeBrgy_db_connect();
 $report_type = $_POST['report_type'] ?? null;
 $title = $_POST['title'] ?? null;
 $description = $_POST['description'] ?? null;
-$location = $_POST['location'] ?? null;
+$location = trim((string) ($_POST['location'] ?? ''));
+$tagIds = array_values(array_unique(array_filter(array_map('intval', (array) ($_POST['tag_ids'] ?? [])))));
 
-if (!$report_type || !$title || !$description) {
+if (!$report_type || !$title || !$description || $location === '') {
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit;
 }
@@ -26,6 +27,19 @@ if (!$report_type || !$title || !$description) {
 // Validate report type
 if (!in_array($report_type, ['Incident', 'Lost Property', 'Public Concerns', 'Blotter'], true)) {
     echo json_encode(['success' => false, 'message' => 'Invalid report type']);
+    exit;
+}
+
+if (count($tagIds) < 1 || count($tagIds) > 5) {
+    echo json_encode(['success' => false, 'message' => 'Choose between one and five tags.']);
+    exit;
+}
+
+$tagPlaceholders = implode(',', array_fill(0, count($tagIds), '?'));
+$tagStmt = $pdo->prepare("SELECT id FROM report_tags WHERE report_type = ? AND id IN ({$tagPlaceholders})");
+$tagStmt->execute(array_merge([$report_type], $tagIds));
+if (count($tagStmt->fetchAll(PDO::FETCH_COLUMN)) !== count($tagIds)) {
+    echo json_encode(['success' => false, 'message' => 'One or more tags do not match the selected report type.']);
     exit;
 }
 
@@ -80,9 +94,10 @@ if (isset($_FILES['picture']) && !empty($_FILES['picture']['name'][0])) {
 $case_number = 'CASE-' . date('Ymd') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
 try {
+    $pdo->beginTransaction();
     $stmt = $pdo->prepare('
-        INSERT INTO reports (case_number, user_id, report_type, title, description, location, attachments, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, "Pending")
+        INSERT INTO reports (case_number, user_id, report_type, title, description, location, attachments, status, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, "Pending", DATE_ADD(UTC_TIMESTAMP(), INTERVAL 15 DAY))
     ');
 
     $stmt->execute([
@@ -95,6 +110,13 @@ try {
         $attachments
     ]);
 
+    $reportId = (int) $pdo->lastInsertId();
+    $assignmentStmt = $pdo->prepare('INSERT INTO report_tag_assignments (report_id, tag_id) VALUES (?, ?)');
+    foreach ($tagIds as $tagId) {
+        $assignmentStmt->execute([$reportId, $tagId]);
+    }
+    $pdo->commit();
+
     $userStmt = $pdo->prepare('SELECT r.mobile_number FROM residents r WHERE r.user_id = ?');
     $userStmt->execute([$userId]);
     $userRow = $userStmt->fetch(PDO::FETCH_ASSOC);
@@ -106,12 +128,28 @@ try {
         sendReportSubmissionNotification($email, $residentName, $mobileNumber, $case_number, $userId);
     }
 
+    $adminIds = $pdo->query("SELECT id FROM users WHERE role = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
+    safeBrgy_notify_users(
+        $pdo,
+        $adminIds,
+        'new_report',
+        'reports',
+        'New Incident Report',
+        $residentName . ' submitted a new incident report.',
+        '/public/public-pages/reports.php',
+        'report',
+        $reportId
+    );
+
     echo json_encode([
         'success' => true,
         'message' => 'Report created successfully',
         'case_number' => $case_number
     ]);
 } catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     echo json_encode([
         'success' => false,
         'message' => 'Database error: ' . $e->getMessage()

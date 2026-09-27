@@ -128,10 +128,10 @@ if ($residentEmail !== '') {
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php" data-notification-badge="dashboard"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="announcement.php" data-notification-badge="announcement"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="reports.php" data-notification-badge="reports"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="requests.php" data-notification-badge="requests"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -366,14 +366,16 @@ if ($residentEmail !== '') {
     </div>
   </main>
 
+<?php include __DIR__ . '/../../includes/notification/notify.html'; ?>
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
+<script src="../../assets/js/shared/layout_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/layout_functions.js'); ?>"></script>
 <!-- Shared JS -->
-<script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
-<script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
-<script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
+<script src="../../assets/js/shared/logo_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/logo_functions.js'); ?>"></script>
+<script src="../../assets/js/shared/shared-header.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-header.js'); ?>"></script>
+<script src="../../assets/js/shared/shared-sidebar.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-sidebar.js'); ?>"></script>
+<script src="../../assets/js/realtime.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/realtime.js'); ?>"></script>
 <!-- Page-specific JS -->
-<script src="../../assets/js/public/dashboard.js?v=20260912"></script>
+<script src="../../assets/js/public/dashboard.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/public/dashboard.js'); ?>"></script>
 </body>
 </html>

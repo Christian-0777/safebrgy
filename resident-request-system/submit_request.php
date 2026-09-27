@@ -215,6 +215,20 @@ try {
     $mobileNumber = $userRow['mobile_number'] ?? null;
     sendRequestSubmissionNotification($residentEmail, $residentName, $mobileNumber, $documentType, $userId);
 
+    $pdo = safeBrgy_db_connect();
+    $adminIds = $pdo->query("SELECT id FROM users WHERE role = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
+    safeBrgy_notify_users(
+        $pdo,
+        $adminIds,
+        'new_request',
+        'requests',
+        'New Request Submitted',
+        $residentName . ' submitted a new ' . $documentType . ' request.',
+        '/admin/main-pages/requests.php',
+        'request',
+        (int) $requestId
+    );
+
     // ---- 4. Respond with data needed to update the UI ----
     respond(true, 'Request submitted successfully.', [
         'reference_no' => $referenceNo,

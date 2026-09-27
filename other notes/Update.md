@@ -1,3 +1,160 @@
+## What's New in V4.1 (Real-Time Notifications and UI Adjustments)
+
+### Real-Time Tables and Row Notifications
+- Added five-second refreshes for admin report, request, and pending/verified verification tables, plus resident report, request, and announcement lists.
+- Linked notifications to their report, request, or announcement record so unread dots appear beside the existing case number, reference number, or announcement title.
+- Added per-record read handling; viewing a report or request, or opening an announcement with **Read More**, clears only that record's dot.
+- Kept category navigation from clearing entity-linked notifications and preserved existing popup and badge counts.
+- Added notification entity columns with runtime migration support for existing databases and updated the schema snapshot.
+
+### Notification Identity and Announcement Interaction
+- Resolved notification identity using the active resident or admin role to prevent resident sessions from receiving admin notifications.
+- Normalized stale session identity when entering protected admin pages.
+- Displayed the latest unread popup after page initialization.
+- Removed the resident announcement card and modal **Mark as Noted** controls; **Read More** is now the read trigger.
+
+### Layout Adjustment
+- Restored consistent desktop and mobile horizontal spacing on admin Announcement and Requests pages to match the Reports page.
+
+### Files Updated
+- `config/db.php`
+- `api/fetch.php`
+- `api/notification-count.php`
+- `api/reports/create.php`
+- `resident-request-system/submit_request.php`
+- `admin/admin_protect.php`
+- `admin/main-pages/announcement.php`
+- `admin/main-pages/reports.php`
+- `admin/main-pages/requests.php`
+- `public/public-pages/announcement.php`
+- `public/public-pages/reports.php`
+- `public/public-pages/requests.php`
+- `assets/js/realtime.js`
+- `assets/js/admin/reports.js`
+- `assets/js/admin/requests.js`
+- `assets/js/public/announcement.js`
+- `assets/js/public/reports.js`
+- `assets/css/admin/announcement.css`
+- `assets/css/admin/requests.css`
+- `assets/css/shared/shared_sidebar.css`
+- `sql/safebrgy_schema.sql`
+
+### Validation
+- Passed PHP syntax checks for updated notification endpoints, writers, and page templates.
+- Passed JavaScript syntax checks for the shared polling and dynamically refreshed page handlers.
+- Workspace diagnostics reported no errors in the updated files.
+- Authenticated production behavior and database migration should be confirmed on the deployment.
+
+---
+
+## What's New in V4.0 (Resident and Admin Report Management)
+
+### Resident Report Updates
+
+#### Report Submission and Community Feed
+- Added type-specific predefined tags for Incident Reports, Public Concerns, Lost Property, and Blotter reports.
+- Added shared custom tags that residents can create and reuse; custom tags are limited to three words.
+- Added support for selecting one to five tags per report and made report location required.
+- Kept picture uploads optional and added the resident Community Feed tab for Blotter and Lost Property reports.
+- Added tags and expiration information to resident report details.
+- Added icon-only status indicators with hover descriptions, including an Expired indicator for overdue Pending or In Progress reports.
+
+### Admin Report Updates
+
+#### Report Management
+- Added a tag column and combined report-type/tag filters to All Reports; tag options are limited to tags currently used by reports.
+- Added row checkboxes, Select All, Unselect All, and Quick Update for changing multiple report statuses at once.
+- Renamed Ongoing to In Progress and retained report status notifications for individual and bulk updates.
+- Kept statistics cards exclusive to the All Reports tab.
+- Added a Report Records tab with date-range and report-type filters.
+- Added an export confirmation preview, PDF download, and browser printing for filtered records. Records include case number, title, date filed, type, tags, readable status, reporter, and reporter email.
+- Added Export PDF and Print actions to individual report details. Individual exports include case number, report type, resident ID, reporter, title, tags, description, pictures when available, location, date filed, expiration, and status.
+- Replaced text-based icon ligatures with Font Awesome icons and added icon-only status tooltips, including Expired.
+- Fixed the case-number search button loading state so its animation clears after the request completes.
+
+### Expiration and Database
+- Added a 15-day report expiration period. Pending reports expire after 15 days; changing Pending to In Progress restarts the 15-day period.
+- Expired reports remain in report lists and show expiration details and an Expired status indicator.
+- Added shared report-tag and report-tag-assignment tables, predefined tag seeds, resident report expiration storage, and status migration updates.
+- Updated `sql/migration.sql` alongside the schema snapshot for the report database changes.
+- Fixed malformed `GROUP_CONCAT` SQL string quoting that caused resident and admin report detail requests to return PHP errors instead of JSON.
+
+### Layout and Readability Adjustments
+- Aligned admin Announcement, Reports, and Requests content spacing with the shared dashboard layout and removed duplicate horizontal padding.
+- Set report table body text to 12px and tag text to 10px while restoring the intended heading and statistic-card sizes.
+
+### Files Updated
+- `admin/main-pages/reports.php`
+- `admin/main-pages/announcement.php`
+- `admin/main-pages/requests.php`
+- `admin/main-pages/dashboard.php`
+- `public/public-pages/reports.php`
+- `api/reports/create.php`
+- `api/reports/get.php`
+- `api/reports/tags.php`
+- `guest_user/api/reports_submit.php`
+- `guest_user/api/reports_feed.php`
+- `guest_user/assets/js/main.js`
+- `includes/shared/report_status.php`
+- `assets/js/admin/reports.js`
+- `assets/js/public/reports.js`
+- `assets/css/admin/reports.css`
+- `assets/css/admin/announcement.css`
+- `assets/css/admin/requests.css`
+- `assets/css/admin/dashboard.css`
+- `assets/css/public/reports.css`
+- `sql/migration.sql`
+- `sql/safebrgy_schema.sql`
+
+### Validation
+- Passed PHP syntax checks for modified report/admin pages and APIs.
+- Passed JavaScript syntax checks for resident and admin report scripts.
+- Passed workspace diagnostics for modified report pages, styles, and scripts.
+- Database migration and authenticated production workflows require validation against the target database and deployment.
+
+---
+
+## What's New in V3.5 (Background Notification and Real-Time Alerts)
+
+### Real-Time Notification System
+
+#### Overview
+Added a lightweight background notification system for residents and admins. The app now polls the server for new alerts without triggering the existing loading overlays and displays toast-style notifications for new reports, requests, announcements, and status updates.
+
+#### Highlights
+- Added a `notifications` table and shared helper functions in `config/db.php` to create and aggregate unread alerts by target.
+- Added an authenticated JSON API in `api/fetch.php` to return unread notifications and per-target badge counts.
+- Added a shared toast popup UI in `includes/notification/notify.html` with the SafeBrgy branded styling.
+- Added the realtime polling script in `assets/js/realtime.js` with domain and subpath-safe URL detection for `safebrgy.com` and `/safebrgy` deployments.
+- Kept the system isolated from the existing loading overlay flow so normal form and page actions are unaffected.
+- Added navigation badge hooks in resident and admin layouts to show unread counts on the relevant menu items.
+- Added notification events for new resident reports, new request submissions, admin status changes, and new announcements.
+- Added target-based read handling so badges can be cleared after the user opens the relevant section.
+
+#### Files Updated
+- `config/db.php`
+- `api/fetch.php`
+- `includes/notification/notify.html`
+- `assets/js/realtime.js`
+- `api/reports/create.php`
+- `resident-request-system/submit_request.php`
+- `admin/main-pages/requests.php`
+- `admin/main-pages/reports.php`
+- `admin/main-pages/announcement.php`
+- `public/public-pages/dashboard.php`
+- `public/public-pages/announcement.php`
+- `public/public-pages/reports.php`
+- `public/public-pages/requests.php`
+- `admin/main-pages/dashboard.php`
+- `admin/main-pages/user_verification.php`
+
+#### Validation and Database Checks
+- Confirmed the notification table and helper functions are available in the database layer.
+- Confirmed the fetch endpoint returns JSON success data, unread notifications, and badge totals.
+- Passed PHP syntax checks for the updated application pages and API files.
+- Passed JavaScript syntax validation for the realtime polling script.
+- Confirmed URL generation works correctly for both root-domain and subpath deployments like `/safebrgy`.
+
 ## What's New in V3.4 (Resident Profile Photo Update Fix)
 
 ### Resident Profile and Account Updates

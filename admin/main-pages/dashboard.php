@@ -42,8 +42,8 @@ $personsWithDisabilities = $pdo->query("SELECT COUNT(*) FROM residents WHERE dis
 // Pending Document Requests
 $pendingRequests = $pdo->query("SELECT COUNT(*) FROM requests WHERE status = 'Pending'")->fetchColumn();
 
-// Pending Cases (Pending or Ongoing Reports)
-$pendingCases = $pdo->query("SELECT COUNT(*) FROM reports WHERE status IN ('Pending', 'Ongoing')")->fetchColumn();
+// Pending Cases (Pending or In Progress Reports)
+$pendingCases = $pdo->query("SELECT COUNT(*) FROM reports WHERE status IN ('Pending', 'In Progress')")->fetchColumn();
 
 // ===== RECENT ACTIVITIES =====
 // Get recent admin logs and combined activities
@@ -190,11 +190,11 @@ $scheduledEvents = $pdo->query('
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span></a></li>
-      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span></a></li>
-      <li><a href="user_verification.php"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span></a></li>
+      <li><a href="dashboard.php" data-notification-badge="dashboard"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="announcement.php" data-notification-badge="announcement"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="reports.php" data-notification-badge="reports"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">Reports</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="requests.php" data-notification-badge="requests"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">Requests</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="user_verification.php" data-notification-badge="verification"<?php echo basename($_SERVER['PHP_SELF']) === 'user_verification.php' ? ' class="active"' : ''; ?>><i class="fas fa-check-circle"></i> <span class="menu-label">Verification</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
     </ul>
     
     <div class="sidebar-footer">
@@ -408,14 +408,16 @@ $scheduledEvents = $pdo->query('
     </div>
   </main>
 
+  <?php include __DIR__ . '/../../includes/notification/notify.html'; ?>
   <!-- Shared Scripts -->
-  <script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
+  <script src="../../assets/js/shared/logo_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/logo_functions.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-header.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-header.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-sidebar.js'); ?>"></script>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Page-specific scripts -->
-  <script src="../../assets/js/admin/dashboard.js?v=20260912"></script>
-  <script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
+  <script src="../../assets/js/admin/dashboard.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/admin/dashboard.js'); ?>"></script>
+  <script src="../../assets/js/shared/layout_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/layout_functions.js'); ?>"></script>
+  <script src="../../assets/js/realtime.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/realtime.js'); ?>"></script>
 </body>
 </html>

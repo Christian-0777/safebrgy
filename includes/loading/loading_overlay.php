@@ -30,7 +30,7 @@ $page_loading = true;
         <button class="test-button" onclick="showLoading()">Show Loading Overlay</button>
     </div>
 
-    <script src="script.js?v=20260912"></script>
+    <script src="script.js?v=<?php echo filemtime(__DIR__ . '/script.js'); ?>"></script>
 
 </body>
 </html>

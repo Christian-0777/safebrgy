@@ -1,0 +1,179 @@
+<div id="safeBrgyNotification" class="safe-notification" aria-live="polite" aria-atomic="true" role="status" style="display:none;">
+  <button type="button" class="safe-notification-close" aria-label="Close notification" onclick="window.hideSafeBrgyNotification && window.hideSafeBrgyNotification()">✕</button>
+  <div class="safe-notification-icon" aria-hidden="true">🔔</div>
+  <div class="safe-notification-content">
+    <div class="safe-notification-title">Notification</div>
+    <div class="safe-notification-message">You have a new update.</div>
+  </div>
+</div>
+
+<style>
+  .safe-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: min(360px, calc(100vw - 24px));
+    background: rgba(17, 24, 39, 0.96);
+    color: #f9fafb;
+    border-radius: 12px;
+    box-shadow: 0 18px 32px rgba(17, 24, 39, 0.28);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 14px 14px 12px;
+    border-left: 4px solid #4f46e5;
+    z-index: 2000;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .safe-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .safe-notification.success {
+    border-left-color: #16a34a;
+  }
+
+  .safe-notification.error {
+    border-left-color: #dc2626;
+  }
+
+  .safe-notification-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    padding-top: 2px;
+  }
+
+  .safe-notification-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .safe-notification-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .safe-notification-message {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.82);
+    word-break: break-word;
+  }
+
+  .safe-notification-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    margin-left: 4px;
+  }
+
+  .safe-notification-close:hover {
+    color: #ffffff;
+  }
+
+  [data-notification-badge] {
+    position: relative;
+  }
+
+  [data-notification-badge] .notification-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  [data-notification-badge] .notification-count.d-none {
+    display: none;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0 4px;
+  }
+
+  .notification-badge.d-none {
+    display: none;
+  }
+</style>
+
+<script>
+  window.showSafeBrgyNotification = function (notification) {
+    const container = document.getElementById('safeBrgyNotification');
+    const titleNode = container ? container.querySelector('.safe-notification-title') : null;
+    const messageNode = container ? container.querySelector('.safe-notification-message') : null;
+    const iconNode = container ? container.querySelector('.safe-notification-icon') : null;
+
+    if (!container || !titleNode || !messageNode) {
+      return;
+    }
+
+    const title = notification.title || 'Notification';
+    const message = notification.message || notification.body || 'You have a new update.';
+    const type = notification.type || 'info';
+
+    titleNode.textContent = title;
+    messageNode.textContent = message;
+    container.classList.remove('success', 'error');
+    if (type === 'success') {
+      container.classList.add('success');
+    } else if (type === 'error') {
+      container.classList.add('error');
+    }
+
+    if (iconNode) {
+      const iconMap = { info: '🔔', success: '✅', error: '⚠️' };
+      iconNode.textContent = iconMap[type] || iconMap.info;
+    }
+
+    container.style.display = 'flex';
+    requestAnimationFrame(() => container.classList.add('show'));
+
+    clearTimeout(window.safeBrgyNotificationTimer);
+    window.safeBrgyNotificationTimer = setTimeout(() => {
+      window.hideSafeBrgyNotification();
+    }, 5000);
+  };
+
+  window.hideSafeBrgyNotification = function () {
+    const container = document.getElementById('safeBrgyNotification');
+    if (!container) {
+      return;
+    }
+
+    container.classList.remove('show');
+    window.setTimeout(() => {
+      container.style.display = 'none';
+    }, 220);
+  };
+</script>

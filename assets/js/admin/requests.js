@@ -14,8 +14,6 @@ window.addEventListener('unhandledrejection', event => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const updateStatusButtons = document.querySelectorAll('.update-status-btn');
-  const statusSelects = document.querySelectorAll('.status-select');
   const requestsEndpoint = window.location.href;
   const rejectRequestModalElement = document.getElementById('rejectRequestModal');
   const rejectRequestModal = rejectRequestModalElement ? new bootstrap.Modal(rejectRequestModalElement) : null;
@@ -25,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.info('[SafeBrgy] Requests page loaded', {
     endpoint: requestsEndpoint,
-    updateButtons: updateStatusButtons.length,
-    statusSelects: statusSelects.length
+    updateButtons: document.querySelectorAll('.update-status-btn').length,
+    statusSelects: document.querySelectorAll('.status-select').length
   });
 
   const updateRequestStatus = async (requestId, newStatus, rejectionReason = '', additionalDetails = '') => {
@@ -91,8 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Update status button click handler
-  updateStatusButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.addEventListener('click', event => {
+      const btn = event.target.closest('.update-status-btn');
+      if (!btn) return;
       const requestId = btn.dataset.requestId;
       const modal = btn.closest('.modal');
       const statusSelect = modal.querySelector('.status-select');
@@ -117,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       updateRequestStatus(requestId, newStatus);
-    });
   });
 
   rejectReasonSelect?.addEventListener('change', () => {
@@ -144,14 +142,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Validate status selection
-  statusSelects.forEach(select => {
-    const updateStatusControls = () => {
+  const updateStatusControls = (select) => {
       const modal = select.closest('.modal');
       const updateBtn = modal.querySelector('.update-status-btn');
       updateBtn.disabled = !select.value;
-    };
+  };
 
-    select.addEventListener('change', updateStatusControls);
-    updateStatusControls();
+  document.querySelectorAll('.status-select').forEach(updateStatusControls);
+  document.addEventListener('change', event => {
+    const select = event.target.closest('.status-select');
+    if (select) updateStatusControls(select);
+  });
+  document.addEventListener('shown.bs.modal', event => {
+    const select = event.target.querySelector('.status-select');
+    if (select) updateStatusControls(select);
   });
 });

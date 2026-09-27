@@ -76,7 +76,7 @@ function getPriorityLabel(priority) {
 function getStatusBadgeClass(status) {
     switch (status) {
         case 'Pending': return 'badge-status-pending';
-        case 'Ongoing': return 'badge-status-ongoing';
+        case 'In Progress': return 'badge-status-ongoing';
         case 'Resolved': return 'badge-status-resolved';
         case 'Dismissed': return 'badge-status-dismissed';
         default: return 'bg-secondary';

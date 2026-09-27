@@ -180,6 +180,32 @@ function safeBrgy_db_connect(): PDO
             CONSTRAINT announcement_reads_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+        $pdo->exec("CREATE TABLE IF NOT EXISTS notifications (
+            id INT(11) NOT NULL AUTO_INCREMENT,
+            user_id INT(11) NOT NULL,
+            type VARCHAR(50) NOT NULL,
+            target VARCHAR(50) NOT NULL,
+            title VARCHAR(150) NOT NULL,
+            message TEXT NOT NULL,
+            target_url VARCHAR(255) DEFAULT NULL,
+            entity_type VARCHAR(32) DEFAULT NULL,
+            entity_id INT(11) DEFAULT NULL,
+            is_read TINYINT(1) NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_notifications_user_read (user_id, is_read, id),
+            KEY idx_notifications_target (user_id, target, is_read),
+            CONSTRAINT notifications_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $notificationColumns = $pdo->query('SHOW COLUMNS FROM notifications')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('entity_type', $notificationColumns, true)) {
+            $pdo->exec('ALTER TABLE notifications ADD COLUMN entity_type VARCHAR(32) DEFAULT NULL AFTER target_url');
+        }
+        if (!in_array('entity_id', $notificationColumns, true)) {
+            $pdo->exec('ALTER TABLE notifications ADD COLUMN entity_id INT(11) DEFAULT NULL AFTER entity_type');
+        }
+
         return $pdo;
     } catch (PDOException $exception) {
         http_response_code(500);
@@ -218,6 +244,42 @@ function generateResidentId(): string
     
     // Fallback - should rarely happen
     throw new Exception('Failed to generate unique resident ID after maximum attempts');
+}
+
+function safeBrgy_create_notification(PDO $pdo, int $userId, string $type, string $target, string $title, string $message, ?string $targetUrl = null, ?string $entityType = null, ?int $entityId = null): bool
+{
+    if ($userId <= 0 || $type === '' || $target === '' || $title === '' || $message === '') {
+        return false;
+    }
+
+    $stmt = $pdo->prepare('INSERT INTO notifications (user_id, type, target, title, message, target_url, entity_type, entity_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    return $stmt->execute([
+        $userId,
+        $type,
+        $target,
+        $title,
+        $message,
+        $targetUrl,
+        $entityType,
+        $entityId,
+    ]);
+}
+
+    function safeBrgy_notify_users(PDO $pdo, array $userIds, string $type, string $target, string $title, string $message, ?string $targetUrl = null, ?string $entityType = null, ?int $entityId = null): int
+{
+    $userIds = array_values(array_unique(array_filter(array_map('intval', $userIds))));
+    if ($userIds === []) {
+        return 0;
+    }
+
+    $count = 0;
+    foreach ($userIds as $userId) {
+        if (safeBrgy_create_notification($pdo, $userId, $type, $target, $title, $message, $targetUrl, $entityType, $entityId)) {
+            $count++;
+        }
+    }
+
+    return $count;
 }
 
 $pdo = safeBrgy_db_connect();

@@ -27,7 +27,7 @@ $dateStarted = !empty($resident['birthdate'])
   : date('Y-m', strtotime('-' . $yearsOfResidency . ' years'));
 
 $stmt = $pdo->prepare(
-    'SELECT r.reference_no, r.document_type, r.status, r.submitted_at,
+    'SELECT r.id, r.reference_no, r.document_type, r.status, r.submitted_at,
             COALESCE(bc.purpose, br.purpose, bi.purpose, bb.purpose) AS purpose
        FROM requests r
   LEFT JOIN barangay_clearance bc ON bc.request_id = r.id
@@ -39,6 +39,12 @@ $stmt = $pdo->prepare(
 );
     $stmt->execute([(int) ($user['id'] ?? 0), $residentEmail]);
 $requests = $stmt->fetchAll();
+$unreadRequestIds = [];
+if (!empty($user['id'])) {
+  $unreadRequestsStmt = $pdo->prepare('SELECT entity_id FROM notifications WHERE user_id = ? AND entity_type = "request" AND is_read = 0 AND entity_id IS NOT NULL');
+  $unreadRequestsStmt->execute([(int) $user['id']]);
+  $unreadRequestIds = array_map('intval', $unreadRequestsStmt->fetchAll(PDO::FETCH_COLUMN));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -85,10 +91,10 @@ $requests = $stmt->fetchAll();
 
   <aside class="sidebar">
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span></a></li>
-      <li><a href="announcement.php"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span></a></li>
-      <li><a href="reports.php"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span></a></li>
-      <li><a href="requests.php"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span></a></li>
+      <li><a href="dashboard.php" data-notification-badge="dashboard"<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? ' class="active"' : ''; ?>><i class="fas fa-tachometer-alt"></i> <span class="menu-label">Dashboard</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="announcement.php" data-notification-badge="announcement"<?php echo basename($_SERVER['PHP_SELF']) === 'announcement.php' ? ' class="active"' : ''; ?>><i class="fas fa-bullhorn"></i> <span class="menu-label">Announcements</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="reports.php" data-notification-badge="reports"<?php echo basename($_SERVER['PHP_SELF']) === 'reports.php' ? ' class="active"' : ''; ?>><i class="fas fa-file-alt"></i> <span class="menu-label">My Reports</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
+      <li><a href="requests.php" data-notification-badge="requests"<?php echo basename($_SERVER['PHP_SELF']) === 'requests.php' ? ' class="active"' : ''; ?>><i class="fas fa-clipboard-list"></i> <span class="menu-label">My Requests</span><span class="notification-count d-none" aria-hidden="true">0</span></a></li>
     </ul>
     <div class="sidebar-footer">
       <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> <span class="menu-label">Logout</span></a>
@@ -155,12 +161,14 @@ $requests = $stmt->fetchAll();
                   <?php $statusLabel = trim($request['status'] ?? '') ?: 'Unknown'; ?>
                   <?php $purposeText = trim($request['purpose'] ?? '') ?: 'No purpose provided'; ?>
                   <tr>
-                    <td><strong><?php echo htmlspecialchars($request['reference_no']); ?></strong></td>
+                    <td><strong><?php echo htmlspecialchars($request['reference_no']); ?></strong><?php if (in_array((int) $request['id'], $unreadRequestIds, true)): ?><span class="notification-dot" aria-label="Unread request update"></span><?php endif; ?></td>
                     <td><?php echo htmlspecialchars($request['document_type']); ?></td>
                     <td><?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($request['submitted_at']))); ?></td>
                     <td><span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $statusLabel)); ?>"><?php echo htmlspecialchars($statusLabel); ?></span></td>
                     <td>
                       <button type="button" class="btn btn-outline view-request-btn"
+                        data-notification-entity="request"
+                        data-notification-id="<?php echo (int) $request['id']; ?>"
                         data-document-type="<?php echo htmlspecialchars($request['document_type'], ENT_QUOTES); ?>"
                         data-reference-no="<?php echo htmlspecialchars($request['reference_no'], ENT_QUOTES); ?>"
                         data-submitted-at="<?php echo htmlspecialchars(date('M d, Y g:i A', strtotime($request['submitted_at'])), ENT_QUOTES); ?>"
@@ -393,12 +401,14 @@ $requests = $stmt->fetchAll();
     </div>
   </div>
 
+  <?php include __DIR__ . '/../../includes/notification/notify.html'; ?>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../../assets/js/shared/logo_functions.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-header.js?v=20260912"></script>
-  <script src="../../assets/js/shared/shared-sidebar.js?v=20260912"></script>
-  <script src="../../assets/js/shared/layout_functions.js?v=20260912"></script>
-  <script src="../../assets/js/shared/loading-overlay.js?v=20260912"></script>
-  <script src="../../assets/js/public/request.js?v=20260912"></script>
+  <script src="../../assets/js/shared/logo_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/logo_functions.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-header.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-header.js'); ?>"></script>
+  <script src="../../assets/js/shared/shared-sidebar.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/shared-sidebar.js'); ?>"></script>
+  <script src="../../assets/js/shared/layout_functions.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/layout_functions.js'); ?>"></script>
+  <script src="../../assets/js/shared/loading-overlay.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/shared/loading-overlay.js'); ?>"></script>
+  <script src="../../assets/js/realtime.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/realtime.js'); ?>"></script>
+  <script src="../../assets/js/public/request.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/public/request.js'); ?>"></script>
 </body>
 </html>

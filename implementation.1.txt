@@ -1,0 +1,1396 @@
+Yes. For SafeBrgy, you can build this as a **background notification/presence system** using your existing:
+
+```text
+api/fetch.php
+includes/notification/notify.html
+```
+
+The important part is that it **must not reload the page** and therefore should **not trigger your existing loading overlay**.
+
+## 1. Recommended architecture
+
+Use:
+
+```text
+SafeBrgy Page
+    │
+    ├── Normal navigation → full page load
+    │
+    └── Background JavaScript
+            │
+            │ every 2–5 seconds
+            ▼
+       api/fetch.php
+            │
+            ▼
+          MySQL
+            │
+            ├── New announcement?
+            ├── New report update?
+            ├── New request update?
+            ├── New verification?
+            └── New admin/resident notification?
+            │
+            ▼
+       JSON response
+            │
+            ├── Update red dot/count
+            └── Trigger notify.html
+```
+
+The key is:
+
+> **Do not use `window.location.reload()` or your normal page-loader function during background updates.**
+
+---
+
+# 2. Your file structure
+
+I recommend:
+
+```text
+safebrgy/
+│
+├── api/
+│   └── fetch.php
+│
+├── includes/
+│   └── notification/
+│       ├── notify.html
+│       └── notify.js
+│
+├── assets/
+│   └── js/
+│       └── realtime.js
+│
+├── resident/
+│   ├── dashboard.php
+│   ├── announcement.php
+│   ├── reports.php
+│   └── requests.php
+│
+└── admin/
+    ├── dashboard.php
+    ├── announcement.php
+    ├── reports.php
+    ├── requests.php
+    └── verification.php
+```
+
+You don't necessarily need `notify.js` if you want everything in one JS file, but separating notification UI from realtime logic is cleaner.
+
+---
+
+# 3. Use a notification table
+
+The easiest way to make this reliable is to give SafeBrgy a central notification table.
+
+For example:
+
+```sql
+CREATE TABLE notifications (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT UNSIGNED NOT NULL,
+
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    message VARCHAR(500) NOT NULL,
+
+    target_url VARCHAR(255) DEFAULT NULL,
+
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_notifications_user_read (user_id, is_read),
+    INDEX idx_notifications_user_id (user_id, id),
+
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+```
+
+Your existing `users` table may use a different primary-key type. If so, change:
+
+```sql
+INT UNSIGNED
+```
+
+to match your actual `users.id`.
+
+---
+
+# 4. Why the notification table helps
+
+Instead of making `fetch.php` guess whether something changed, every important event creates a notification.
+
+For example:
+
+### Resident submits report
+
+```text
+Resident
+   ↓
+Submit report
+   ↓
+reports table
+   ↓
+Create notification for admins
+```
+
+Example:
+
+```text
+New Incident Report
+Christian submitted a new incident report.
+```
+
+---
+
+### Admin changes report status
+
+```text
+Admin
+   ↓
+Update report
+   ↓
+reports table
+   ↓
+Create notification for resident
+```
+
+Example:
+
+```text
+Report Updated
+Your incident report CASE-20260824-4894 is now Under Review.
+```
+
+---
+
+### Resident requests document
+
+```text
+Resident
+   ↓
+Document request
+   ↓
+requests table
+   ↓
+Notification → admins
+```
+
+---
+
+### Admin approves resident
+
+```text
+Admin
+   ↓
+Approve account
+   ↓
+Notification → resident
+```
+
+---
+
+# 5. `api/fetch.php` should NOT return HTML
+
+Make it a JSON API.
+
+For example:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../config/db.php';
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+header('Content-Type: application/json; charset=utf-8');
+
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+
+    echo json_encode([
+        'success' => false,
+        'error' => 'Authentication required.'
+    ]);
+
+    exit;
+}
+
+$userId = (int) $_SESSION['user_id'];
+
+$database = db();
+
+$lastId = max(
+    0,
+    (int) ($_GET['last_id'] ?? 0)
+);
+
+$statement = $database->prepare(
+    'SELECT
+        id,
+        type,
+        title,
+        message,
+        target_url,
+        is_read,
+        created_at
+     FROM notifications
+     WHERE user_id = :user_id
+       AND id > :last_id
+     ORDER BY id ASC
+     LIMIT 50'
+);
+
+$statement->execute([
+    'user_id' => $userId,
+    'last_id' => $lastId
+]);
+
+$notifications = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+$unreadStatement = $database->prepare(
+    'SELECT COUNT(*)
+     FROM notifications
+     WHERE user_id = :user_id
+       AND is_read = 0'
+);
+
+$unreadStatement->execute([
+    'user_id' => $userId
+]);
+
+$unreadCount = (int) $unreadStatement->fetchColumn();
+
+echo json_encode([
+    'success' => true,
+    'notifications' => $notifications,
+    'unread_count' => $unreadCount,
+    'server_time' => date('Y-m-d H:i:s')
+]);
+```
+
+This is the basic engine.
+
+---
+
+# 6. Why `last_id` is important
+
+Suppose the browser has already received:
+
+```text
+Notification 100
+Notification 101
+Notification 102
+```
+
+JavaScript remembers:
+
+```javascript
+lastNotificationId = 102;
+```
+
+The next request becomes:
+
+```text
+/api/fetch.php?last_id=102
+```
+
+The database only needs to return:
+
+```text
+103
+104
+105
+```
+
+instead of returning the entire notification history every time.
+
+This is the same concept as the `after_id` in your GamersHUB messaging API.
+
+---
+
+# 7. Background JavaScript
+
+Create:
+
+```text
+assets/js/realtime.js
+```
+
+Use:
+
+```javascript
+(() => {
+    let lastNotificationId = 0;
+    let polling = false;
+
+    async function checkUpdates() {
+        if (polling) {
+            return;
+        }
+
+        polling = true;
+
+        try {
+            const response = await fetch(
+                `/safebrgy/api/fetch.php?last_id=${lastNotificationId}`,
+                {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                return;
+            }
+
+            if (Array.isArray(data.notifications)) {
+                for (const notification of data.notifications) {
+                    handleNotification(notification);
+
+                    const id = Number(notification.id);
+
+                    if (id > lastNotificationId) {
+                        lastNotificationId = id;
+                    }
+                }
+            }
+
+            updateNavigationBadge(data.unread_count);
+
+        } catch (error) {
+            console.error('SafeBrgy realtime error:', error);
+        } finally {
+            polling = false;
+        }
+    }
+
+    function handleNotification(notification) {
+        showNotification(notification);
+    }
+
+    function updateNavigationBadge(count) {
+        const badges = document.querySelectorAll(
+            '[data-notification-badge]'
+        );
+
+        badges.forEach(badge => {
+            const value = Number(count);
+
+            if (value > 0) {
+                badge.textContent = value > 99 ? '99+' : value;
+                badge.classList.remove('d-none');
+            } else {
+                badge.textContent = '';
+                badge.classList.add('d-none');
+            }
+        });
+    }
+
+    function showNotification(notification) {
+        if (typeof window.showSafeBrgyNotification === 'function') {
+            window.showSafeBrgyNotification(notification);
+        }
+    }
+
+    async function initialize() {
+        try {
+            const response = await fetch(
+                `/safebrgy/api/fetch.php?last_id=0`,
+                {
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                /*
+                 * Initial load should NOT display old
+                 * notifications as new popups.
+                 */
+                if (Array.isArray(data.notifications) &&
+                    data.notifications.length > 0) {
+
+                    lastNotificationId =
+                        Number(
+                            data.notifications[
+                                data.notifications.length - 1
+                            ].id
+                        );
+                }
+
+                updateNavigationBadge(data.unread_count);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
+        checkUpdates();
+
+        setInterval(checkUpdates, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+})();
+```
+
+Change:
+
+```javascript
+/safebrgy/api/fetch.php
+```
+
+to whatever your actual SafeBrgy URL is.
+
+---
+
+# 8. Your existing `notify.html`
+
+Your `notify.html` should be the visual notification component.
+
+For example:
+
+```html
+<div
+    id="safeBrgyNotification"
+    class="safe-notification"
+    aria-live="polite"
+    aria-atomic="true"
+>
+    <button
+        type="button"
+        class="safe-notification-close"
+        onclick="hideSafeBrgyNotification()"
+    >
+        ×
+    </button>
+
+    <div class="safe-notification-icon">
+        <i class="material-icons">notifications</i>
+    </div>
+
+    <div class="safe-notification-content">
+        <strong id="safeNotificationTitle">
+            Notification
+        </strong>
+
+        <p id="safeNotificationMessage">
+            You have a new notification.
+        </p>
+    </div>
+</div>
+```
+
+Then:
+
+```javascript
+window.showSafeBrgyNotification = function(notification) {
+
+    const container =
+        document.getElementById('safeBrgyNotification');
+
+    const title =
+        document.getElementById('safeNotificationTitle');
+
+    const message =
+        document.getElementById('safeNotificationMessage');
+
+    if (!container || !title || !message) {
+        return;
+    }
+
+    title.textContent =
+        notification.title || 'Notification';
+
+    message.textContent =
+        notification.message || '';
+
+    container.classList.add('show');
+
+    clearTimeout(window.safeNotificationTimer);
+
+    window.safeNotificationTimer = setTimeout(() => {
+        container.classList.remove('show');
+    }, 5000);
+};
+
+window.hideSafeBrgyNotification = function() {
+
+    const container =
+        document.getElementById('safeBrgyNotification');
+
+    if (container) {
+        container.classList.remove('show');
+    }
+};
+```
+
+---
+
+# 9. Important: don't use your loading overlay
+
+Your normal page navigation might currently have something like:
+
+```javascript
+showLoadingOverlay();
+```
+
+or:
+
+```javascript
+window.addEventListener('beforeunload', ...);
+```
+
+Your realtime system should **never call that**.
+
+This:
+
+```javascript
+fetch('/safebrgy/api/fetch.php')
+```
+
+does not need to display your loading overlay.
+
+The user stays on:
+
+```text
+Dashboard
+```
+
+while the background request happens.
+
+So:
+
+```text
+Dashboard
+       │
+       │ background fetch
+       ▼
+api/fetch.php
+       │
+       ▼
+JSON
+       │
+       ├── badge update
+       └── notification popup
+```
+
+No page reload.
+
+---
+
+# 10. Navigation badge HTML
+
+You need a common attribute so JavaScript knows where the badge is.
+
+For example, resident desktop:
+
+```html
+<a href="dashboard.php" class="nav-link">
+    <i class="material-icons">dashboard</i>
+    <span>Dashboard</span>
+</a>
+
+<a href="announcement.php" class="nav-link">
+    <i class="material-icons">campaign</i>
+    <span>Announcement</span>
+
+    <span
+        class="notification-badge d-none"
+        data-notification-badge
+    ></span>
+</a>
+```
+
+But you don't want the same generic badge on every page.
+
+Instead, give each navigation item its own notification category.
+
+---
+
+# 11. Better badge structure
+
+I recommend:
+
+```html
+<a
+    href="dashboard.php"
+    class="nav-link"
+    data-nav="dashboard"
+>
+    <i class="material-icons">dashboard</i>
+    <span>Dashboard</span>
+
+    <span
+        class="notification-badge d-none"
+        data-notification-badge="dashboard"
+    ></span>
+</a>
+```
+
+Announcement:
+
+```html
+<a
+    href="announcement.php"
+    class="nav-link"
+    data-nav="announcement"
+>
+    <i class="material-icons">campaign</i>
+    <span>Announcement</span>
+
+    <span
+        class="notification-badge d-none"
+        data-notification-badge="announcement"
+    ></span>
+</a>
+```
+
+Reports:
+
+```html
+<a
+    href="reports.php"
+    class="nav-link"
+    data-nav="reports"
+>
+    <i class="material-icons">report</i>
+    <span>My Reports</span>
+
+    <span
+        class="notification-badge d-none"
+        data-notification-badge="reports"
+    ></span>
+</a>
+```
+
+Requests:
+
+```html
+<a
+    href="requests.php"
+    class="nav-link"
+    data-nav="requests"
+>
+    <i class="material-icons">description</i>
+    <span>My Request</span>
+
+    <span
+        class="notification-badge d-none"
+        data-notification-badge="requests"
+    ></span>
+</a>
+```
+
+---
+
+# 12. Don't use one global unread count
+
+For SafeBrgy, I recommend that your API return:
+
+```json
+{
+    "success": true,
+    "notifications": [],
+    "badges": {
+        "dashboard": 0,
+        "announcement": 2,
+        "reports": 1,
+        "requests": 3,
+        "verification": 0
+    }
+}
+```
+
+This is much better.
+
+For example, resident:
+
+```text
+Dashboard
+Announcement      🔴 2
+My Reports        🔴 1
+My Request        🔴 3
+```
+
+Admin:
+
+```text
+Dashboard
+Announcement      🔴 1
+Reports           🔴 5
+Request           🔴 3
+Verification      🔴 7
+```
+
+---
+
+# 13. Resident desktop behavior
+
+Your desktop navigation:
+
+```text
+Dashboard
+Announcement       🔴 2
+My Reports         🔴 1
+My Request         🔴 3
+```
+
+When the resident clicks:
+
+```text
+My Reports
+```
+
+go to:
+
+```text
+reports.php
+```
+
+and immediately remove:
+
+```text
+🔴 1
+```
+
+from that navigation item.
+
+---
+
+# 14. Resident mobile behavior
+
+You described a useful mobile behavior:
+
+Initially:
+
+```text
+☰ 🔴 6
+```
+
+The notification indicator is on the burger menu.
+
+When the user opens the menu:
+
+```text
+☰
+────────────────
+Dashboard
+Announcement       🔴 2
+My Reports         🔴 1
+My Request         🔴 3
+────────────────
+```
+
+So on mobile:
+
+```text
+closed
+    ↓
+burger 🔴 6
+```
+
+then:
+
+```text
+menu opened
+    ↓
+individual navigation badges
+```
+
+---
+
+# 15. Mobile badge logic
+
+Example:
+
+```html
+<button
+    id="mobileMenuButton"
+    type="button"
+    class="mobile-menu-button"
+>
+    <i class="material-icons">menu</i>
+
+    <span
+        id="mobileMenuBadge"
+        class="notification-badge d-none"
+    ></span>
+</button>
+```
+
+Then:
+
+```javascript
+function updateMobileMenuBadge(total) {
+
+    const badge =
+        document.getElementById('mobileMenuBadge');
+
+    if (!badge) {
+        return;
+    }
+
+    if (total > 0) {
+        badge.textContent =
+            total > 99 ? '99+' : total;
+
+        badge.classList.remove('d-none');
+    } else {
+        badge.textContent = '';
+        badge.classList.add('d-none');
+    }
+}
+```
+
+When menu opens:
+
+```javascript
+document
+    .getElementById('mobileMenuButton')
+    ?.addEventListener('click', function () {
+
+        document.body.classList.toggle('mobile-menu-open');
+
+        if (
+            document.body.classList.contains(
+                'mobile-menu-open'
+            )
+        ) {
+            updateMobileMenuBadge(0);
+        }
+    });
+```
+
+But there's an important distinction:
+
+**Don't mark the notifications as read merely because the menu opened.**
+
+Only hide the **mobile aggregate indicator**.
+
+The actual notifications should remain unread until the user opens the relevant page.
+
+---
+
+# 16. Clicking navigation removes that category
+
+For example:
+
+```javascript
+document.addEventListener('click', function(event) {
+
+    const link =
+        event.target.closest('[data-nav]');
+
+    if (!link) {
+        return;
+    }
+
+    const nav =
+        link.dataset.nav;
+
+    clearNavigationBadge(nav);
+});
+```
+
+Then:
+
+```javascript
+function clearNavigationBadge(nav) {
+
+    const badge =
+        document.querySelector(
+            `[data-notification-badge="${nav}"]`
+        );
+
+    if (!badge) {
+        return;
+    }
+
+    badge.textContent = '';
+    badge.classList.add('d-none');
+}
+```
+
+However, this only hides it locally.
+
+For a proper system, the server should also mark those notifications as read.
+
+---
+
+# 17. Add a `read` action to `fetch.php`
+
+Your API can support:
+
+```text
+fetch.php?action=read&type=reports
+```
+
+Then:
+
+```php
+if ($action === 'read') {
+
+    $type = trim(
+        (string) ($_POST['type'] ?? $_GET['type'] ?? '')
+    );
+
+    $allowedTypes = [
+        'dashboard',
+        'announcement',
+        'reports',
+        'requests',
+        'verification'
+    ];
+
+    if (!in_array($type, $allowedTypes, true)) {
+        http_response_code(422);
+
+        echo json_encode([
+            'success' => false,
+            'error' => 'Invalid notification type.'
+        ]);
+
+        exit;
+    }
+
+    $statement = $database->prepare(
+        'UPDATE notifications
+         SET is_read = 1
+         WHERE user_id = :user_id
+           AND type = :type'
+    );
+
+    $statement->execute([
+        'user_id' => $userId,
+        'type' => $type
+    ]);
+
+    echo json_encode([
+        'success' => true
+    ]);
+
+    exit;
+}
+```
+
+Then when:
+
+```text
+My Reports
+```
+
+is clicked:
+
+```javascript
+markNotificationTypeRead('reports');
+```
+
+---
+
+# 18. But there's an important improvement
+
+I would **not** make `type` equal to the navigation name.
+
+Instead use two fields:
+
+```text
+type
+target
+```
+
+For example:
+
+```text
+type = "report_status"
+target = "reports"
+```
+
+or:
+
+```text
+type = "new_report"
+target = "reports"
+```
+
+This gives you much more flexibility.
+
+Your table could have:
+
+```sql
+type VARCHAR(50)
+target VARCHAR(50)
+```
+
+Examples:
+
+| Event                 | type             | target         |
+| --------------------- | ---------------- | -------------- |
+| New announcement      | `announcement`   | `announcement` |
+| Report submitted      | `new_report`     | `reports`      |
+| Report status changed | `report_status`  | `reports`      |
+| Request submitted     | `new_request`    | `requests`     |
+| Request approved      | `request_status` | `requests`     |
+| Resident verification | `verification`   | `verification` |
+
+Then your API returns:
+
+```json
+{
+    "type": "report_status",
+    "target": "reports"
+}
+```
+
+---
+
+# 19. Admin notification flow
+
+For your admin:
+
+```text
+                  Resident
+                     │
+              Submit a report
+                     │
+                     ▼
+                  reports
+                     │
+                     ▼
+              notifications
+                     │
+                     ▼
+              Admin browser
+                     │
+              api/fetch.php
+                     │
+             ┌───────┴───────┐
+             ▼               ▼
+        🔴 Reports       Popup
+```
+
+Admin sees:
+
+```text
+Dashboard
+Announcement
+Reports          🔴 1
+Request
+Verification
+```
+
+and:
+
+```text
+┌─────────────────────────────┐
+│ 🔔 New Incident Report      │
+│ Christian submitted a new   │
+│ incident report.            │
+└─────────────────────────────┘
+```
+
+---
+
+# 20. Resident notification flow
+
+For resident:
+
+```text
+Admin
+  │
+  │ changes report status
+  ▼
+reports
+  │
+  ▼
+notifications
+  │
+  ▼
+Resident browser
+```
+
+Resident sees:
+
+```text
+Dashboard
+Announcement
+My Reports        🔴 1
+My Request
+```
+
+and:
+
+```text
+┌─────────────────────────────┐
+│ 🔔 Report Updated           │
+│ Your report is now          │
+│ Under Review.               │
+└─────────────────────────────┘
+```
+
+---
+
+# 21. What should trigger notifications?
+
+For your SafeBrgy system, I'd map them like this:
+
+### Resident
+
+| Event                           | Notification           | Navigation   |
+| ------------------------------- | ---------------------- | ------------ |
+| New announcement                | Announcement available | Announcement |
+| Report status changed           | Report updated         | My Reports   |
+| Report comment/update           | Report updated         | My Reports   |
+| Document request status changed | Request updated        | My Request   |
+| Document request approved       | Request approved       | My Request   |
+| Document request rejected       | Request rejected       | My Request   |
+
+### Admin
+
+| Event                          | Notification                  | Navigation   |
+| ------------------------------ | ----------------------------- | ------------ |
+| New resident report            | New report                    | Reports      |
+| Report update                  | Report updated                | Reports      |
+| New document request           | New request                   | Request      |
+| New resident registration      | Verification required         | Verification |
+| Resident account pending       | Account awaiting verification | Verification |
+| New announcement-related event | Announcement                  | Announcement |
+
+---
+
+# 22. Include `realtime.js` on every authenticated page
+
+For resident:
+
+```php
+<?php include __DIR__ . '/../includes/notification/notify.html'; ?>
+
+<script src="/safebrgy/assets/js/realtime.js"></script>
+```
+
+For admin:
+
+```php
+<?php include __DIR__ . '/../includes/notification/notify.html'; ?>
+
+<script src="/safebrgy/assets/js/realtime.js"></script>
+```
+
+This means **every page automatically listens for updates**.
+
+---
+
+# 23. Your existing loading overlay remains untouched
+
+Your architecture becomes:
+
+```text
+┌─────────────────────────────────────────────┐
+│                 SafeBrgy Page               │
+│                                             │
+│  Dashboard                                  │
+│  Reports                                    │
+│  Request                                    │
+│                                             │
+│          Existing Loading Overlay            │
+│             ↓ normal navigation             │
+│                                             │
+│  ─────────────────────────────────────────  │
+│                                             │
+│       realtime.js                           │
+│          │                                  │
+│          │ fetch()                          │
+│          ▼                                  │
+│       api/fetch.php                         │
+│          │                                  │
+│          ▼                                  │
+│        MySQL                                │
+│          │                                  │
+│          ▼                                  │
+│       JSON                                  │
+│          │                                  │
+│       ┌──┴─────────┐                        │
+│       ▼            ▼                        │
+│    Badges       notify.html                 │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+The realtime system never calls the overlay.
+
+---
+
+# 24. One thing I recommend changing from the basic implementation
+
+Don't poll every **1 second**.
+
+For SafeBrgy, start with:
+
+```javascript
+setInterval(checkUpdates, 3000);
+```
+
+That's one request every 3 seconds per active browser.
+
+If you have:
+
+```text
+20 users
+```
+
+that's approximately:
+
+```text
+20 / 3 ≈ 6.7 requests/second
+```
+
+At your current PHP + MySQL architecture, that's much more reasonable than 1-second polling.
+
+You can also increase it to:
+
+```text
+5 seconds
+```
+
+if traffic grows.
+
+---
+
+# 25. Final behavior
+
+The finished SafeBrgy system should behave like this.
+
+### Resident desktop
+
+```text
+Dashboard
+Announcement       🔴 2
+My Reports         🔴 1
+My Request         🔴 3
+```
+
+New report status arrives:
+
+```text
+                    ↓
+              background fetch
+                    ↓
+              🔴 My Reports
+                    ↓
+             notification popup
+```
+
+No page reload.
+
+No loading overlay.
+
+Click:
+
+```text
+My Reports
+```
+
+→ navigate normally
+→ reports badge disappears
+→ server marks report notifications read.
+
+---
+
+### Resident mobile
+
+Initially:
+
+```text
+☰ 🔴 6
+```
+
+Tap menu:
+
+```text
+☰
+────────────────────
+Dashboard
+Announcement       🔴 2
+My Reports         🔴 1
+My Request         🔴 3
+────────────────────
+```
+
+Tap:
+
+```text
+My Reports
+```
+
+→ page opens
+→ My Reports badge disappears.
+
+---
+
+### Admin
+
+```text
+Dashboard
+Announcement
+Reports             🔴 4
+Request              🔴 2
+Verification         🔴 5
+```
+
+A new resident submits a report:
+
+```text
+                    ↓
+             api/fetch.php
+                    ↓
+             Reports 🔴 5
+                    +
+             notify.html
+```
+
+The admin remains on the current page with **no reload and no loading overlay**.
+
+---
+
+## The key pieces to implement
+
+You essentially need **four components**:
+
+```text
+1. notifications table
+        ↓
+2. api/fetch.php
+        ↓
+3. realtime.js
+        ↓
+4. notify.html + navigation badges
+```
+
+Then modify your existing SafeBrgy actions so that events such as **report submission, request submission, status changes, account verification, and announcements** insert records into `notifications`.
+
+For your existing PHP project, I would implement it using your **current `db.php`, current session/authentication structure, and actual `users/reports/requests/announcements` table names** rather than blindly adding a second authentication or database system.

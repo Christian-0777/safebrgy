@@ -60,6 +60,10 @@ RewriteRule ^guest/(assets|api)/(.*)$ guest_user/$1/$2 [L]
 RewriteRule ^guest/uploads/(.*)$ uploads/$1 [L]
 RewriteRule ^upload/(.*)$ guest_user/upload/$1 [L]
 
+# API endpoints: resolve directly to the project file for both root and subfolder deployments.
+RewriteRule ^api/?$ api/fetch.php [L,QSA]
+RewriteRule ^api/(.*)$ api/$1 [L,QSA]
+
 # Resident pages.
 RewriteRule ^$ index.php [L]
 RewriteRule ^(dashboard|announcement|reports|requests|profile|account)/?$ public/public-pages/$1.php [L]

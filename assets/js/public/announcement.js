@@ -1,10 +1,9 @@
 // Announcement page interactions
 document.addEventListener('DOMContentLoaded', () => {
-  const notedBtns = document.querySelectorAll('.noted-btn, .noted-btn-modal');
-  
-  notedBtns.forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
+  document.addEventListener('click', async (event) => {
+      const btn = event.target.closest('.noted-btn, .noted-btn-modal');
+      if (!btn) return;
+      event.preventDefault();
       const announcementId = btn.getAttribute('data-id');
       
       try {
@@ -37,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error marking as noted:', error);
         alert('Error marking as noted. Please try again.');
       }
-    });
   });
 });
 

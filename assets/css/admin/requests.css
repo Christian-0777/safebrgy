@@ -28,10 +28,6 @@ p, span, a, button, .btn, label {
   border-radius: 4px;
 }
 
-.main-content {
-  padding-top: 80px;
-}
-
 /* Statistics Cards */
 .stat-card {
   background: white;
@@ -211,5 +207,26 @@ body .modal-dialog {
 
   .table {
     font-size: 12px;
+  }
+}
+
+.main-content {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+.main-content > .container-fluid.p-4 {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .main-content,
+  .main-content.collapsed {
+    padding-left: .9rem !important;
+    padding-right: .9rem !important;
   }
 }

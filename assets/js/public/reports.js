@@ -1,20 +1,31 @@
 // Reports page functionality
 document.addEventListener('DOMContentLoaded', function() {
+  if (window.bootstrap) {
+    document.querySelectorAll('.report-status-icon[data-bs-toggle="tooltip"]').forEach(icon => {
+      bootstrap.Tooltip.getOrCreateInstance(icon);
+    });
+  }
+
   const searchInput = document.getElementById('searchReports');
   const filterStatus = document.getElementById('filterStatus');
   const reportsTable = document.getElementById('reportsTable');
-  const reportRows = document.querySelectorAll('#reportsTable .report-row');
   const createReportForm = document.getElementById('createReportForm');
   const reportType = document.getElementById('reportType');
+  const reportTagsSection = document.getElementById('reportTagsSection');
+  const reportTagChoices = document.getElementById('reportTagChoices');
+  const addReportTagButton = document.getElementById('addReportTagButton');
+  const addReportTagModal = document.getElementById('addReportTagModal');
+  const addReportTagForm = document.getElementById('addReportTagForm');
+  const addReportTagError = document.getElementById('addReportTagError');
   const pictureUploadArea = document.getElementById('pictureUploadArea');
   const reportPicture = document.getElementById('reportPicture');
   const picturePreview = document.getElementById('picturePreview');
   const viewReportModal = document.getElementById('viewReportModal');
   const reportDetailsContent = document.getElementById('reportDetailsContent');
-  const reportButtons = document.querySelectorAll('.btn-view-report');
+  let selectedTagIds = new Set();
 
   const requestedReportType = new URLSearchParams(window.location.search).get('report_type');
-  if (['Incident', 'Lost Property', 'Public Concerns'].includes(requestedReportType)) {
+  if (['Incident', 'Lost Property', 'Public Concerns', 'Blotter'].includes(requestedReportType)) {
     if (reportType) {
       reportType.value = requestedReportType;
     }
@@ -22,6 +33,95 @@ document.addEventListener('DOMContentLoaded', function() {
     if (createReportModal && window.bootstrap) {
       bootstrap.Modal.getOrCreateInstance(createReportModal).show();
     }
+  }
+
+  async function loadReportTags(type, selectedTagId = null, preserveSelection = false) {
+    if (!preserveSelection) selectedTagIds = new Set();
+    if (selectedTagId && selectedTagIds.size < 5) selectedTagIds.add(String(selectedTagId));
+    if (!type || !reportTagsSection || !reportTagChoices) {
+      if (reportTagsSection) reportTagsSection.hidden = true;
+      return;
+    }
+    reportTagsSection.hidden = false;
+    reportTagChoices.innerHTML = '<span class="text-muted">Loading tags...</span>';
+    try {
+      const response = await fetch(`../../api/reports/tags.php?report_type=${encodeURIComponent(type)}`);
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.message || 'Could not load tags.');
+      if (reportType.value !== type) return;
+      renderReportTags(data.tags || []);
+    } catch (error) {
+      if (reportType.value !== type) return;
+      reportTagChoices.innerHTML = `<span class="text-danger">${escapeHtml(error.message)}</span>`;
+    }
+  }
+
+  function renderReportTags(tags) {
+    reportTagChoices.innerHTML = tags.map(tag => `
+      <label class="report-tag-option">
+        <input type="checkbox" name="tag_ids[]" value="${escapeHtml(tag.id)}" ${selectedTagIds.has(String(tag.id)) ? 'checked' : ''}>
+        <span>${escapeHtml(tag.tag_name)}</span>
+      </label>
+    `).join('');
+    reportTagChoices.querySelectorAll('input[type="checkbox"]').forEach(input => {
+      input.addEventListener('change', () => {
+        if (input.checked && selectedTagIds.size >= 5) {
+          input.checked = false;
+          alert('You can choose up to five tags.');
+          return;
+        }
+        if (input.checked) selectedTagIds.add(input.value);
+        else selectedTagIds.delete(input.value);
+        renderReportTags(tags);
+      });
+    });
+  }
+
+  if (reportType) {
+    reportType.addEventListener('change', () => loadReportTags(reportType.value));
+    if (reportType.value) loadReportTags(reportType.value);
+  }
+
+  if (addReportTagButton && addReportTagModal) {
+    addReportTagButton.addEventListener('click', event => {
+      event.preventDefault();
+      const createModal = document.getElementById('createReportModal');
+      createModal.addEventListener('hidden.bs.modal', () => bootstrap.Modal.getOrCreateInstance(addReportTagModal).show(), { once: true });
+      bootstrap.Modal.getOrCreateInstance(createModal).hide();
+    });
+    addReportTagModal.addEventListener('hidden.bs.modal', () => {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('createReportModal')).show();
+    });
+  }
+
+  if (addReportTagForm) {
+    addReportTagForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const tagName = document.getElementById('newReportTagName').value.trim();
+      const submitButton = addReportTagForm.querySelector('button[type="submit"]');
+      addReportTagError.textContent = '';
+      if (tagName.split(/\s+/).filter(Boolean).length > 3) {
+        addReportTagError.textContent = 'Tags can contain a maximum of three words.';
+        return;
+      }
+      submitButton.disabled = true;
+      try {
+        const response = await fetch('../../api/reports/tags.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ report_type: reportType.value, tag_name: tagName })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Could not add tag.');
+        await loadReportTags(reportType.value, data.tag.id, true);
+        addReportTagForm.reset();
+        bootstrap.Modal.getOrCreateInstance(addReportTagModal).hide();
+      } catch (error) {
+        addReportTagError.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
   }
 
   // Search functionality
@@ -38,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
     const statusFilter = filterStatus ? filterStatus.value : '';
 
-    reportRows.forEach(row => {
+    reportsTable?.querySelectorAll('.report-row').forEach(row => {
       let show = true;
 
       // Check search query
@@ -57,6 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
       row.style.display = show ? '' : 'none';
     });
   }
+
+  document.addEventListener('safebrgy:live-refresh', filterReports);
 
   // Picture upload area click handler
   if (pictureUploadArea) {
@@ -125,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         previewItem.innerHTML = `
           <img src="${e.target.result}" alt="Preview ${index + 1}">
           <button type="button" class="picture-remove-btn" title="Remove picture" aria-label="Remove picture">
-            <i class="fas fa-times"></i>
+            <i class="fas fa-times" aria-hidden="true"></i>
           </button>
         `;
         previewItem.querySelector('.picture-remove-btn').addEventListener('click', () => {
@@ -142,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (createReportForm) {
     createReportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (selectedTagIds.size < 1 || selectedTagIds.size > 5) {
+        alert('Choose between one and five tags for this report.');
+        return;
+      }
 
       const submitButton = createReportForm.querySelector('button[type="submit"]');
       if (submitButton && window.setButtonLoading) {
@@ -205,9 +312,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // View report functionality
-  reportButtons.forEach(btn => {
-    btn.addEventListener('click', async function() {
-      const reportId = this.getAttribute('data-report-id');
+  reportsTable?.addEventListener('click', async event => {
+      const btn = event.target.closest('.btn-view-report');
+      if (!btn) return;
+      const reportId = btn.getAttribute('data-report-id');
       
       try {
         const response = await fetch(`../../api/reports/get.php?id=${reportId}`);
@@ -215,38 +323,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (data.success) {
           const report = data.report;
+          const reportTypeIcons = { Incident: 'fa-exclamation-triangle', 'Public Concerns': 'fa-bullhorn', Blotter: 'fa-gavel', 'Lost Property': 'fa-search' };
+          const reportTypeClass = String(report.report_type || '').toLowerCase().replace(/\s+/g, '-');
           reportDetailsContent.innerHTML = `
             <div class="report-detail-section">
               <div class="detail-label">Case Number</div>
               <div class="detail-value case-number-detail">
                 <span id="reportCaseNumber">${escapeHtml(report.case_number || 'N/A')}</span>
                 <button type="button" class="copy-case-number-btn" id="copyCaseNumberBtn" title="Copy case number" aria-label="Copy case number">
-                  <i class="fas fa-copy"></i>
+                  <i class="fas fa-copy" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
 
             <div class="report-detail-section">
               <div class="detail-label">Report Type</div>
-              <div class="detail-value">
-                <span class="badge bg-info">${report.report_type}</span>
-              </div>
+              <div class="detail-value"><span class="report-type-badge type-${escapeHtml(reportTypeClass)}"><i class="fas ${reportTypeIcons[report.report_type] || 'fa-file-alt'}" aria-hidden="true"></i>${escapeHtml(report.report_type === 'Incident' ? 'Incident Report' : report.report_type)}</span></div>
+            </div>
+
+            <div class="report-detail-section">
+              <div class="detail-label">Tags</div>
+              <div class="detail-value">${escapeHtml(report.tags || 'No tags')}</div>
             </div>
 
             <div class="report-detail-section">
               <div class="detail-label">Title</div>
-              <div class="detail-value">${report.title}</div>
+              <div class="detail-value">${escapeHtml(report.title)}</div>
             </div>
 
             <div class="report-detail-section">
               <div class="detail-label">Description</div>
-              <div class="detail-value">${report.description}</div>
+              <div class="detail-value">${escapeHtml(report.description)}</div>
             </div>
 
             ${report.location ? `
               <div class="report-detail-section">
                 <div class="detail-label">Location</div>
-                <div class="detail-value">${report.location}</div>
+                <div class="detail-value">${escapeHtml(report.location)}</div>
               </div>
             ` : ''}
 
@@ -255,11 +368,11 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="detail-value">
                 <span class="badge bg-${
                   report.status === 'Pending' ? 'warning' :
-                  report.status === 'Ongoing' ? 'info' :
+                  report.status === 'In Progress' ? 'info' :
                   report.status === 'Resolved' ? 'success' :
                   report.status === 'Dismissed' ? 'danger' : 'secondary'
                 }">
-                  ${report.status}
+                  ${escapeHtml(report.status)}
                 </span>
               </div>
             </div>
@@ -273,11 +386,16 @@ document.addEventListener('DOMContentLoaded', function() {
               })}</div>
             </div>
 
+            <div class="report-detail-section">
+              <div class="detail-label">Expiration</div>
+              <div class="detail-value">${report.expires_at ? `${new Date(report.expires_at.replace(' ', 'T') + 'Z').toLocaleString()}${new Date(report.expires_at.replace(' ', 'T') + 'Z') <= new Date() && ['Pending', 'In Progress'].includes(report.status) ? ' (Expired)' : ''}` : 'Not available'}</div>
+            </div>
+
             ${report.attachments && report.attachments.length > 0 ? `
               <div class="report-detail-section">
                 <div class="detail-label">Attachments</div>
                 ${report.attachments.map(attachment => `
-                  <img src="../../${attachment}" alt="Report image" class="report-detail-image">
+                  <img src="../../${escapeHtml(attachment)}" alt="Report image" class="report-detail-image">
                 `).join('')}
               </div>
             ` : ''}
@@ -305,10 +423,10 @@ document.addEventListener('DOMContentLoaded', function() {
               }
 
               if (copied) {
-                copyCaseNumberButton.innerHTML = '<i class="fas fa-check"></i>';
+                copyCaseNumberButton.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
                 copyCaseNumberButton.title = 'Copied';
                 window.setTimeout(() => {
-                  copyCaseNumberButton.innerHTML = '<i class="fas fa-copy"></i>';
+                  copyCaseNumberButton.innerHTML = '<i class="fas fa-copy" aria-hidden="true"></i>';
                   copyCaseNumberButton.title = 'Copy case number';
                 }, 1500);
               }
@@ -321,6 +439,5 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error:', error);
         reportDetailsContent.innerHTML = '<p class="text-danger">An error occurred while loading report details</p>';
       }
-    });
   });
 });

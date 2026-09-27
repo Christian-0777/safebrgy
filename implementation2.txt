@@ -1,0 +1,735 @@
+For **SafeBrgy**, I recommend implementing it as a **global notification counter** shared by the sidebar, individual menu badges, and the browser tab title.
+
+The flow will be:
+
+```text
+Database
+   ↓
+notifications table
+   ↓
+notification-count.php
+   ↓
+JavaScript fetch() every 5 seconds
+   ↓
+┌──────────────────────────────┐
+│ 🔴 Reports       3           │
+│ 🔴 Requests      2           │
+│ 🔴 Announcements 1           │
+└──────────────────────────────┘
+              +
+       Browser tab title
+       (6) SafeBrgy
+```
+
+## 1. First, check your existing notification table
+
+Since you said your SafeBrgy **already has a working notification system**, don't immediately create another table.
+
+Your existing table should have equivalent information to:
+
+```text
+id
+user_id
+type
+title
+message
+is_read
+created_at
+```
+
+The important column is:
+
+```text
+is_read
+```
+
+For example:
+
+```text
+is_read = 0 → unread → show red dot/badge
+is_read = 1 → read → don't show badge
+```
+
+If your existing column is called something else, use your existing column.
+
+---
+
+# 2. Create a notification count endpoint
+
+Create:
+
+```text
+/api/notification-count.php
+```
+
+For example:
+
+```php
+<?php
+
+session_start();
+
+require_once '../config/db.php';
+
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode([
+        'success' => false,
+        'count' => 0
+    ]);
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM notifications
+    WHERE user_id = ?
+      AND is_read = 0
+");
+
+$stmt->execute([$userId]);
+
+$count = (int) $stmt->fetchColumn();
+
+echo json_encode([
+    'success' => true,
+    'count' => $count
+]);
+```
+
+### Important
+
+If your SafeBrgy database uses:
+
+```php
+$_SESSION['resident_id']
+```
+
+instead of:
+
+```php
+$_SESSION['user_id']
+```
+
+change it accordingly.
+
+Also change:
+
+```php
+require_once '../config/db.php';
+```
+
+to the actual location of your SafeBrgy `db.php`.
+
+---
+
+# 3. Add the badge to your sidebar
+
+Suppose you currently have:
+
+```html
+<a href="requests.php">
+    <i class="material-icons">description</i>
+    Requests
+</a>
+```
+
+Change it to:
+
+```html
+<a href="requests.php" class="notification-link">
+    <i class="material-icons">description</i>
+
+    <span>Requests</span>
+
+    <span
+        class="notification-badge"
+        data-notification-badge="requests">
+    </span>
+</a>
+```
+
+For reports:
+
+```html
+<a href="reports.php" class="notification-link">
+    <i class="material-icons">report</i>
+
+    <span>Reports</span>
+
+    <span
+        class="notification-badge"
+        data-notification-badge="reports">
+    </span>
+</a>
+```
+
+For announcements:
+
+```html
+<a href="announcements.php" class="notification-link">
+    <i class="material-icons">campaign</i>
+
+    <span>Announcements</span>
+
+    <span
+        class="notification-badge"
+        data-notification-badge="announcements">
+    </span>
+</a>
+```
+
+---
+
+# 4. Add the CSS
+
+```css
+.notification-badge {
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 6px;
+
+    margin-left: auto;
+
+    border-radius: 999px;
+
+    background: #e53935;
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.notification-badge.show {
+    display: inline-flex;
+}
+```
+
+This gives you:
+
+```text
+Requests                         3 🔴
+Reports                          2 🔴
+Announcements                    1 🔴
+```
+
+---
+
+# 5. Return counts for each category
+
+For SafeBrgy, I would make the endpoint return more than one count.
+
+For example:
+
+```php
+$stmt = $pdo->prepare("
+    SELECT
+        COUNT(*) AS total,
+
+        SUM(CASE
+            WHEN type = 'request' THEN 1
+            ELSE 0
+        END) AS requests,
+
+        SUM(CASE
+            WHEN type = 'report' THEN 1
+            ELSE 0
+        END) AS reports,
+
+        SUM(CASE
+            WHEN type = 'announcement' THEN 1
+            ELSE 0
+        END) AS announcements
+
+    FROM notifications
+
+    WHERE user_id = ?
+      AND is_read = 0
+");
+
+$stmt->execute([$userId]);
+
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+echo json_encode([
+    'success' => true,
+    'total' => (int) ($row['total'] ?? 0),
+    'requests' => (int) ($row['requests'] ?? 0),
+    'reports' => (int) ($row['reports'] ?? 0),
+    'announcements' => (int) ($row['announcements'] ?? 0)
+]);
+```
+
+Now PHP returns something like:
+
+```json
+{
+    "success": true,
+    "total": 6,
+    "requests": 3,
+    "reports": 2,
+    "announcements": 1
+}
+```
+
+---
+
+# 6. Create the JavaScript notification manager
+
+Put this near the bottom of your main layout:
+
+```html
+<script>
+async function updateNotificationBadges() {
+
+    try {
+
+        const response = await fetch(
+            '/safebrgy/api/notification-count.php',
+            {
+                credentials: 'same-origin',
+                cache: 'no-store'
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            return;
+        }
+
+        updateBadge('requests', data.requests);
+        updateBadge('reports', data.reports);
+        updateBadge('announcements', data.announcements);
+
+        updateBrowserTitle(data.total);
+
+    } catch (error) {
+
+        console.error(
+            'Notification update failed:',
+            error
+        );
+
+    }
+}
+
+
+function updateBadge(type, count) {
+
+    const badge = document.querySelector(
+        `[data-notification-badge="${type}"]`
+    );
+
+    if (!badge) {
+        return;
+    }
+
+    if (count > 0) {
+
+        badge.textContent = count;
+        badge.classList.add('show');
+
+    } else {
+
+        badge.textContent = '';
+        badge.classList.remove('show');
+
+    }
+}
+
+
+function updateBrowserTitle(count) {
+
+    const baseTitle = 'SafeBrgy';
+
+    if (count > 0) {
+
+        document.title =
+            `(${count}) ${baseTitle}`;
+
+    } else {
+
+        document.title =
+            baseTitle;
+
+    }
+}
+</script>
+```
+
+---
+
+# 7. Automatically check for new notifications
+
+After the functions:
+
+```javascript
+updateNotificationBadges();
+
+setInterval(
+    updateNotificationBadges,
+    5000
+);
+```
+
+Now SafeBrgy checks the database every **5 seconds**.
+
+For example:
+
+```text
+8:00:00
+No notifications
+
+SafeBrgy
+```
+
+Then an administrator creates a new announcement.
+
+Within approximately 5 seconds:
+
+```text
+(1) SafeBrgy
+```
+
+and:
+
+```text
+Announcements   🔴 1
+```
+
+appears without refreshing the page.
+
+---
+
+# 8. When the user opens the notification
+
+This is where your previous requirement becomes important.
+
+You said you want:
+
+> red dot disappears when clicking the action.
+
+You should distinguish between:
+
+### Notification exists
+
+and
+
+### Notification has been read
+
+For example:
+
+```text
+notifications
+
+id | type         | is_read
+---+--------------+---------
+1  | announcement | 0
+2  | request      | 0
+3  | report       | 1
+```
+
+Only `is_read = 0` contributes to the badge.
+
+---
+
+# 9. Create `mark-notification-read.php`
+
+```php
+<?php
+
+session_start();
+
+require_once '../config/db.php';
+
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['user_id'])) {
+
+    echo json_encode([
+        'success' => false
+    ]);
+
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+$notificationId =
+    isset($_POST['notification_id'])
+        ? (int) $_POST['notification_id']
+        : 0;
+
+if ($notificationId <= 0) {
+
+    echo json_encode([
+        'success' => false
+    ]);
+
+    exit;
+}
+
+$stmt = $pdo->prepare("
+    UPDATE notifications
+
+    SET is_read = 1
+
+    WHERE id = ?
+      AND user_id = ?
+");
+
+$stmt->execute([
+    $notificationId,
+    $userId
+]);
+
+echo json_encode([
+    'success' => true
+]);
+```
+
+The important security part is:
+
+```sql
+WHERE id = ?
+AND user_id = ?
+```
+
+This prevents one resident from marking another resident's notification as read.
+
+---
+
+# 10. Mark it read when the action is clicked
+
+For example:
+
+```html
+<a
+    href="requests.php"
+    class="notification-action"
+    data-notification-id="25"
+>
+    View Request
+</a>
+```
+
+JavaScript:
+
+```javascript
+document.addEventListener(
+    'click',
+    async function (event) {
+
+        const link =
+            event.target.closest(
+                '.notification-action'
+            );
+
+        if (!link) {
+            return;
+        }
+
+        const notificationId =
+            link.dataset.notificationId;
+
+        if (!notificationId) {
+            return;
+        }
+
+        const formData = new FormData();
+
+        formData.append(
+            'notification_id',
+            notificationId
+        );
+
+        try {
+
+            await fetch(
+                '/safebrgy/api/mark-notification-read.php',
+                {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Unable to mark notification as read:',
+                error
+            );
+
+        }
+
+    }
+);
+```
+
+Then the user clicks:
+
+```text
+🔴 New document request
+        ↓
+Click "View Request"
+        ↓
+UPDATE notifications
+SET is_read = 1
+        ↓
+Badge disappears
+        ↓
+Browser title updates
+```
+
+---
+
+# 11. Better approach for Reports
+
+For SafeBrgy, you probably have different report types:
+
+```text
+Lost Property
+Public Concern
+Blotter
+Incident
+```
+
+Don't necessarily create four separate notification tables.
+
+Instead:
+
+```text
+notifications
+```
+
+can contain:
+
+```text
+type
+```
+
+such as:
+
+```text
+lost_property
+public_concern
+blotter
+incident
+document_request
+announcement
+```
+
+Then your notification could contain:
+
+```text
+id
+user_id
+type
+reference_id
+title
+message
+is_read
+created_at
+```
+
+Example:
+
+```text
+id:           105
+user_id:      21
+type:         incident
+reference_id: 4894
+title:        Incident Report Updated
+message:      Your report CASE-20260824-4894 has been reviewed.
+is_read:      0
+```
+
+The `reference_id` allows you to take the user directly to the relevant record.
+
+---
+
+# 12. Your final SafeBrgy architecture
+
+I recommend this structure:
+
+```text
+SafeBrgy
+│
+├── admin/
+│   ├── dashboard.php
+│   ├── reports.php
+│   ├── requests.php
+│   └── announcements.php
+│
+├── resident/
+│   ├── dashboard.php
+│   ├── reports.php
+│   ├── requests.php
+│   └── announcements.php
+│
+├── api/
+│   ├── notification-count.php
+│   ├── mark-notification-read.php
+│   └── mark-all-notifications-read.php
+│
+├── includes/
+│   └── notification.php
+│
+└── assets/
+    ├── css/
+    └── js/
+```
+
+Then put the reusable JavaScript into:
+
+```text
+assets/js/notifications.js
+```
+
+and include it on every authenticated page:
+
+```html
+<script src="/safebrgy/assets/js/notifications.js"></script>
+```
+
+That way **Dashboard, Reports, Requests, Announcements, Profile, etc. all receive the same live notification system**.
+
+### Result
+
+Your SafeBrgy UI can behave like:
+
+```text
+┌───────────────────────────────────────────┐
+│ SafeBrgy                         (6)      │ ← browser title
+├───────────────────────────────────────────┤
+│                                           │
+│ Dashboard                                 │
+│                                           │
+│ Reports                    🔴 2            │
+│ Requests                   🔴 3            │
+│ Announcements              🔴 1            │
+│                                           │
+│ ───────────────────────────────────────── │
+│                                           │
+│ Recent Activity                           │
+│                                           │
+│ 🔴 New incident report                    │
+│ 🔴 Document request updated               │
+│ 🔴 New barangay announcement              │
+│                                           │
+└───────────────────────────────────────────┘
+```
+
+**One important improvement:** instead of polling every 5 seconds forever, you can later upgrade SafeBrgy to **Server-Sent Events (SSE)** so notifications appear immediately when the database changes. For your current safebrgy.com, the **5-second AJAX polling approach is much simpler and sufficient**.

@@ -30,10 +30,19 @@ if (empty($_SESSION['admin_user'])) {
     exit;
 }
 
-if (empty($_SESSION['user'])) {
-    $_SESSION['user'] = adminDisplayName($_SESSION['admin_user']['username'] ?? (
-        !empty($_SESSION['admin_user']['email']) ? strtok($_SESSION['admin_user']['email'], '@') : 'Admin'
-    ));
+if (
+    !is_array($_SESSION['user'] ?? null)
+    || ($_SESSION['user']['role'] ?? '') !== 'admin'
+    || (int) ($_SESSION['user']['id'] ?? 0) !== (int) ($_SESSION['admin_user']['id'] ?? 0)
+) {
+    $_SESSION['user'] = [
+        'id' => (int) ($_SESSION['admin_user']['id'] ?? 0),
+        'role' => 'admin',
+        'name' => adminDisplayName($_SESSION['admin_user']['username'] ?? (
+            !empty($_SESSION['admin_user']['email']) ? strtok($_SESSION['admin_user']['email'], '@') : 'Admin'
+        )),
+        'email' => $_SESSION['admin_user']['email'] ?? '',
+    ];
 }
 
 if (empty($_SESSION['email']) && !empty($_SESSION['admin_user']['email'])) {
